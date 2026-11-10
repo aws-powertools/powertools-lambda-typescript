@@ -10,7 +10,10 @@ import {
 } from '../../src/index.js';
 import {
   asyncSettingsSchema,
+  createJSONParsingSchema,
+  createRejectingSchema,
   createSchema,
+  createThrowingSchema,
   createUndefinedOutputSchema,
   dateSchema,
   flexibleSchema,
@@ -37,6 +40,151 @@ const prepare = () => {
 };
 
 describe('Standard Schema evaluation', () => {
+  it.each([
+    { method: 'evaluate', source: 'fallback', kind: 'sync' },
+    { method: 'evaluate', source: 'result', kind: 'sync' },
+    { method: 'evaluateMany', source: 'fallback', kind: 'sync' },
+    { method: 'evaluateMany', source: 'result', kind: 'sync' },
+    { method: 'evaluate', source: 'fallback', kind: 'async' },
+    { method: 'evaluate', source: 'result', kind: 'async' },
+    { method: 'evaluateMany', source: 'fallback', kind: 'async' },
+    { method: 'evaluateMany', source: 'result', kind: 'async' },
+  ] as const)(
+    'wraps $kind schema failures from the $method $source with the original cause',
+    async ({ method, source, kind }) => {
+      // Prepare
+      const { flags, store, logger } = prepare();
+      const secret = 'transform-secret-5743';
+      const cause = new Error(secret);
+      const schema =
+        kind === 'sync'
+          ? createThrowingSchema(source, cause)
+          : createRejectingSchema(source, cause);
+      store.getMany.mockResolvedValue({
+        banner: { found: true, value: 'welcome', enabled: true },
+        settings: { found: true, value: 'result', enabled: true },
+      });
+      // Act
+      const result =
+        method === 'evaluate'
+          ? flags.evaluate({ name: 'settings', default: 'fallback', schema })
+          : flags.evaluateMany({
+              flags: { banner: 'none', settings: 'fallback' },
+              schemas: { settings: schema },
+            });
+      const error = await result.catch((error: unknown) => error);
+      // Assess
+      expect(error).toBeInstanceOf(FlagResultValidationError);
+      expect(error).toMatchObject({
+        flag: 'settings',
+        source,
+        message: `Flag 'settings' ${source} failed schema validation: the schema threw`,
+      });
+      expect(error instanceof FlagResultValidationError && error.cause).toBe(
+        cause
+      );
+      expect(error).not.toHaveProperty(
+        'message',
+        expect.stringContaining(secret)
+      );
+      if (source === 'fallback') expect(store.getMany).not.toHaveBeenCalled();
+      else
+        expect(store.getMany).toHaveBeenCalledExactlyOnceWith(
+          method === 'evaluate' ? ['settings'] : ['banner', 'settings'],
+          {}
+        );
+      expect(logger.warn).not.toHaveBeenCalled();
+      expect(logger.debug).not.toHaveBeenCalled();
+    }
+  );
+
+  it.each([
+    { kind: 'sync', cause: 'non-error-secret-5743' },
+    { kind: 'async', cause: 'non-error-secret-5743' },
+    { kind: 'sync', cause: undefined },
+    { kind: 'async', cause: undefined },
+    { kind: 'sync', cause: null },
+    { kind: 'async', cause: null },
+  ] as const)(
+    'preserves non-Error cause $cause from a $kind schema failure',
+    async ({ kind, cause }) => {
+      // Prepare
+      const { flags, store, logger } = prepare();
+      const schema =
+        kind === 'sync'
+          ? createThrowingSchema('result', cause)
+          : createRejectingSchema('result', cause);
+      store.getMany.mockResolvedValue({
+        settings: { found: true, value: 'result', enabled: true },
+      });
+      // Act
+      const result = flags.evaluate({
+        name: 'settings',
+        default: 'fallback',
+        schema,
+      });
+      const error = await result.catch((error: unknown) => error);
+      // Assess
+      expect(error).toBeInstanceOf(FlagResultValidationError);
+      expect(error).toMatchObject({
+        flag: 'settings',
+        source: 'result',
+        message:
+          "Flag 'settings' result failed schema validation: the schema threw",
+      });
+      expect(error instanceof FlagResultValidationError && error.cause).toBe(
+        cause
+      );
+      expect(logger.warn).not.toHaveBeenCalled();
+      expect(logger.debug).not.toHaveBeenCalled();
+    }
+  );
+
+  it.each([
+    { method: 'evaluate', source: 'fallback' },
+    { method: 'evaluate', source: 'result' },
+    { method: 'evaluateMany', source: 'fallback' },
+    { method: 'evaluateMany', source: 'result' },
+  ] as const)(
+    'preserves the JSON.parse SyntaxError from the $method $source transform',
+    async ({ method, source }) => {
+      // Prepare
+      const { flags, store, logger } = prepare();
+      const capture = vi.fn<(cause: unknown) => void>();
+      const schema = createJSONParsingSchema(capture);
+      const malformed = 'not-json-transform-secret-5743';
+      const fallback = source === 'fallback' ? malformed : '{}';
+      store.getMany.mockResolvedValue({
+        settings: { found: true, value: malformed, enabled: true },
+      });
+      // Act
+      const result =
+        method === 'evaluate'
+          ? flags.evaluate({ name: 'settings', default: fallback, schema })
+          : flags.evaluateMany({
+              flags: { settings: fallback },
+              schemas: { settings: schema },
+            });
+      const error = await result.catch((error: unknown) => error);
+      // Assess
+      expect(error).toBeInstanceOf(FlagResultValidationError);
+      expect(error).toMatchObject({
+        flag: 'settings',
+        source,
+        message: `Flag 'settings' ${source} failed schema validation: the schema threw`,
+      });
+      const cause = error instanceof FlagResultValidationError && error.cause;
+      expect(cause).toBeInstanceOf(SyntaxError);
+      expect(cause).toBe(capture.mock.calls[0][0]);
+      expect(capture).toHaveBeenCalledOnce();
+      if (source === 'fallback') expect(store.getMany).not.toHaveBeenCalled();
+      else
+        expect(store.getMany).toHaveBeenCalledExactlyOnceWith(['settings'], {});
+      expect(logger.warn).not.toHaveBeenCalled();
+      expect(logger.debug).not.toHaveBeenCalled();
+    }
+  );
+
   it.each([
     { method: 'evaluate', source: 'fallback' },
     { method: 'evaluate', source: 'result' },

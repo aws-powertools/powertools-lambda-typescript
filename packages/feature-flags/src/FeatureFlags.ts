@@ -299,7 +299,12 @@ const validateWithSchema = async (
   value: unknown,
   schema: StandardSchemaV1
 ): Promise<JSONValue> => {
-  const result = await schema['~standard'].validate(value);
+  let result: StandardSchemaV1.Result<unknown>;
+  try {
+    result = await schema['~standard'].validate(value);
+  } catch (cause) {
+    throw new FlagResultValidationError(name, source, [], { cause });
+  }
   if (result.issues) {
     throw new FlagResultValidationError(name, source, result.issues);
   }

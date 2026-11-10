@@ -1,3 +1,4 @@
+import type { JSONValue } from '@aws-lambda-powertools/commons/types';
 import type { StandardSchemaV1 } from '@standard-schema/spec';
 
 /** Identifies an issue message that must never appear in an error message. */
@@ -71,9 +72,48 @@ const createUndefinedOutputSchema = (input: string) =>
     return { value: String(value) };
   });
 
+/**
+ * Creates a schema that throws synchronously for the selected input.
+ * @param input - Select the input that triggers a thrown failure
+ * @param cause - Supply the value to throw
+ */
+const createThrowingSchema = (input: string, cause: unknown) =>
+  createSchema<string, string>((value) => {
+    if (value === input) throw cause;
+    return { value: String(value) };
+  });
+
+/**
+ * Creates a schema that returns a rejected promise for the selected input.
+ * @param input - Select the input that triggers a rejected promise
+ * @param cause - Supply the rejection reason
+ */
+const createRejectingSchema = (input: string, cause: unknown) =>
+  createSchema<string, string>((value) => {
+    if (value === input) return Promise.reject(cause);
+    return { value: String(value) };
+  });
+
+/**
+ * Creates a JSON.parse transform and exposes its original error to test assertions.
+ * @param onError - Capture the original thrown value before rethrowing it
+ */
+const createJSONParsingSchema = (onError: (cause: unknown) => void) =>
+  createSchema<string, Exclude<JSONValue, undefined>>((value) => {
+    try {
+      return { value: JSON.parse(String(value)) };
+    } catch (cause) {
+      onError(cause);
+      throw cause;
+    }
+  });
+
 export {
   asyncSettingsSchema,
+  createJSONParsingSchema,
+  createRejectingSchema,
   createSchema,
+  createThrowingSchema,
   createUndefinedOutputSchema,
   dateSchema,
   flexibleSchema,

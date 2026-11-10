@@ -75,25 +75,30 @@ class ConditionEvaluationError extends FeatureFlagsError {
 }
 
 /**
- * Reports schema validation failures using issue paths without exposing values.
+ * Reports schema validation failures without exposing values or validator messages.
  *
- * Preserves the validator's issues as cause. Uses an empty issues array as cause
- * and a single synthetic (root) path when a schema returns undefined without issues.
+ * Preserves the validator's issues array or the value thrown by the schema as cause.
+ * Messages list issue paths or report that the schema threw. Uses an empty issues
+ * array as cause and a single synthetic (root) path when a schema returns undefined
+ * without issues.
  */
 class FlagResultValidationError extends FeatureFlagsError {
   public readonly flag: string;
   public readonly source: 'fallback' | 'result';
 
   /**
-   * Creates a validation error and preserves the issues as its cause.
+   * Creates a validation error and preserves the issues or thrown value as its cause.
    * @param flag - Identify the flag
    * @param source - Identify the fallback or Store result
    * @param issues - Supply the validator's issue paths and cause
+   * @param {Object} options - Report a failure thrown by the schema instead of issues
+   * @param {unknown} options.cause - Preserve the original value thrown by the schema
    */
   public constructor(
     flag: string,
     source: 'fallback' | 'result',
-    issues: ReadonlyArray<StandardSchemaV1.Issue>
+    issues: ReadonlyArray<StandardSchemaV1.Issue>,
+    options?: ErrorOptions
   ) {
     const paths: string[] = [];
     for (const issue of issues) {
@@ -106,8 +111,10 @@ class FlagResultValidationError extends FeatureFlagsError {
       paths.push(segments.length > 0 ? segments.join('.') : '(root)');
     }
     super(
-      `Flag '${flag}' ${source} failed schema validation at ${paths.length > 0 ? paths.join(', ') : '(root)'}`,
-      {
+      options
+        ? `Flag '${flag}' ${source} failed schema validation: the schema threw`
+        : `Flag '${flag}' ${source} failed schema validation at ${paths.length > 0 ? paths.join(', ') : '(root)'}`,
+      options ?? {
         cause: issues,
       }
     );

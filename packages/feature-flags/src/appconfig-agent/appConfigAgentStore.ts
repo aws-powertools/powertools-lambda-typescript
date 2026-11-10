@@ -1,4 +1,5 @@
 import { getConfig } from '@aws-lambda-powertools/parameters/appconfig-agent';
+import { StoreNames } from '../constants.js';
 import { createDocumentSource } from '../parameters-stores/createDocumentSource.js';
 import { ruleEngineStore } from '../ruleEngine/index.js';
 import type { AppConfigAgentStoreOptions } from '../types/AppConfigAgentStore.js';
@@ -30,10 +31,10 @@ import type { Store } from '../types/index.js';
  */
 const appConfigAgentStore = (options: AppConfigAgentStoreOptions): Store =>
   ruleEngineStore({
-    name: 'appconfig-agent',
+    name: StoreNames.APPCONFIG_AGENT,
     logger: options.logger,
     source: createDocumentSource({
-      storeName: 'appconfig-agent',
+      storeName: StoreNames.APPCONFIG_AGENT,
       envelope: options.envelope,
       retrieve: () =>
         getConfig(options.name, {

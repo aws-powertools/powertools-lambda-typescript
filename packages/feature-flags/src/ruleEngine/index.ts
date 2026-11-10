@@ -1,3 +1,4 @@
+import { StoreNames } from '../constants.js';
 import type { Store, StoreResult } from '../types/index.js';
 import type { RuleEngineStoreOptions } from '../types/RuleEngine.js';
 import { evaluate } from './evaluate.js';
@@ -28,7 +29,7 @@ import { validate } from './validate.js';
 const ruleEngineStore = ({
   source,
   logger,
-  name = 'rule-engine',
+  name = StoreNames.RULE_ENGINE,
 }: RuleEngineStoreOptions): Store => ({
   name,
   getMany: async (names, context) => {

@@ -1,5 +1,10 @@
 # Change Log
 
+## [2.36.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.35.0...v2.36.0) (2026-10-06)
+
+### Bug Fixes
+
+- lazily import Avro and Protobuf codecs so JSON-only consumers bundle ([#5578](https://github.com/aws-powertools/powertools-lambda-typescript/issues/5578)) ([0b7521b](https://github.com/aws-powertools/powertools-lambda-typescript/commit/0b7521b20138240ccadbe8fce98120c4898be6eb))
 ## [2.35.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.34.0...v2.35.0) (2026-08-18)
 
 **Note:** Version bump only for this package

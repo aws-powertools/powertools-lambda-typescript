@@ -3,7 +3,11 @@ import { ParseError } from '../errors.js';
 import { SnsSqsNotificationSchema } from '../schemas/sns.js';
 import { SqsSchema } from '../schemas/sqs.js';
 import type { ParsedResult, SnsSqsNotification } from '../types/index.js';
-import { envelopeDiscriminator, prefixIssuePaths } from './envelope.js';
+import {
+  envelopeDiscriminator,
+  parseOrThrow,
+  prefixIssuePaths,
+} from './envelope.js';
 
 const createError = (index: number, issues: z.core.$ZodIssue[]) => ({
   issues: issues.map((issue) => ({
@@ -57,14 +61,11 @@ export const SnsSqsEnvelope = {
    */
   [envelopeDiscriminator]: 'array' as const,
   parse<T>(data: unknown, schema: ZodType<T>): T[] {
-    let parsedEnvelope: z.infer<typeof SqsSchema>;
-    try {
-      parsedEnvelope = SqsSchema.parse(data);
-    } catch (error) {
-      throw new ParseError('Failed to parse SQS Envelope', {
-        cause: error as Error,
-      });
-    }
+    const parsedEnvelope = parseOrThrow(
+      SqsSchema,
+      data,
+      'Failed to parse SQS Envelope'
+    );
 
     return parsedEnvelope.Records.map((record, recordIndex) => {
       let body: unknown;
@@ -130,32 +131,20 @@ export const SnsSqsEnvelope = {
         };
       }
 
-      try {
-        const notification = parseStep<SnsSqsNotification>(
-          (data) => SnsSqsNotificationSchema.safeParse(data),
-          body,
-          index
-        );
-        if (!notification.success) return notification;
+      // An error thrown by the schema is a bug in the schema, not invalid input,
+      // so it propagates like in every other envelope's safeParse.
+      const notification = parseStep<SnsSqsNotification>(
+        (data) => SnsSqsNotificationSchema.safeParse(data),
+        body,
+        index
+      );
+      if (!notification.success) return notification;
 
-        return parseStep<T>(
-          (data) => schema.safeParse(data),
-          notification.data.Message,
-          index
-        );
-      } catch (error) {
-        return {
-          success: false,
-          error: createError(index, [
-            {
-              code: 'custom',
-              message: (error as Error).message,
-              input: record.body,
-              path: [],
-            },
-          ]),
-        };
-      }
+      return parseStep<T>(
+        (data) => schema.safeParse(data),
+        notification.data.Message,
+        index
+      );
     };
 
     const result = parsedEnvelope.data.Records.reduce<{

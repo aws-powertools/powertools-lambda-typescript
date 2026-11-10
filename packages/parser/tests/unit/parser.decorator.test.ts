@@ -3,11 +3,15 @@ import type { Context } from 'aws-lambda';
 import { describe, expect, it, vi } from 'vitest';
 import { z } from 'zod';
 import { EventBridgeEnvelope } from '../../src/envelopes/eventbridge.js';
+import { EventBridgeWithMetadataEnvelope } from '../../src/envelopes/eventbridge-with-metadata.js';
 import { ParseError } from '../../src/errors.js';
 import { parser } from '../../src/index.js';
 import { EventBridgeSchema } from '../../src/schemas/index.js';
 import type { EventBridgeEvent, ParsedResult } from '../../src/types/index.js';
-import { getTestEvent } from './helpers/utils.js';
+import {
+  getTestEvent,
+  makeEventBridgeWithMetadataRecord,
+} from './helpers/utils.js';
 
 describe('Decorator: parser', () => {
   const schema = z.object({
@@ -367,5 +371,59 @@ describe('Decorator: parser', () => {
         {} as Context
       )
     ).toThrow(TypeError);
+  });
+
+  it('parses transformed WITH_METADATA details with the decorator', async () => {
+    // Prepare
+    const schema = z.object({ orderId: z.string().transform(Number) });
+    type Order = z.infer<typeof schema>;
+    class Lambda implements LambdaInterface {
+      @parser({ schema, envelope: EventBridgeWithMetadataEnvelope })
+      public async handler(event: Order[], _context: Context) {
+        return event;
+      }
+    }
+    // Invoke through the Lambda boundary, which receives the unparsed event.
+    const lambda: LambdaInterface = new Lambda();
+    const event = [makeEventBridgeWithMetadataRecord({ orderId: '42' })];
+
+    // Act
+    const result = await lambda.handler(event, {} as Context, () => {});
+
+    // Assess
+    expect(result).toEqual([{ orderId: 42 }]);
+  });
+
+  it('returns a failed WITH_METADATA result for a throwing transform', async () => {
+    // Prepare
+    const cause = new SyntaxError('invalid JSON');
+    const throwingSchema = z.unknown().transform(() => {
+      throw cause;
+    });
+    class Lambda implements LambdaInterface {
+      @parser({
+        schema: throwingSchema,
+        envelope: EventBridgeWithMetadataEnvelope,
+        safeParse: true,
+      })
+      public async handler(
+        event: ParsedResult<unknown, never[]>,
+        _context: Context
+      ) {
+        return event;
+      }
+    }
+    const lambda: LambdaInterface = new Lambda();
+    const event = [makeEventBridgeWithMetadataRecord({})];
+
+    // Act
+    const result = await lambda.handler(event, {} as Context, () => {});
+
+    // Assess
+    expect(result).toMatchObject({
+      success: false,
+      originalEvent: event,
+      error: { cause },
+    });
   });
 });

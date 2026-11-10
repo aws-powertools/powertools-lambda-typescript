@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, expectTypeOf, it } from 'vitest';
 import {
   CloudFormationCustomResourceCreateSchema,
   CloudFormationCustomResourceDeleteSchema,
@@ -56,6 +56,7 @@ describe('Schema: CloudFormationCustomResource ', () => {
 
     // Assess
     expect(result).toStrictEqual(event);
+    expectTypeOf(result.PhysicalResourceId).toEqualTypeOf<string>();
   });
 
   it('throws if the event is not a CloudFormation Custom Resource Delete event', () => {
@@ -77,6 +78,7 @@ describe('Schema: CloudFormationCustomResource ', () => {
 
     // Assess
     expect(result).toStrictEqual(event);
+    expectTypeOf(result.PhysicalResourceId).toEqualTypeOf<string>();
   });
 
   it('throws if the event is not a CloudFormation Custom Resource Update event', () => {
@@ -87,5 +89,38 @@ describe('Schema: CloudFormationCustomResource ', () => {
     expect(() =>
       CloudFormationCustomResourceUpdateSchema.parse(event)
     ).toThrow();
+  });
+
+  describe.each([
+    ['Delete', baseDelete, CloudFormationCustomResourceDeleteSchema],
+    ['Update', baseUpdate, CloudFormationCustomResourceUpdateSchema],
+  ])('%s event PhysicalResourceId', (_requestType, baseEvent, schema) => {
+    it('rejects an event without a physical resource ID', () => {
+      // Prepare
+      const event = omit(['PhysicalResourceId'], structuredClone(baseEvent));
+
+      // Act
+      const result = schema.safeParse(event);
+
+      // Assess
+      expect(result.success).toBe(false);
+    });
+
+    it.each([null, 123])(
+      'rejects a non-string physical resource ID: %s',
+      (value) => {
+        // Prepare
+        const event = {
+          ...structuredClone(baseEvent),
+          PhysicalResourceId: value,
+        };
+
+        // Act
+        const result = schema.safeParse(event);
+
+        // Assess
+        expect(result.success).toBe(false);
+      }
+    );
   });
 });

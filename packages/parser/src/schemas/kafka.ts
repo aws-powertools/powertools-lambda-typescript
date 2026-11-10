@@ -2,6 +2,14 @@ import { z } from 'zod';
 import type { KafkaMskEvent, KafkaSelfManagedEvent } from '../types/schema.js';
 
 /**
+ * Zod schema for the schema registry metadata of a Kafka record key or value.
+ */
+const KafkaSchemaMetadataSchema = z.object({
+  dataFormat: z.string(),
+  schemaId: z.string().optional(),
+});
+
+/**
  * Zod schema for a Kafka record from an Kafka event.
  */
 const KafkaRecordSchema = z.object({
@@ -22,11 +30,15 @@ const KafkaRecordSchema = z.object({
   headers: z.array(
     z.record(
       z.string(),
-      z.array(z.number()).transform((value) => {
-        return String.fromCodePoint(...value);
+      // Lambda sends header bytes as signed Java bytes, so bytes >= 128 arrive negative.
+      // Buffer.from masks each number to a byte, and decoding matches @aws-lambda-powertools/kafka.
+      z.array(z.number().int().min(-128).max(255)).transform((value) => {
+        return Buffer.from(value).toString('utf8');
       })
     )
   ),
+  keySchemaMetadata: KafkaSchemaMetadataSchema.optional(),
+  valueSchemaMetadata: KafkaSchemaMetadataSchema.optional(),
 });
 
 const KafkaBaseEventSchema = z.object({

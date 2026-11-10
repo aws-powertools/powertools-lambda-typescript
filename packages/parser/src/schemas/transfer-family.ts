@@ -20,10 +20,10 @@ import type { TransferFamilyEvent } from '../types/schema.js';
  */
 const TransferFamilySchema = z.object({
   username: z.string(),
-  password: z.string(),
+  password: z.string().optional(),
   protocol: z.string(),
   serverId: z.string(),
-  sourceIp: z.ipv4(),
+  sourceIp: z.union([z.ipv4(), z.ipv6()]),
 });
 
 export { TransferFamilySchema };

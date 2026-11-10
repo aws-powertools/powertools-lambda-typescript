@@ -2,7 +2,7 @@ import { ZodError, type ZodType, type z } from 'zod';
 import { ParseError } from '../errors.js';
 import { SqsSchema } from '../schemas/sqs.js';
 import type { ParsedResult } from '../types/index.js';
-import { envelopeDiscriminator, prefixIssuePaths } from './envelope.js';
+import { envelopeDiscriminator, parseOrThrow } from './envelope.js';
 
 /**
  * SQS Envelope to extract array of Records
@@ -30,29 +30,20 @@ const SqsEnvelope = {
    */
   [envelopeDiscriminator]: 'array' as const,
   parse<T>(data: unknown, schema: ZodType<T>): T[] {
-    let parsedEnvelope: z.infer<typeof SqsSchema>;
-    try {
-      parsedEnvelope = SqsSchema.parse(data);
-    } catch (error) {
-      throw new ParseError('Failed to parse SQS Envelope', {
-        cause: error as Error,
-      });
-    }
+    const parsedEnvelope = parseOrThrow(
+      SqsSchema,
+      data,
+      'Failed to parse SQS Envelope'
+    );
 
-    return parsedEnvelope.Records.map((record, recordIndex) => {
-      let parsedRecord: T;
-      try {
-        parsedRecord = schema.parse(record.body);
-      } catch (error) {
-        throw new ParseError(
-          `Failed to parse SQS Record at index ${recordIndex}`,
-          {
-            cause: prefixIssuePaths(error, ['Records', recordIndex, 'body']),
-          }
-        );
-      }
-      return parsedRecord;
-    });
+    return parsedEnvelope.Records.map((record, recordIndex) =>
+      parseOrThrow(
+        schema,
+        record.body,
+        `Failed to parse SQS Record at index ${recordIndex}`,
+        ['Records', recordIndex, 'body']
+      )
+    );
   },
 
   safeParse<T>(data: unknown, schema: ZodType<T>): ParsedResult<unknown, T[]> {

@@ -157,7 +157,18 @@ describe('Class: SSMProvider', () => {
         provider.getParametersByNameWithDecryptOption
       ).toHaveBeenCalledWith({}, true);
       expect(provider.getParametersBatchByName).toHaveBeenCalledWith(
-        parameters,
+        {
+          '/foo/bar': {
+            maxAge: 1000,
+            decrypt: false,
+            transform: undefined,
+          },
+          '/foo/baz': {
+            transform: 'json',
+            decrypt: false,
+            maxAge: 5,
+          },
+        },
         true,
         false
       );
@@ -188,7 +199,18 @@ describe('Class: SSMProvider', () => {
 
       // Assess
       expect(provider.getParametersBatchByName).toHaveBeenCalledWith(
-        parameters,
+        {
+          '/foo/bar': {
+            maxAge: 1000,
+            decrypt: true,
+            transform: undefined,
+          },
+          '/foo/baz': {
+            transform: 'json',
+            decrypt: true,
+            maxAge: 5,
+          },
+        },
         true,
         true
       );
@@ -318,6 +340,64 @@ describe('Class: SSMProvider', () => {
       expect(result).toEqual({
         _errors: ['/foo/bar', '/foo/baz'],
       });
+    });
+  });
+
+  describe('Method: getParametersByName (mixed decrypt batch)', () => {
+    const mockSdk = () => {
+      const client = mockClient(SSMClient);
+      client.on(GetParameterCommand).resolves({
+        Parameter: { Name: '/secret', Value: '{"a":1}' },
+      });
+      client.on(GetParametersCommand).resolves({
+        Parameters: [{ Name: '/plain', Value: '{"b":2}' }],
+        InvalidParameters: [],
+      });
+
+      return client;
+    };
+
+    it('applies the transform to the decrypted parameters', async () => {
+      // Prepare
+      mockSdk();
+      const provider = new SSMProvider();
+      const parameters = {
+        '/secret': { decrypt: true },
+        '/plain': {},
+      };
+
+      // Act
+      const result = await provider.getParametersByName(parameters, {
+        transform: 'json',
+      });
+
+      // Assess
+      expect(result).toEqual({
+        '/secret': { a: 1 },
+        '/plain': { b: 2 },
+      });
+    });
+
+    it('caches the decrypted parameters', async () => {
+      // Prepare
+      const client = mockSdk();
+      const provider = new SSMProvider();
+      const parameters = {
+        '/secret': { decrypt: true },
+        '/plain': {},
+      };
+
+      // Act
+      await provider.getParametersByName(parameters);
+      const result = await provider.getParametersByName(parameters);
+
+      // Assess
+      expect(result).toEqual({
+        '/secret': '{"a":1}',
+        '/plain': '{"b":2}',
+      });
+      expect(client.commandCalls(GetParameterCommand)).toHaveLength(1);
+      expect(client.commandCalls(GetParametersCommand)).toHaveLength(1);
     });
   });
 
@@ -1190,7 +1270,7 @@ describe('Class: SSMProvider', () => {
       });
     });
 
-    it('respects any local overrides by giving them precedence over global config', () => {
+    it('respects any local overrides by giving them precedence over global config without mutating them', () => {
       // Prepare
       const provider = new SSMProviderMock();
       const parameters = {
@@ -1223,6 +1303,10 @@ describe('Class: SSMProvider', () => {
           maxAge: 1000,
           transform: undefined,
         },
+      });
+      expect(parameters).toEqual({
+        '/foo/bar': { decrypt: true },
+        '/foo/baz': { maxAge: 1000 },
       });
     });
   });

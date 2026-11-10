@@ -1,5 +1,11 @@
 # Change Log
 
+## [2.36.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.35.0...v2.36.0) (2026-10-06)
+
+### Bug Fixes
+
+- throw when a synchronous processor gets a promise-returning handler ([#5650](https://github.com/aws-powertools/powertools-lambda-typescript/issues/5650)) ([cb36243](https://github.com/aws-powertools/powertools-lambda-typescript/commit/cb36243d470acdc78dd579ead8a607a820f57a7e))
+- populate response() before full batch throw and normalize non-Error throws ([#5625](https://github.com/aws-powertools/powertools-lambda-typescript/issues/5625)) ([f71fd53](https://github.com/aws-powertools/powertools-lambda-typescript/commit/f71fd53d19c0a76e663d908068d6816c7c4e3801))
 ## [2.35.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.34.0...v2.35.0) (2026-08-18)
 
 **Note:** Version bump only for this package

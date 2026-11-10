@@ -6,6 +6,7 @@
         "mail": {
           "commonHeaders": {
             "from": ["Jane Doe <janedoe@example.com>"],
+            "replyTo": ["janedoe+replies@example.com"],
             "to": ["johndoe@example.com"],
             "returnPath": "janedoe@example.com",
             "messageId": "<0123456789example.com>",
@@ -35,6 +36,10 @@
             {
               "name": "From",
               "value": "Jane Doe <janedoe@example.com>"
+            },
+            {
+              "name": "Reply-To",
+              "value": "janedoe+replies@example.com"
             },
             {
               "name": "Date",
@@ -69,7 +74,6 @@
           "dkimVerdict": {
             "status": "PASS"
           },
-          "dmarcPolicy": "reject",
           "processingTimeMillis": 574,
           "action": {
             "type": "Lambda",

@@ -13,6 +13,9 @@ declare module 'avro-js' {
      * @returns The deserialized object
      */
     fromBuffer(buffer: Buffer): unknown;
+
+    /** Get the type name; with `noRef` set to `true`, return the underlying type name (e.g. `bytes`) instead of a named reference */
+    getName(noRef?: boolean): string | undefined;
   }
 
   /**

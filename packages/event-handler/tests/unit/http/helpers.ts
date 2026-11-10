@@ -89,6 +89,14 @@ export const createTestEventV2 = (
   isBase64Encoded: false,
 });
 
+/**
+ * Creates an ALB event for a target group without multi-value headers, the ALB default.
+ *
+ * @param path - The request path
+ * @param httpMethod - The HTTP method
+ * @param headers - The request headers
+ * @param body - The request body
+ */
 export const createTestALBEvent = (
   path: string,
   httpMethod: string,
@@ -99,7 +107,6 @@ export const createTestALBEvent = (
   httpMethod,
   headers,
   body: createAlbBody(httpMethod, body),
-  multiValueHeaders: {},
   isBase64Encoded: false,
   queryStringParameters: undefined,
   multiValueQueryStringParameters: undefined,
@@ -110,6 +117,30 @@ export const createTestALBEvent = (
     },
   },
 });
+
+/**
+ * Creates an ALB event for a target group with multi-value headers enabled, which sends
+ * `multiValueHeaders` in place of `headers`.
+ *
+ * @param path - The request path
+ * @param httpMethod - The HTTP method
+ * @param multiValueHeaders - The request headers, each with a list of values
+ * @param body - The request body
+ */
+export const createTestALBMultiValueEvent = (
+  path: string,
+  httpMethod: string,
+  multiValueHeaders: Record<string, string[]> = {},
+  body: JSONValue = null
+): ALBEvent => {
+  const { headers: _, ...event } = createTestALBEvent(
+    path,
+    httpMethod,
+    {},
+    body
+  );
+  return { ...event, multiValueHeaders };
+};
 
 export const createTrackingMiddleware = (
   name: string,

@@ -1,5 +1,5 @@
 # The Python minor version must match docs/.python-version; Dependabot keeps the digest current.
-FROM python:3.14-alpine@sha256:9e9fde4d32eedce0b661d9ab91e826b62dddf28e928c230ec55f1866cac66b01
+FROM python:3.14-alpine@sha256:eb2c62658b8d51bff0acc408504b76521d02030de56a8a3c1e830083e89b89d2
 
 # git for mkdocs-git-revision-date-plugin, Node.js for TypeDoc, tini to forward signals to mkdocs serve.
 # The mounted checkout belongs to the host user, so git must be told to trust it.

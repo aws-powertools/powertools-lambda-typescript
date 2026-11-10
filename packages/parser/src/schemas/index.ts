@@ -59,6 +59,11 @@ export {
 } from './dynamodb.js';
 export { EventBridgeSchema } from './eventbridge.js';
 export {
+  EventBridgeWithMetadataRecordSchema,
+  EventBridgeWithMetadataSchema,
+  EventBridgeWithMetadataSystemMetadataSchema,
+} from './eventbridge-with-metadata.js';
+export {
   KafkaMskEventSchema,
   KafkaRecordSchema,
   KafkaSelfManagedEventSchema,

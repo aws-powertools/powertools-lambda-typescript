@@ -35,6 +35,18 @@ describe('Schema: S3', () => {
     expect(result).toStrictEqual(event);
   });
 
+  it('parses an S3 event with an IPv6 source IP address', () => {
+    // Prepare
+    const event = structuredClone(baseEvent);
+    event.Records[0].requestParameters.sourceIPAddress = '2001:db8::1';
+
+    // Act
+    const result = S3Schema.parse(event);
+
+    // Assess
+    expect(result).toStrictEqual(event);
+  });
+
   it('throws if the event is not an S3 event', () => {
     // Prepare
     const event = {
@@ -111,6 +123,35 @@ describe('Schema: S3', () => {
     expect(result).toStrictEqual(event);
   });
 
+  it.each([
+    { eventType: 'Intelligent-Tiering', filename: 'intelligent-tiering' },
+    { eventType: 'Lifecycle transition', filename: 'lifecycle-transition' },
+    { eventType: 'replication', filename: 'replication' },
+  ])('keeps the event data of an S3 $eventType event', ({ filename }) => {
+    // Prepare
+    const event = getTestEvent<S3Event>({ eventsPath, filename });
+
+    // Act
+    const result = S3Schema.parse(event);
+
+    // Assess
+    expect(result).toStrictEqual(event);
+  });
+
+  it('parses an S3 replication event that has only part of the replication data', () => {
+    // Prepare
+    const event = structuredClone(baseEvent);
+    event.Records[0].replicationEventData = {
+      replicationRuleId: 'notification-test-replication-rule',
+    };
+
+    // Act
+    const result = S3Schema.parse(event);
+
+    // Assess
+    expect(result).toStrictEqual(event);
+  });
+
   it('parses an S3 Object Lambda with an IAM user', () => {
     // Prepare
     const event = structuredClone(baseLambdaEvent);
@@ -153,6 +194,21 @@ describe('Schema: S3', () => {
       eventsPath,
       filename: 'eventbridge-object-created',
     });
+
+    // Act
+    const result = S3EventNotificationEventBridgeSchema.parse(event);
+
+    // Assess
+    expect(result).toStrictEqual(event);
+  });
+
+  it('parses an S3 Object Notification EventBridge event with an IPv6 source IP address', () => {
+    // Prepare
+    const event = getTestEvent<S3EventNotificationEventBridge>({
+      eventsPath,
+      filename: 'eventbridge-object-created',
+    });
+    event.detail['source-ip-address'] = '2001:db8::1';
 
     // Act
     const result = S3EventNotificationEventBridgeSchema.parse(event);

@@ -18,6 +18,22 @@ describe('Envelope: DynamoDB Stream', () => {
   });
 
   describe('Method: parse', () => {
+    it('throws a ParseError if the event is not a valid DynamoDB Stream event', () => {
+      // Prepare
+      const event = { Records: [{ foo: 'bar' }] };
+
+      // Act & Assess
+      expect(() => DynamoDBStreamEnvelope.parse(event, schema)).toThrow(
+        expect.objectContaining({
+          name: 'ParseError',
+          message: expect.stringContaining(
+            'Failed to parse DynamoDB Stream envelope'
+          ),
+          cause: expect.objectContaining({ name: 'ZodError' }),
+        })
+      );
+    });
+
     it('throws a ParseError with the original error as cause when a transform throws', () => {
       // Prepare
       const event = structuredClone(baseEvent);

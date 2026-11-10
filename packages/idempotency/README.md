@@ -67,7 +67,7 @@ const myHandler = async (
   event: APIGatewayProxyEvent,
   _context: Context
 ): Promise<void> => {
-  // your code goes here here
+  // your code goes here
 };
 
 export const handler = makeIdempotent(myHandler, {
@@ -87,7 +87,7 @@ const persistenceStore = new DynamoDBPersistenceLayer({
 });
 
 const processingFunction = async (payload: SQSRecord): Promise<void> => {
-  // your code goes here here
+  // your code goes here
 };
 
 const processIdempotently = makeIdempotent(processingFunction, {
@@ -117,7 +117,7 @@ const persistenceStore = new DynamoDBPersistenceLayer({
 });
 
 const processingFunction = async (payload: SQSRecord, customerId: string): Promise<void> => {
-  // your code goes here here
+  // your code goes here
 };
 
 const processIdempotently = makeIdempotent(processingFunction, {
@@ -152,13 +152,13 @@ const myHandler = async (
   event: APIGatewayProxyEvent,
   _context: Context
 ): Promise<void> => {
-  // your code goes here here
+  // your code goes here
 };
 
 export const handler = makeIdempotent(myHandler, {
   persistenceStore,
   config: new IdempotencyConfig({
-    eventKeyJmespath: 'requestContext.identity.user',
+    eventKeyJmesPath: 'requestContext.identity.user',
   }),
 });
 ```
@@ -180,13 +180,13 @@ const myHandler = async (
   event: APIGatewayProxyEvent,
   _context: Context
 ): Promise<void> => {
-  // your code goes here here
+  // your code goes here
 };
 
 export const handler = makeIdempotent(myHandler, {
   persistenceStore,
   config: new IdempotencyConfig({
-    eventKeyJmespath: 'powertools_json(body).["user", "productId"]',
+    eventKeyJmesPath: 'powertools_json(body).["user", "productId"]',
   }),
 });
 ```
@@ -213,7 +213,7 @@ class MyHandler extends LambdaInterface {
     event: APIGatewayProxyEvent,
     context: Context
   ): Promise<void> {
-    // your code goes here here
+    // your code goes here
   }
 }
 
@@ -288,7 +288,7 @@ const config = new IdempotencyConfig({
 
 export const handler = middy(
   async (_event: APIGatewayProxyEvent, _context: Context): Promise<void> => {
-    // your code goes here here
+    // your code goes here
   }
 ).use(
   makeHandlerIdempotent({

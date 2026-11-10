@@ -380,6 +380,9 @@ class DynamoDBProvider extends BaseProvider {
   /**
    * Retrieve multiple items from Amazon DynamoDB.
    *
+   * The `ExpressionAttributeNames` and `ExpressionAttributeValues` passed in `sdkOptions` are merged with the
+   * provider's own placeholders (`#key`, `#sk`, `#value`, and `:key`), which take precedence on conflicts.
+   *
    * @param path - The path of the values to retrieve (i.e. the partition key)
    * @param options - Options to customize the retrieval
    * @param options.maxAge - Maximum age of the value in the cache, in seconds.
@@ -396,8 +399,12 @@ class DynamoDBProvider extends BaseProvider {
       ...(options?.sdkOptions || {}),
       TableName: this.tableName,
       KeyConditionExpression: '#key = :key',
-      ExpressionAttributeValues: marshall({ ':key': path }),
+      ExpressionAttributeValues: {
+        ...options?.sdkOptions?.ExpressionAttributeValues,
+        ...marshall({ ':key': path }),
+      },
       ExpressionAttributeNames: {
+        ...options?.sdkOptions?.ExpressionAttributeNames,
         '#key': this.keyAttr,
         '#sk': this.sortAttr,
         '#value': this.valueAttr,

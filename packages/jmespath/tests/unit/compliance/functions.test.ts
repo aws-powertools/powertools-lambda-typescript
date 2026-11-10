@@ -4,6 +4,46 @@ import { search } from '../../../src/index.js';
 describe('Functions tests', () => {
   it.each([
     {
+      expression: 'sort(numbers)',
+      expected: [1, 2, 3],
+    },
+    {
+      expression: 'sort(strings)',
+      expected: ['a', 'b', 'c'],
+    },
+    {
+      expression: 'reverse(numbers)',
+      expected: [2, 1, 3],
+    },
+    {
+      expression: 'reverse(strings)',
+      expected: ['a', 'c', 'b'],
+    },
+  ])(
+    'does not mutate the input when evaluating $expression',
+    ({ expression, expected }) => {
+      // Prepare
+      const data = {
+        numbers: [3, 1, 2],
+        strings: ['b', 'c', 'a'],
+      };
+
+      // Act
+      const result = search(expression, data);
+
+      // Assess
+      expect(result).toStrictEqual(expected);
+      expect(data).toStrictEqual({
+        numbers: [3, 1, 2],
+        strings: ['b', 'c', 'a'],
+      });
+      expect(result).not.toBe(data.numbers);
+      expect(result).not.toBe(data.strings);
+    }
+  );
+
+  it.each([
+    {
       expression: 'abs(foo)',
       expected: 1,
     },
@@ -136,6 +176,10 @@ describe('Functions tests', () => {
     {
       expression: 'avg(numbers)',
       expected: 2.75,
+    },
+    {
+      expression: 'avg(empty_list)',
+      expected: null,
     },
   ])(
     'should support the avg() function: $expression',
@@ -302,6 +346,10 @@ describe('Functions tests', () => {
       expected: false,
     },
     {
+      expression: "contains('a123', `123`)",
+      expected: false,
+    },
+    {
       expression: "contains(strings, 'a')",
       expected: true,
     },
@@ -311,6 +359,18 @@ describe('Functions tests', () => {
     },
     {
       expression: 'contains(decimals, `false`)',
+      expected: false,
+    },
+    {
+      expression: 'contains(`[{"a": 1}]`, `{"a": 1}`)',
+      expected: true,
+    },
+    {
+      expression: 'contains(`[[1, 2]]`, `[1, 2]`)',
+      expected: true,
+    },
+    {
+      expression: 'contains(`[{"a": 1}]`, `{"a": 2}`)',
       expected: false,
     },
   ])(
@@ -952,6 +1012,14 @@ describe('Functions tests', () => {
       expected: ['a', 'b', 'c'],
     },
     {
+      expression: 'sort(`["b", "a", "B", "A"]`)',
+      expected: ['A', 'B', 'a', 'b'],
+    },
+    {
+      expression: 'sort(`["b", "a", "b"]`)',
+      expected: ['a', 'b', 'b'],
+    },
+    {
       expression: 'sort(decimals)',
       expected: [-1.5, 1.01, 1.2],
     },
@@ -1435,6 +1503,22 @@ describe('Functions tests', () => {
       expected: null,
     },
     {
+      expression: `to_number('-1.5e3')`,
+      expected: -1500,
+    },
+    {
+      expression: `to_number('')`,
+      expected: null,
+    },
+    {
+      expression: `to_number('0x10')`,
+      expected: null,
+    },
+    {
+      expression: `to_number('1e400')`,
+      expected: null,
+    },
+    {
       expression: 'to_number(`false`)',
       expected: null,
     },
@@ -1514,6 +1598,18 @@ describe('Functions tests', () => {
     {
       expression: 'not_null(all, expressions, are_null)',
       expected: null,
+    },
+    {
+      expression: 'not_null(unknown_key, zero, str)',
+      expected: 0,
+    },
+    {
+      expression: 'not_null(unknown_key, "false", str)',
+      expected: false,
+    },
+    {
+      expression: 'not_null(unknown_key, `""`, str)',
+      expected: '',
     },
   ])('should support the not_null() function', ({ expression, expected }) => {
     // Prepare
@@ -2222,6 +2318,10 @@ describe('Functions tests', () => {
       expression: 'map(&foo, empty)',
       expected: [],
     },
+    {
+      expression: 'map(&value, falsy)',
+      expected: [0, false, '', null],
+    },
   ])('should support map() special cases', ({ expression, expected }) => {
     // Prepare
     const data = {
@@ -2270,6 +2370,7 @@ describe('Functions tests', () => {
         },
       ],
       empty: [],
+      falsy: [{ value: 0 }, { value: false }, { value: '' }, {}],
     };
 
     // Act

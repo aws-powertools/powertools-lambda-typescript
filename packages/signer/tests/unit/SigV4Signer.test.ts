@@ -1,5 +1,7 @@
+import { SignatureV4 } from '@smithy/signature-v4';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { RequestSigningError, SignerConfigError } from '../../src/errors.js';
+import { Sha256 } from '../../src/Sha256.js';
 import { SigV4Signer } from '../../src/sigv4.js';
 
 describe('Class: SigV4Signer', () => {
@@ -267,6 +269,45 @@ describe('Class: SigV4Signer', () => {
 
       // Assess
       expect(signed.headers.has('authorization')).toBe(true);
+    });
+
+    it('signs every value of a repeated query string parameter', async () => {
+      // Prepare
+      vi.useFakeTimers({ now: new Date('2026-01-01T00:00:00Z') });
+      const credentials = {
+        accessKeyId: 'AKIDEXAMPLE',
+        secretAccessKey: 'secret-example',
+      };
+      const signer = new SigV4Signer({ service: 'execute-api', credentials });
+      const reference = new SignatureV4({
+        service: 'execute-api',
+        region: 'us-east-1',
+        credentials,
+        sha256: Sha256,
+      });
+      const host = 'example.execute-api.us-east-1.amazonaws.com';
+      const expected = await reference.sign({
+        method: 'GET',
+        protocol: 'https:',
+        hostname: host,
+        path: '/items',
+        query: { foo: 'bar', tag: ['red', 'blue'] },
+        headers: { host },
+      });
+
+      try {
+        // Act
+        const signed = await signer.sign(
+          `https://${host}/items?tag=red&foo=bar&tag=blue`
+        );
+
+        // Assess
+        expect(signed.headers.get('authorization')).toBe(
+          expected.headers.authorization
+        );
+      } finally {
+        vi.useRealTimers();
+      }
     });
 
     it('signs a request against a URL with an explicit port', async () => {

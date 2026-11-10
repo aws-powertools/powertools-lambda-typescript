@@ -1,5 +1,20 @@
 # Change Log
 
+## [2.36.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.35.0...v2.36.0) (2026-10-06)
+
+### Bug Fixes
+
+- accept real Cognito trigger events from common flows ([#5777](https://github.com/aws-powertools/powertools-lambda-typescript/issues/5777)) ([c77facf](https://github.com/aws-powertools/powertools-lambda-typescript/commit/c77facf2d5780e7f241c03ac9fe02e8e4ec83ac1))
+- accept multi-value headers in VPC Lattice v2 events ([#5773](https://github.com/aws-powertools/powertools-lambda-typescript/issues/5773)) ([40fb84e](https://github.com/aws-powertools/powertools-lambda-typescript/commit/40fb84e8e9b1d496b8d4074180dc68ae3e77a171))
+- accept documented SES receipt event variants ([#5772](https://github.com/aws-powertools/powertools-lambda-typescript/issues/5772)) ([13257dd](https://github.com/aws-powertools/powertools-lambda-typescript/commit/13257dd0f314f5734f16ac3f426a6099bc461c2e))
+- keep PhysicalResourceId in CloudFormation events ([#5767](https://github.com/aws-powertools/powertools-lambda-typescript/issues/5767)) ([f9cce6a](https://github.com/aws-powertools/powertools-lambda-typescript/commit/f9cce6a0d80343d1010673777d80bf8cba6bf2dd))
+- keep transform errors as the ParseError cause ([#5745](https://github.com/aws-powertools/powertools-lambda-typescript/issues/5745)) ([b898ec4](https://github.com/aws-powertools/powertools-lambda-typescript/commit/b898ec495dadacd0ebbdcebb8c03506aa8e68509))
+- keep Lambda authorizer context in the REST API event schema ([#5749](https://github.com/aws-powertools/powertools-lambda-typescript/issues/5749)) ([077d1f1](https://github.com/aws-powertools/powertools-lambda-typescript/commit/077d1f1894f1be8fc8ae23b7e3036663455f1c9e))
+- stop malformed base64 from escaping safeParse ([#5666](https://github.com/aws-powertools/powertools-lambda-typescript/issues/5666)) ([11a18a3](https://github.com/aws-powertools/powertools-lambda-typescript/commit/11a18a3ab553e0f72a2c0cea46458fc10430d043))
+
+### Features
+
+- support EventBridge WITH_METADATA deliveries ([#5776](https://github.com/aws-powertools/powertools-lambda-typescript/issues/5776)) ([58f4bb2](https://github.com/aws-powertools/powertools-lambda-typescript/commit/58f4bb2ad179033022fcafaee3757b284b02f07e))
 ## [2.35.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.34.0...v2.35.0) (2026-08-18)
 
 ### Features

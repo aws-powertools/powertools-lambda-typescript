@@ -2,7 +2,7 @@ import { ZodError, type ZodType, type z } from 'zod';
 import { ParseError } from '../errors.js';
 import { SnsSchema } from '../schemas/sns.js';
 import type { ParsedResult } from '../types/index.js';
-import { envelopeDiscriminator, prefixIssuePaths } from './envelope.js';
+import { envelopeDiscriminator, parseOrThrow } from './envelope.js';
 
 /**
  * SNS Envelope to extract array of Records
@@ -20,17 +20,20 @@ export const SnsEnvelope = {
    */
   [envelopeDiscriminator]: 'array' as const,
   parse<T>(data: unknown, schema: ZodType<T>): T[] {
-    const parsedEnvelope = SnsSchema.parse(data);
+    const parsedEnvelope = parseOrThrow(
+      SnsSchema,
+      data,
+      'Failed to parse SNS envelope'
+    );
 
-    return parsedEnvelope.Records.map((record, index) => {
-      try {
-        return schema.parse(record.Sns.Message);
-      } catch (error) {
-        throw new ParseError(`Failed to parse SNS record at index ${index}`, {
-          cause: prefixIssuePaths(error, ['Records', index, 'Sns', 'Message']),
-        });
-      }
-    });
+    return parsedEnvelope.Records.map((record, index) =>
+      parseOrThrow(
+        schema,
+        record.Sns.Message,
+        `Failed to parse SNS record at index ${index}`,
+        ['Records', index, 'Sns', 'Message']
+      )
+    );
   },
 
   safeParse<T>(data: unknown, schema: ZodType<T>): ParsedResult<unknown, T[]> {

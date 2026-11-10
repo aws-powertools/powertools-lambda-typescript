@@ -248,33 +248,18 @@ describe('Envelope: SnsSqsEnvelope', () => {
       });
     });
 
-    it('returns the transform error message when a transform throws', () => {
+    it('throws the original error when a transform throws', () => {
       // Prepare
       const event = structuredClone(baseEvent);
+      const cause = new SyntaxError('boom');
       const throwingSchema = z.unknown().transform(() => {
-        throw new SyntaxError('boom');
+        throw cause;
       });
 
-      // Act
-      const result = SnsSqsEnvelope.safeParse(event, throwingSchema);
-
-      // Assess
-      expect(result).toEqual({
-        success: false,
-        error: expect.objectContaining({
-          name: 'ParseError',
-          cause: expect.objectContaining({
-            issues: [
-              expect.objectContaining({
-                code: 'custom',
-                message: 'boom',
-                path: ['Records', 0, 'body'],
-              }),
-            ],
-          }),
-        }),
-        originalEvent: event,
-      });
+      // Act & Assess
+      expect(() => SnsSqsEnvelope.safeParse(event, throwingSchema)).toThrow(
+        cause
+      );
     });
 
     it('returns an error if the SQS message is not a valid SNS notification', () => {

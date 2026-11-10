@@ -42,7 +42,7 @@ You can use Powertools for AWS Lambda (TypeScript) by installing it with your fa
 - **Tracer**: `npm install @aws-lambda-powertools/tracer`
 - **Event Handler**: `npm install @aws-lambda-powertools/event-handler`
 - **Parameters**: `npm install @aws-lambda-powertools/parameters @aws-sdk/client-ssm` see [documentation](https://docs.aws.amazon.com/powertools/typescript/latest/features/parameters/#installation) for other providers
-- **Idempotency**: `npm install @aws-lambda-powertools/idempotency @aws-sdk/client-dynamodb @aws-sdk/lib-dynamodb` see [documentation](https://docs.aws.amazon.com/powertools/typescript/latest/features/idempotency/#installation) for other providers
+- **Idempotency**: `npm install @aws-lambda-powertools/idempotency @aws-sdk/client-dynamodb @aws-sdk/lib-dynamodb` see [documentation](https://docs.aws.amazon.com/powertools/typescript/latest/features/idempotency/#getting-started) for other providers
 - **Batch Processing**: `npm install @aws-lambda-powertools/batch`
 - **JMESPath Functions**: `npm install @aws-lambda-powertools/jmespath`
 - **Parser**: `npm install @aws-lambda-powertools/parser zod`

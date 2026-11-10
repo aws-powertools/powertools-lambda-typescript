@@ -602,6 +602,12 @@ Keep the following in mind when authoring middleware for Event Handler:
 You can use the Web API's `Response` object to have full control over the response. For
 example, you might want to add additional headers, cookies, or set a custom content type.
 
+Use `headers.append('Set-Cookie', cookie)` once for each cookie when constructing a `Response`.
+The router preserves these cookies alongside cookies added to the response headers by middleware.
+
+On ALB, the router returns headers in the field your target group reads: `multiValueHeaders` when [multi-value headers](https://docs.aws.amazon.com/elasticloadbalancing/latest/application/lambda-functions.html#multi-value-headers){target="_blank"} are enabled, `headers` otherwise.
+Without multi-value headers, ALB returns only one `Set-Cookie` header, so enable multi-value headers on the target group if a response sets more than one cookie.
+
 === "index.ts"
 
     ```ts hl_lines="11-18 25-31"
@@ -673,6 +679,8 @@ You can override the global CORS settings on a per-route basis by passing option
 
 You can enable response compression by using the `compress` middleware. This will automatically compress responses using gzip and base64 encode them when the client indicates support via the `Accept-Encoding` header.
 
+When a response qualifies for compression, the middleware also adds `Accept-Encoding` to its `Vary` header, even if the client doesn't accept compression. This lets shared caches such as Amazon CloudFront keep compressed and uncompressed responses apart. Any `Vary` value already on the response, such as `Origin` from the [`cors`](#cors) middleware, is kept.
+
 === "index.ts"
 
     ```ts hl_lines="2 7"
@@ -687,7 +695,7 @@ You can enable response compression by using the `compress` middleware. This wil
 
 === "Response"
 
-    ```json hl_lines="4-5 7-8"
+    ```json hl_lines="4-6 8-9"
     --8<-- "examples/snippets/event-handler/http/samples/advanced_compress_res.json"
     ```
 
@@ -834,6 +842,9 @@ In order to gain the most benefit, you should return either a readable [Nodejs s
 a duplex [Nodejs stream](https://nodejs.org/api/stream.html#class-streamduplex){target="_blank"}, or
 a [Web stream](https://developer.mozilla.org/en-US/docs/Web/API/Streams_API){target="_blank"} from your handlers. However, you can also return
 other types and these will also be delivered via HTTP streaming.
+
+Streaming responses send `Set-Cookie` headers in the response metadata's `cookies` array.
+Cookies from handlers and middleware remain separate, including values containing an `Expires` date.
 
 === "index.ts"
 

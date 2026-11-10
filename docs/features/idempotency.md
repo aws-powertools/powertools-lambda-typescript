@@ -301,6 +301,38 @@ Here is an example on how you register the Lambda context in your handler:
     --8<-- "examples/snippets/idempotency/makeIdempotentLambdaContext.ts"
     ```
 
+### Durable functions
+
+To make a [durable function](https://docs.aws.amazon.com/lambda/latest/dg/durable-functions.html){target="_blank"} idempotent, wrap its handler with the [makeIdempotent](#makeidempotent-function-wrapper) function wrapper inside `withDurableExecution`.
+
+=== "Making a durable function idempotent"
+
+    ```typescript hl_lines="16-18 20-21"
+    --8<-- "examples/snippets/idempotency/workingWithDurableFunctions.ts"
+    ```
+
+A durable execution can be suspended, for example by a wait, and resumed in a later invocation. For this reason, its idempotency record works differently from the record of a regular invocation:
+
+* **No in-progress expiry.** The record doesn't store the [remaining time of the invocation](#lambda-timeouts), since the execution can outlive it. It stays `INPROGRESS` until the execution completes or the record expires.
+* **Owned by the execution.** The record stores the ARN of the durable execution as its owner. When the same execution is replayed or retried, it continues with its own record. Another execution with the same payload gets an `IdempotencyAlreadyInProgressError` until the first one completes, and the stored result after that.
+* **Updated in a durable step.** After your handler returns or throws, the utility saves the result or deletes the record in a durable step, named `powertools-idempotency-save` or `powertools-idempotency-delete`, which appears in the execution history.
+  The step keeps the execution from being suspended while the record is updated. Without it, a handler that leaves a durable operation pending, for example the losing side of a `Promise.race` against a `context.wait`, would only complete once that operation does.
+  The step doesn't retry, so a failure to update the record still surfaces as an `IdempotencyPersistenceLayerError`.
+
+???+ important "Set `expiresAfterSeconds` to at least the execution timeout"
+    Without an in-progress expiry, the record of a durable execution expires only after `expiresAfterSeconds`, one hour by default. If the execution runs longer, its record can expire while it is suspended, and another execution with the same payload can run in the meantime.
+
+    Set [`expiresAfterSeconds`](#expiring-idempotency-records) to at least the execution timeout of your durable function.
+
+    If an execution ends without cleaning up its record, for example because it reaches its execution timeout or is stopped, the record stays `INPROGRESS` until it expires.
+    Until then, other executions with the same payload get an `IdempotencyAlreadyInProgressError`. To run the payload again sooner, delete its record from the persistence store.
+
+If you [bring your own persistence store](#bring-your-own-persistent-store), save and return the `owner` of the record too, so that a durable execution can recognize its own record.
+
+???+ tip "Call idempotent functions inside a step"
+    The durable execution SDK suspends an invocation shortly after its durable operations go idle, without waiting for other asynchronous work in your handler.
+    If you [make a function idempotent](#makeidempotent-function-wrapper) and call it between durable operations, its calls to the persistence store are such work. Call it inside a `context.step` instead, so that the execution is not suspended while it runs.
+
 ### Handling exceptions
 
 If you are making on your entire Lambda handler idempotent, any unhandled exceptions that are raised during the code execution will cause **the record in the persistence layer to be deleted**.
@@ -575,28 +607,23 @@ sequenceDiagram
 <i>Optional idempotency key</i>
 </center>
 
-#### Race condition with Cache
+#### Timed out invocations with Cache
+
+An in progress record is stored with a TTL that ends at the execution deadline of the invocation that created it, capped at the overall expiry. If that invocation times out, the cache removes the record, and the next invocation with the same payload acquires the key with a single conditional write.
+
+Records without an execution deadline, such as those of [durable functions](#durable-functions) or of functions that don't [register the Lambda context](#lambda-timeouts), keep the overall expiry.
+
+No separate lock or recovery step is involved, so a record that another invocation has since completed is never overwritten.
 
 <center>
 ```mermaid
 graph TD;
-    A(Existing orphan record in cache)-->A1;
-    A1[Two Lambda invoke at same time]-->B1[Lambda handler1];
-    B1-->B2[Fetch from Cache];
-    B2-->B3[Handler1 got orphan record];
-    B3-->B4[Handler1 acquired lock];
-    B4-->B5[Handler1 overwrite orphan record]
-    B5-->B6[Handler1 continue to execution];
-    A1-->C1[Lambda handler2];
-    C1-->C2[Fetch from Cache];
-    C2-->C3[Handler2 got orphan record];
-    C3-->C4[Handler2 failed to acquire lock];
-    C4-->C5[Handler2 wait and fetch from Cache];
-    C5-->C6[Handler2 return without executing];
-    B6-->D(Lambda handler executed only once);
-    C6-->D;
+    A(Invocation 1 sets the record if absent, TTL = remaining time)-->B[Invocation 1 times out];
+    B-->C[Cache removes the record at the deadline];
+    C-->D[Invocation 2 sets the record if absent];
+    D-->E(Handler executed once);
 ```
-<i>Race condition with Cache</i>
+<i>Timed out invocations with Cache</i>
 </center>
 
 ### Persistence layers
@@ -622,6 +649,7 @@ When using DynamoDB as a persistence layer, you can alter the attribute names by
 | **statusAttr**           |                    | `status`                             | Stores status of the lambda execution during and after invocation                                        |
 | **dataAttr**             |                    | `data`                               | Stores results of successfully executed Lambda handlers                                                  |
 | **validationKeyAttr**    |                    | `validation`                         | Hashed representation of the parts of the event used for validation                                      |
+| **ownerAttr**            |                    | `owner`                              | ARN of the durable execution that owns the record (only for durable functions)                           |
 | **sortKeyAttr**          |                    |                                      | Sort key of the table (if table is configured with a sort key).                                          |
 | **staticPkValue**        |                    | `idempotency#{LAMBDA_FUNCTION_NAME}` | Static value to use as the partition key. Only used when **sort_key_attr** is set.                       |
 
@@ -654,6 +682,7 @@ When using Cache as a persistence layer, you can alter the attribute names by pa
 | **statusAttr**           |                    | `status`                 | Stores status of the lambda execution during and after invocation                             |
 | **dataAttr**             |                    | `data`                   | Stores results of successfully executed Lambda handlers                                       |
 | **validationKeyAttr**    |                    | `validation`             | Hashed representation of the parts of the event used for validation                           |
+| **ownerAttr**            |                    | `owner`                  | ARN of the durable execution that owns the record (only for durable functions)                |
 
 === "Customizing CachePersistenceLayer"
 
@@ -667,17 +696,17 @@ When using Cache as a persistence layer, you can alter the attribute names by pa
 
 Idempotent decorator can be further configured with **`IdempotencyConfig`** as seen in the previous examples. These are the available options for further configuration
 
-| Parameter                     | Default     | Description                                                                                                                                                                                                                                |
-| ----------------------------- | ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| **eventKeyJmespath**          | `''`        | JMESPath expression to extract the idempotency key from the event record using [built-in functions](./jmespath.md#built-in-jmespath-functions){target="_blank"}                                                                            |
-| **payloadValidationJmespath** | `''`        | JMESPath expression to validate that the specified fields haven't changed across requests for the same idempotency key _e.g., payload tampering._                                                                                          |
-| **jmesPathOptions**           | `undefined` | Custom JMESPath functions to use when parsing the JMESPath expressions. See [Custom JMESPath Functions](idempotency.md#custom-jmespath-functions)                                                                                          |
-| **throwOnNoIdempotencyKey**   | `false`     | Throw an error if no idempotency key was found in the request                                                                                                                                                                              |
-| **expiresAfterSeconds**       | 3600        | The number of seconds to wait before a record is expired, allowing a new transaction with the same idempotency key                                                                                                                         |
-| **useLocalCache**             | `false`     | Whether to cache idempotency results in-memory to save on persistence storage latency and costs                                                                                                                                            |
-| **localCacheMaxItems**        | 256         | Max number of items to store in local cache                                                                                                                                                                                                |
-| **hashFunction**              | `md5`       | Function to use for calculating hashes, as provided by the [crypto](https://nodejs.org/api/crypto.html#cryptocreatehashalgorithm-options){target="_blank"} module in the standard library.                                                 |
-| **responseHook**              | `undefined` | Function to use for processing the stored Idempotent response. This function hook is called when an existing idempotent response is found. See [Manipulating The Idempotent Response](idempotency.md#manipulating-the-idempotent-response) |
+| Parameter                     | Default               | Description                                                                                                                                                                                                                                |
+| ----------------------------- | --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **eventKeyJmesPath**          | `''`                  | JMESPath expression to extract the idempotency key from the event record using [built-in functions](./jmespath.md#built-in-jmespath-functions){target="_blank"}                                                                            |
+| **payloadValidationJmesPath** | `undefined`           | JMESPath expression to validate that the specified fields haven't changed across requests for the same idempotency key _e.g., payload tampering._                                                                                          |
+| **jmesPathOptions**           | `PowertoolsFunctions` | Custom JMESPath functions to use when parsing the JMESPath expressions. See [Custom JMESPath Functions](idempotency.md#custom-jmespath-functions)                                                                                          |
+| **throwOnNoIdempotencyKey**   | `false`               | Throw an error if no idempotency key was found in the request                                                                                                                                                                              |
+| **expiresAfterSeconds**       | 3600                  | The number of seconds to wait before a record is expired, allowing a new transaction with the same idempotency key                                                                                                                         |
+| **useLocalCache**             | `false`               | Whether to cache idempotency results in-memory to save on persistence storage latency and costs                                                                                                                                            |
+| **maxLocalCacheSize**         | 1000                  | Max number of items to store in local cache                                                                                                                                                                                                |
+| **hashFunction**              | `md5`                 | Function to use for calculating hashes, as provided by the [crypto](https://nodejs.org/api/crypto.html#cryptocreatehashalgorithm-options){target="_blank"} module in the standard library.                                                 |
+| **responseHook**              | `undefined`           | Function to use for processing the stored Idempotent response. This function hook is called when an existing idempotent response is found. See [Manipulating The Idempotent Response](idempotency.md#manipulating-the-idempotent-response) |
 
 ### Handling concurrent executions with the same payload
 
@@ -703,7 +732,7 @@ You can enable in-memory caching with the **`useLocalCache`** parameter:
     --8<-- "examples/snippets/idempotency/workingWithLocalCache.ts"
     ```
 
-When enabled, the default is to cache a maximum of 256 records in each Lambda execution environment - You can change it with the **`maxLocalCacheSize`** parameter.
+When enabled, the default is to cache a maximum of 1000 records in each Lambda execution environment - You can change it with the **`maxLocalCacheSize`** parameter.
 
 ### Expiring idempotency records
 
@@ -747,7 +776,7 @@ With **`payloadValidationJmesPath`**, you can provide an additional JMESPath exp
     --8<-- "examples/snippets/idempotency/workingWithPayloadValidation.ts"
     ```
 
-In this example, the **`userId`** and **`productId`** keys are used as the payload to generate the idempotency key, as per **`eventKeyJmespath`** parameter.
+In this example, the **`userId`** and **`productId`** keys are used as the payload to generate the idempotency key, as per **`eventKeyJmesPath`** parameter.
 
 ???+ note
     If we try to send the same request but with a different amount, we will raise **`IdempotencyValidationError`**.

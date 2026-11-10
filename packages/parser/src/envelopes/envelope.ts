@@ -1,4 +1,5 @@
-import { ZodError } from 'zod';
+import { ZodError, type ZodType } from 'zod';
+import { ParseError } from '../errors.js';
 
 /**
  * This is a discriminator to differentiate whether an envelope returns an array or an object
@@ -24,4 +25,30 @@ const prefixIssuePaths = (error: unknown, path: PropertyKey[]): unknown =>
       )
     : error;
 
-export { envelopeDiscriminator, prefixIssuePaths };
+/**
+ * Parses the data with the schema, and throws a `ParseError` with the given message when parsing fails.
+ *
+ * The original error is kept as the cause. When a path is given, the issue paths of a `ZodError` are
+ * prefixed with it through {@link prefixIssuePaths | `prefixIssuePaths`}.
+ *
+ * @param schema - the schema to parse the data with
+ * @param data - the data to parse
+ * @param message - the message of the `ParseError` thrown when parsing fails
+ * @param path - the path of the data inside the event
+ */
+const parseOrThrow = <T>(
+  schema: ZodType<T>,
+  data: unknown,
+  message: string,
+  path?: PropertyKey[]
+): T => {
+  try {
+    return schema.parse(data);
+  } catch (error) {
+    throw new ParseError(message, {
+      cause: path === undefined ? error : prefixIssuePaths(error, path),
+    });
+  }
+};
+
+export { envelopeDiscriminator, parseOrThrow, prefixIssuePaths };

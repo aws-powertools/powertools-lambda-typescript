@@ -511,7 +511,11 @@ describe('Class: DynamoDBProvider', () => {
           KeyConditionExpression: '#key = :key',
           ExpressionAttributeValues: marshall({
             ':myKey': 'foo',
+            ':key': 'bar',
           }),
+          ExpressionAttributeNames: {
+            '#key': 'pk',
+          },
           ConsistentRead: true,
           ProjectionExpression: 'sort, val',
           Limit: 10,
@@ -523,6 +527,7 @@ describe('Class: DynamoDBProvider', () => {
         TableName: 'test-table',
         KeyConditionExpression: '#key = :key',
         ExpressionAttributeValues: marshall({
+          ':myKey': 'foo',
           ':key': parameterPath,
         }),
         ExpressionAttributeNames: {
@@ -533,6 +538,39 @@ describe('Class: DynamoDBProvider', () => {
         ProjectionExpression: '#sk, #value',
         ConsistentRead: true,
         Limit: 10,
+      });
+    });
+
+    it('preserves filter placeholders alongside provider-owned placeholders', async () => {
+      // Prepare
+      const provider = new DynamoDBProvider({ tableName: 'test-table' });
+      client.on(QueryCommand).resolves({ Items: [] });
+
+      // Act
+      await provider.getMultiple('my-hash-key', {
+        sdkOptions: {
+          FilterExpression: '#status = :status',
+          ExpressionAttributeNames: { '#status': 'status' },
+          ExpressionAttributeValues: { ':status': { S: 'active' } },
+        },
+      });
+
+      // Assess
+      expect(client).toReceiveCommandWith(QueryCommand, {
+        TableName: 'test-table',
+        KeyConditionExpression: '#key = :key',
+        ProjectionExpression: '#sk, #value',
+        FilterExpression: '#status = :status',
+        ExpressionAttributeNames: {
+          '#key': 'id',
+          '#sk': 'sk',
+          '#value': 'value',
+          '#status': 'status',
+        },
+        ExpressionAttributeValues: {
+          ':key': { S: 'my-hash-key' },
+          ':status': { S: 'active' },
+        },
       });
     });
   });

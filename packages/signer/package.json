@@ -1,6 +1,6 @@
 {
   "name": "@aws-lambda-powertools/signer",
-  "version": "2.35.0",
+  "version": "2.36.0",
   "description": "The signer package for the Powertools for AWS Lambda (TypeScript) library.",
   "author": {
     "name": "Amazon Web Services",
@@ -116,7 +116,7 @@
     "nodejs"
   ],
   "dependencies": {
-    "@smithy/signature-v4": "^5.7.3",
+    "@smithy/signature-v4": "^5.7.4",
     "@smithy/types": "^4.18.0"
   },
   "devDependencies": {

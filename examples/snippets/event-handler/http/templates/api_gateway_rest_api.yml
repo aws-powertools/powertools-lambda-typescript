@@ -42,12 +42,12 @@ Resources:
             Path: /{proxy+} # Send requests on any path to the lambda function
             Method: ANY # Send requests using any http method to the lambda function
         GetAllTodos:
-           Type: Api
-           Properties:
-             Path: /todos
-             Method: GET
+          Type: Api
+          Properties:
+            Path: /todos
+            Method: GET
         GetTodoById:
-           Type: Api
-           Properties:
-             Path: /todos/{todo_id}
-             Method: GET
+          Type: Api
+          Properties:
+            Path: /todos/{todo_id}
+            Method: GET

@@ -703,6 +703,29 @@ describe('Class: BasePersistenceLayer', () => {
       );
     });
 
+    it('stores the owner without an in progress expiry or a warning when an owner is provided', async () => {
+      // Prepare
+      const persistenceLayer = new PersistenceLayerTestClass();
+      const putRecordSpy = vi.spyOn(persistenceLayer, '_putRecord');
+      const logWarningSpy = vi
+        .spyOn(console, 'warn')
+        .mockImplementation(() => ({}));
+
+      // Act
+      await persistenceLayer.saveInProgress({ foo: 'bar' }, undefined, {
+        owner: 'durable-execution-arn',
+      });
+
+      // Assess
+      expect(putRecordSpy).toHaveBeenCalledWith(
+        expect.objectContaining({
+          owner: 'durable-execution-arn',
+          inProgressExpiryTimestamp: undefined,
+        })
+      );
+      expect(logWarningSpy).not.toHaveBeenCalled();
+    });
+
     it('throws an `IdempotencyItemAlreadyExistsError` when there is already a completed record in the cache', async () => {
       // Prepare
       const persistenceLayer = new PersistenceLayerTestClass();
@@ -775,6 +798,27 @@ describe('Class: BasePersistenceLayer', () => {
       expect(updateRecordSpy).toHaveBeenCalledWith(
         expect.objectContaining({
           ...identity,
+          status: IdempotencyRecordStatus.COMPLETED,
+        })
+      );
+    });
+
+    it('keeps the owner on the completed record when an owner is provided', async () => {
+      // Prepare
+      const persistenceLayer = new PersistenceLayerTestClass();
+      const updateRecordSpy = vi.spyOn(persistenceLayer, '_updateRecord');
+
+      // Act
+      await persistenceLayer.saveSuccess(
+        { foo: 'bar' },
+        { bar: 'baz' },
+        { owner: 'durable-execution-arn' }
+      );
+
+      // Assess
+      expect(updateRecordSpy).toHaveBeenCalledWith(
+        expect.objectContaining({
+          owner: 'durable-execution-arn',
           status: IdempotencyRecordStatus.COMPLETED,
         })
       );

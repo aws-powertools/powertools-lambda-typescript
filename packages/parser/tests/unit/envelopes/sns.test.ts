@@ -12,6 +12,30 @@ describe('Envelope: SnsEnvelope', () => {
   });
 
   describe('Method: parse', () => {
+    it('throws a ParseError if the event is not a valid SNS event', () => {
+      // Prepare
+      const event = structuredClone(baseEvent);
+      // @ts-expect-error - force invalid event
+      event.Records[0].Sns = undefined;
+
+      // Act & Assess
+      expect(() => SnsEnvelope.parse(event, z.string())).toThrow(
+        expect.objectContaining({
+          name: 'ParseError',
+          message: expect.stringContaining('Failed to parse SNS envelope'),
+          cause: expect.objectContaining({
+            name: 'ZodError',
+            issues: [
+              expect.objectContaining({
+                code: 'invalid_type',
+                path: ['Records', 0, 'Sns'],
+              }),
+            ],
+          }),
+        })
+      );
+    });
+
     it('throws a ParseError with the original error as cause when a transform throws', () => {
       // Prepare
       const event = structuredClone(baseEvent);

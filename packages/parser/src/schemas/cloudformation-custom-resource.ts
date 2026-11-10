@@ -54,6 +54,7 @@ const CloudFormationCustomResourceCreateSchema = z.object({
  *   "StackId": "arn:aws:cloudformation:us-east-1:xxxx:stack/xxxx/271845b0-f2e8-11ed-90ac-0eeb25b8ae21",
  *   "RequestId": "xxxxx-d2a0-4dfb-ab1f-xxxxxx",
  *   "LogicalResourceId": "xxxxxxxxx",
+ *   "PhysicalResourceId": "provider-defined-physical-id",
  *   "ResourceType": "Custom::MyType",
  *   "ResourceProperties": {
  *     "ServiceToken": "arn:aws:lambda:us-east-1:xxxxx:function:xxxxx",
@@ -67,6 +68,7 @@ const CloudFormationCustomResourceCreateSchema = z.object({
 const CloudFormationCustomResourceDeleteSchema = z.object({
   ...CloudFormationCustomResourceBaseSchema.shape,
   RequestType: z.literal('Delete'),
+  PhysicalResourceId: z.string(),
 });
 
 /**
@@ -81,6 +83,7 @@ const CloudFormationCustomResourceDeleteSchema = z.object({
  *   "StackId": "arn:aws:cloudformation:us-east-1:xxxx:stack/xxxx/271845b0-f2e8-11ed-90ac-0eeb25b8ae21",
  *   "RequestId": "xxxxx-d2a0-4dfb-ab1f-xxxxxx",
  *   "LogicalResourceId": "xxxxxxxxx",
+ *   "PhysicalResourceId": "provider-defined-physical-id",
  *   "ResourceType": "Custom::MyType",
  *   "ResourceProperties": {
  *     "ServiceToken": "arn:aws:lambda:us-east-1:xxxxx:function:xxxxx",
@@ -98,6 +101,7 @@ const CloudFormationCustomResourceDeleteSchema = z.object({
 const CloudFormationCustomResourceUpdateSchema = z.object({
   ...CloudFormationCustomResourceBaseSchema.shape,
   RequestType: z.literal('Update'),
+  PhysicalResourceId: z.string(),
   OldResourceProperties: z.record(z.string(), z.any()),
 });
 

@@ -47,6 +47,39 @@ const compareStrings = (
 };
 
 /**
+ * Checks whether a string starts with a prefix by Unicode code point.
+ * @param container - Supply the string to check
+ * @param prefix - Supply the prefix to match
+ * @internal
+ */
+const startsWithByCodePoint = (container: string, prefix: string): boolean => {
+  if (prefix === '') return true;
+  // Compare code points so a lone surrogate cannot match half of a surrogate pair.
+  const containerCodePoints = Array.from(container);
+  const prefixCodePoints = Array.from(prefix);
+  return prefixCodePoints.every(
+    (codePoint, index) => codePoint === containerCodePoints[index]
+  );
+};
+
+/**
+ * Checks whether a string ends with a suffix by Unicode code point.
+ * @param container - Supply the string to check
+ * @param suffix - Supply the suffix to match
+ * @internal
+ */
+const endsWithByCodePoint = (container: string, suffix: string): boolean => {
+  if (suffix === '') return true;
+  // Compare code points so a lone surrogate cannot match half of a surrogate pair.
+  const containerCodePoints = Array.from(container);
+  const suffixCodePoints = Array.from(suffix);
+  const start = containerCodePoints.length - suffixCodePoints.length;
+  return suffixCodePoints.every(
+    (codePoint, index) => codePoint === containerCodePoints[start + index]
+  );
+};
+
+/**
  * Checks whether an array contains a value using strict JSON equality.
  * @param container - Supply the array to search
  * @param needle - Supply the value to find
@@ -132,9 +165,9 @@ const actions: Record<RuleAction, Comparator> = {
   [RuleActions.KEY_LESS_THAN_OR_EQUAL_VALUE]: (context, value) =>
     compareOrdered(context, value, (left, right) => left <= right),
   [RuleActions.STARTSWITH]: (context, value) =>
-    compareStrings(context, value, (left, right) => left.startsWith(right)),
+    compareStrings(context, value, startsWithByCodePoint),
   [RuleActions.ENDSWITH]: (context, value) =>
-    compareStrings(context, value, (left, right) => left.endsWith(right)),
+    compareStrings(context, value, endsWithByCodePoint),
   [RuleActions.IN]: (context, value) => contains(value, context),
   [RuleActions.NOT_IN]: (context, value) => !contains(value, context),
   [RuleActions.KEY_IN_VALUE]: (context, value) => contains(value, context),

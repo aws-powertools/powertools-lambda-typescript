@@ -267,6 +267,25 @@ describe('Python 3.36.0 conformance', () => {
       }
     );
 
+    it.each([
+      { action: 'STARTSWITH', value: '\ud83d' },
+      { action: 'ENDSWITH', value: '\ude00' },
+    ])(
+      'matches Python code-point semantics for $action',
+      async ({ action, value }) => {
+        // Prepare
+        const store = ruleEngineStore({
+          source: async () => actionDocument(action, value),
+        });
+        // Act
+        const result = await store.getAll({ fact: '😀' });
+        // Assess
+        expect(result).toEqual({
+          my_feature: { found: true, value: false, enabled: false },
+        });
+      }
+    );
+
     it('matches Python code-point ordering for BMP and astral strings', async () => {
       // Prepare
       const store = ruleEngineStore({

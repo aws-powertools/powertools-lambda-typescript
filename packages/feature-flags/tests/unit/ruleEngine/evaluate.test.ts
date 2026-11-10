@@ -721,6 +721,141 @@ describe('Rule Engine evaluation', () => {
     }
   );
 
+  it.each<{
+    action: RuleAction;
+    name: string;
+    context: string;
+    value: string;
+    expected: boolean;
+  }>([
+    {
+      action: 'STARTSWITH',
+      name: 'a lone high surrogate',
+      context: '😀',
+      value: '\ud83d',
+      expected: false,
+    },
+    {
+      action: 'ENDSWITH',
+      name: 'a lone low surrogate',
+      context: '😀',
+      value: '\ude00',
+      expected: false,
+    },
+    {
+      action: 'STARTSWITH',
+      name: 'an astral prefix',
+      context: '😀a',
+      value: '😀',
+      expected: true,
+    },
+    {
+      action: 'ENDSWITH',
+      name: 'an astral suffix',
+      context: 'xa😀',
+      value: 'a😀',
+      expected: true,
+    },
+    {
+      action: 'STARTSWITH',
+      name: 'a prefix ending inside a pair',
+      context: 'a😀',
+      value: 'a\ud83d',
+      expected: false,
+    },
+    {
+      action: 'ENDSWITH',
+      name: 'a suffix starting inside a pair',
+      context: '😀b',
+      value: '\ude00b',
+      expected: false,
+    },
+    {
+      action: 'STARTSWITH',
+      name: 'a standalone high surrogate',
+      context: '\ud83d',
+      value: '\ud83d',
+      expected: true,
+    },
+    {
+      action: 'ENDSWITH',
+      name: 'a standalone low surrogate',
+      context: '\ude00',
+      value: '\ude00',
+      expected: true,
+    },
+    {
+      action: 'STARTSWITH',
+      name: 'a longer prefix',
+      context: '😀',
+      value: '😀a',
+      expected: false,
+    },
+    {
+      action: 'ENDSWITH',
+      name: 'a longer suffix',
+      context: '😀',
+      value: 'a😀',
+      expected: false,
+    },
+    {
+      action: 'STARTSWITH',
+      name: 'an empty prefix',
+      context: '😀',
+      value: '',
+      expected: true,
+    },
+    {
+      action: 'ENDSWITH',
+      name: 'an empty suffix',
+      context: '😀',
+      value: '',
+      expected: true,
+    },
+    {
+      action: 'STARTSWITH',
+      name: 'an empty container',
+      context: '',
+      value: '😀',
+      expected: false,
+    },
+    {
+      action: 'ENDSWITH',
+      name: 'an empty container',
+      context: '',
+      value: '😀',
+      expected: false,
+    },
+    {
+      action: 'STARTSWITH',
+      name: 'two empty strings',
+      context: '',
+      value: '',
+      expected: true,
+    },
+    {
+      action: 'ENDSWITH',
+      name: 'two empty strings',
+      context: '',
+      value: '',
+      expected: true,
+    },
+  ])(
+    'checks $action by code point for $name',
+    ({ action, context, value, expected }) => {
+      // Prepare
+      const flag = prepareFlag(action, value);
+      // Act
+      const result = evaluate('checkout', flag, { tier: context });
+      // Assess
+      expect(result).toEqual({
+        found: true,
+        value: expected,
+        enabled: expected,
+      });
+    }
+  );
+
   it.each<{ action: RuleAction; expected: boolean }>([
     { action: 'KEY_GREATER_THAN_VALUE', expected: false },
     { action: 'KEY_GREATER_THAN_OR_EQUAL_VALUE', expected: false },

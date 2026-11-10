@@ -5,6 +5,7 @@ import type {
   HttpRequest,
 } from '@smithy/types';
 import type { BodyInit } from 'undici-types';
+import { SERVICE_S3 } from './constants.js';
 import { RequestSigningError, SignerConfigError } from './errors.js';
 import { Sha256 } from './Sha256.js';
 import type { Signer, SigV4SignerOptions } from './types/index.js';
@@ -118,7 +119,7 @@ class SigV4Signer implements Signer {
       region: this.#region,
       credentials,
       sha256: Sha256,
-      uriEscapePath: this.#service !== 's3',
+      uriEscapePath: this.#service !== SERVICE_S3,
     });
 
     let signed: HttpRequest;
@@ -176,7 +177,9 @@ class SigV4Signer implements Signer {
       hostname: url.hostname,
       port: url.port ? Number(url.port) : undefined,
       path:
-        this.#service === 's3' ? canonicalS3Path(url.pathname) : url.pathname,
+        this.#service === SERVICE_S3
+          ? canonicalS3Path(url.pathname)
+          : url.pathname,
       query,
       headers,
       body,

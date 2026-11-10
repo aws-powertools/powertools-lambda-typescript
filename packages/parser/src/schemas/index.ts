@@ -57,6 +57,10 @@ export {
   DynamoDBStreamSchema,
   DynamoDBStreamToKinesisRecord,
 } from './dynamodb.js';
+export {
+  EcsTaskStateChangeDetailSchema,
+  EcsTaskStateChangeSchema,
+} from './ecs.js';
 export { EventBridgeSchema } from './eventbridge.js';
 export {
   EventBridgeWithMetadataRecordSchema,

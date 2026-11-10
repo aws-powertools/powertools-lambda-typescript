@@ -23,6 +23,8 @@ import type {
   DynamoDBStreamRecord as DynamoDBStreamRecordSchema,
   DynamoDBStreamSchema,
   DynamoDBStreamToKinesisRecord,
+  EcsTaskStateChangeDetailSchema,
+  EcsTaskStateChangeSchema,
   EventBridgeSchema,
   EventBridgeWithMetadataRecordSchema,
   EventBridgeWithMetadataSchema,
@@ -123,6 +125,10 @@ type DynamoDBStreamToKinesisRecordEvent = z.infer<
   typeof DynamoDBStreamToKinesisRecord
 >;
 
+type EcsTaskStateChangeDetail = z.infer<typeof EcsTaskStateChangeDetailSchema>;
+
+type EcsTaskStateChangeEvent = z.infer<typeof EcsTaskStateChangeSchema>;
+
 type EventBridgeEvent = z.infer<typeof EventBridgeSchema>;
 
 /** Represents the system metadata of a WITH_METADATA delivery. */
@@ -218,6 +224,8 @@ export type {
   DynamoDBStreamEvent,
   DynamoDBStreamRecord,
   DynamoDBStreamToKinesisRecordEvent,
+  EcsTaskStateChangeDetail,
+  EcsTaskStateChangeEvent,
   EventBridgeEvent,
   EventBridgeWithMetadataEvent,
   EventBridgeWithMetadataRecord,

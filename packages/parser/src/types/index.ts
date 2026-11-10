@@ -38,6 +38,8 @@ export type {
   DynamoDBStreamEvent,
   DynamoDBStreamRecord,
   DynamoDBStreamToKinesisRecordEvent,
+  EcsTaskStateChangeDetail,
+  EcsTaskStateChangeEvent,
   EventBridgeEvent,
   EventBridgeWithMetadataEvent,
   EventBridgeWithMetadataRecord,

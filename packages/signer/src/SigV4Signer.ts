@@ -5,9 +5,33 @@ import type {
   HttpRequest,
 } from '@smithy/types';
 import type { BodyInit } from 'undici-types';
+import { SERVICE_S3 } from './constants.js';
 import { RequestSigningError, SignerConfigError } from './errors.js';
 import { Sha256 } from './Sha256.js';
 import type { Signer, SigV4SignerOptions } from './types/index.js';
+
+/**
+ * Builds the canonical S3 URI for an already parsed request URL.
+ *
+ * S3 treats raw plus signs as spaces and decodes escaped slashes in object
+ * keys. Preserve other escapes without double-encoding their percent signs.
+ *
+ * @param path - The URL pathname as it will be sent to S3.
+ * @internal
+ */
+const canonicalS3Path = (path: string): string =>
+  encodeURIComponent(path.replace(/\+/g, ' '))
+    .replace(
+      /[!'()*]/g,
+      (character) => `%${character.charCodeAt(0).toString(16).toUpperCase()}`
+    )
+    .replace(/%2F/g, '/')
+    .replace(/%25([a-f0-9]{2})/gi, (_match, byte: string) => {
+      const character = String.fromCharCode(Number.parseInt(byte, 16));
+      return /^[a-z0-9._~/-]$/i.test(character)
+        ? character
+        : `%${byte.toUpperCase()}`;
+    });
 
 /**
  * Credential provider that reads AWS credentials from the standard environment
@@ -95,6 +119,7 @@ class SigV4Signer implements Signer {
       region: this.#region,
       credentials,
       sha256: Sha256,
+      uriEscapePath: this.#service !== SERVICE_S3,
     });
 
     let signed: HttpRequest;
@@ -151,7 +176,10 @@ class SigV4Signer implements Signer {
       protocol: url.protocol,
       hostname: url.hostname,
       port: url.port ? Number(url.port) : undefined,
-      path: url.pathname,
+      path:
+        this.#service === SERVICE_S3
+          ? canonicalS3Path(url.pathname)
+          : url.pathname,
       query,
       headers,
       body,

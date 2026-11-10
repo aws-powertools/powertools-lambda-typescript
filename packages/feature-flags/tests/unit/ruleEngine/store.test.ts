@@ -36,6 +36,22 @@ const prepare = () => {
 };
 
 describe('ruleEngineStore', () => {
+  it('uses a caller-supplied Store name', async () => {
+    // Prepare
+    const store = ruleEngineStore({
+      source: async () => ({ checkout: { default: true } }),
+      name: 'custom-store',
+    });
+    // Act
+    const result = await new FeatureFlags({ store }).evaluate({
+      name: 'checkout',
+      default: false,
+    });
+    // Assess
+    expect(store.name).toBe('custom-store');
+    expect(result).toBe(true);
+  });
+
   it('returns known and missing flags from one retrieval', async () => {
     // Prepare
     const { store, source } = prepare();

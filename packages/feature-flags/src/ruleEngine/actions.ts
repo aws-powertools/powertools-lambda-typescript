@@ -7,7 +7,7 @@ import {
   isString,
 } from '@aws-lambda-powertools/commons';
 import { RuleActions } from '../constants.js';
-import type { Comparator, RuleAction } from './types.js';
+import type { Comparator, RuleAction } from '../types/RuleEngine.js';
 
 /**
  * Compares numbers directly and strings by Unicode code point without coercion.

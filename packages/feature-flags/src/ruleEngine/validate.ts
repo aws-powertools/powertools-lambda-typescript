@@ -6,6 +6,7 @@ import type {
 import {
   FlagDocumentFields,
   RuleActions,
+  StoreNames,
   UnsupportedRuleActions,
 } from '../constants.js';
 import { SchemaValidationError } from '../errors.js';
@@ -16,7 +17,7 @@ import type {
   FlagDocument,
   Rule,
   RuleAction,
-} from './types.js';
+} from '../types/RuleEngine.js';
 
 /**
  * Validates an entire Python-format Flag Document and returns typed definitions.
@@ -53,7 +54,7 @@ const validate = (document: unknown, logger?: GenericLogger): FlagDocument => {
     entries.push([name, { default: defaultValue, rules }]);
   }
   if (entries.length === 0)
-    logger?.warn({ store: 'rule-engine', reason: 'empty-document' });
+    logger?.warn({ store: StoreNames.RULE_ENGINE, reason: 'empty-document' });
   return Object.fromEntries(entries);
 };
 
@@ -114,7 +115,11 @@ const validateRules = (
     ]);
   }
   if (entries.length === 0)
-    logger?.warn({ store: 'rule-engine', reason: 'empty-rules', name });
+    logger?.warn({
+      store: StoreNames.RULE_ENGINE,
+      reason: 'empty-rules',
+      name,
+    });
   return Object.fromEntries(entries);
 };
 

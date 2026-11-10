@@ -1,4 +1,4 @@
-click==8.5.0
+click==8.5.1
 mike==1.1.2
 mkdocs-material==9.8.1
 mkdocs-git-revision-date-plugin==0.3.2

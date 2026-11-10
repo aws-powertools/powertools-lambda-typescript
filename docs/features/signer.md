@@ -53,6 +53,12 @@ Signing and sending are deliberately kept separate, so you can use the signed re
 
 ## Advanced
 
+### Signing S3 requests
+
+Set `service: 's3'` and use the bucket's region when signing S3 requests. S3 uses different canonical-path rules from other AWS services: percent escapes are not double-encoded, and repeated slashes and object-key dot segments are preserved during signing.
+
+The signer preserves the request URL and follows S3's interpretation of its path. S3 treats a raw `+` as a space; use `%2B` in the URL to address an object key containing a literal `+`.
+
 ### Configuring the region
 
 The region defaults to the `AWS_REGION` environment variable that Lambda sets. You can override it, for example to sign requests for a service in a different region.

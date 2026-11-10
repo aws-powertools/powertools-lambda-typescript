@@ -11,7 +11,10 @@ import {
 import {
   asyncSettingsSchema,
   createSchema,
+  createUndefinedOutputSchema,
+  dateSchema,
   flexibleSchema,
+  numberSchema,
   schemaIssues,
   secretIssueMessage,
   settingsSchema,
@@ -34,6 +37,134 @@ const prepare = () => {
 };
 
 describe('Standard Schema evaluation', () => {
+  it.each([
+    { method: 'evaluate', source: 'fallback' },
+    { method: 'evaluate', source: 'result' },
+    { method: 'evaluateMany', source: 'fallback' },
+    { method: 'evaluateMany', source: 'result' },
+  ] as const)(
+    'rejects undefined output from the $method $source schema validation',
+    async ({ method, source }) => {
+      // Prepare
+      const { flags, store, logger } = prepare();
+      const schema = createUndefinedOutputSchema(source);
+      store.getMany.mockResolvedValue({
+        settings: { found: true, value: 'result', enabled: true },
+      });
+      // Act
+      const result =
+        method === 'evaluate'
+          ? flags.evaluate({ name: 'settings', default: 'fallback', schema })
+          : flags.evaluateMany({
+              flags: { banner: 'none', settings: 'fallback' },
+              schemas: { settings: schema },
+            });
+      // Assess
+      await expect(result).rejects.toBeInstanceOf(FlagResultValidationError);
+      await expect(result).rejects.toMatchObject({
+        flag: 'settings',
+        source,
+        cause: [],
+        message: `Flag 'settings' ${source} failed schema validation at (root)`,
+      });
+      if (source === 'fallback') expect(store.getMany).not.toHaveBeenCalled();
+      else
+        expect(store.getMany).toHaveBeenCalledExactlyOnceWith(
+          method === 'evaluate' ? ['settings'] : ['banner', 'settings'],
+          {}
+        );
+      expect(logger.warn).not.toHaveBeenCalled();
+      expect(logger.debug).not.toHaveBeenCalled();
+    }
+  );
+
+  it.each([
+    { method: 'evaluate', outcome: 'found' },
+    { method: 'evaluate', outcome: 'missing' },
+    { method: 'evaluate', outcome: 'unavailable' },
+    { method: 'evaluateMany', outcome: 'found' },
+    { method: 'evaluateMany', outcome: 'missing' },
+    { method: 'evaluateMany', outcome: 'unavailable' },
+  ] as const)(
+    'returns numeric schema output for $method with a $outcome Store outcome',
+    async ({ method, outcome }) => {
+      // Prepare
+      const { flags, store } = prepare();
+      if (outcome === 'unavailable')
+        store.getMany.mockRejectedValue(new StoreUnavailableError('secret'));
+      else
+        store.getMany.mockResolvedValue(
+          outcome === 'found'
+            ? {
+                settings: { found: true, value: '10', enabled: true },
+              }
+            : {}
+        );
+      // Act
+      const result =
+        method === 'evaluate'
+          ? await flags.evaluate({
+              name: 'settings',
+              default: '5',
+              schema: numberSchema,
+            })
+          : (
+              await flags.evaluateMany({
+                flags: { settings: '5' },
+                schemas: { settings: numberSchema },
+              })
+            ).settings;
+      // Assess
+      expect(result).toBe(outcome === 'found' ? 10 : 5);
+      expect(store.getMany).toHaveBeenCalledExactlyOnceWith(['settings'], {});
+    }
+  );
+
+  it.each([
+    { method: 'evaluate', outcome: 'found' },
+    { method: 'evaluate', outcome: 'missing' },
+    { method: 'evaluate', outcome: 'unavailable' },
+    { method: 'evaluateMany', outcome: 'found' },
+    { method: 'evaluateMany', outcome: 'missing' },
+    { method: 'evaluateMany', outcome: 'unavailable' },
+  ] as const)(
+    'returns Date schema output for $method with a $outcome Store outcome',
+    async ({ method, outcome }) => {
+      // Prepare
+      const { flags, store } = prepare();
+      const fallback = '2026-01-01T00:00:00.000Z';
+      const value = '2026-11-10T00:00:00.000Z';
+      if (outcome === 'unavailable')
+        store.getMany.mockRejectedValue(new StoreUnavailableError('secret'));
+      else
+        store.getMany.mockResolvedValue(
+          outcome === 'found'
+            ? {
+                settings: { found: true, value, enabled: true },
+              }
+            : {}
+        );
+      // Act
+      const result =
+        method === 'evaluate'
+          ? await flags.evaluate({
+              name: 'settings',
+              default: fallback,
+              schema: dateSchema,
+            })
+          : (
+              await flags.evaluateMany({
+                flags: { settings: fallback },
+                schemas: { settings: dateSchema },
+              })
+            ).settings;
+      // Assess
+      expect(result).toBeInstanceOf(Date);
+      expect(result).toEqual(new Date(outcome === 'found' ? value : fallback));
+      expect(store.getMany).toHaveBeenCalledExactlyOnceWith(['settings'], {});
+    }
+  );
+
   it.each([
     { kind: 'sync', schema: settingsSchema },
     { kind: 'async', schema: asyncSettingsSchema },

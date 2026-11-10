@@ -6,7 +6,11 @@ import {
   type EvaluateWithSchemaOptions,
   FeatureFlags,
 } from '../../src/index.js';
-import { createSchema, settingsSchema } from '../helpers/standardSchema.js';
+import {
+  createSchema,
+  dateSchema,
+  settingsSchema,
+} from '../helpers/standardSchema.js';
 
 /** Creates a feature flag evaluator for type assertions. */
 const prepare = () =>
@@ -19,6 +23,27 @@ const prepare = () =>
   });
 
 describe('Type: Standard Schema evaluation', () => {
+  it('infers non-JSON schema outputs', () => {
+    // Prepare
+    const flags = prepare();
+    // Act
+    const single = flags.evaluate({
+      name: 'settings',
+      default: '2026-01-01',
+      schema: dateSchema,
+    });
+    const many = flags.evaluateMany({
+      flags: { settings: '2026-01-01', banner: 'none' },
+      schemas: { settings: dateSchema },
+    });
+    // Assess
+    expectTypeOf(single).resolves.toEqualTypeOf<Date>();
+    expectTypeOf(many).resolves.toEqualTypeOf<{
+      settings: Date;
+      banner: string;
+    }>();
+  });
+
   it('infers the schema output instead of its input', () => {
     // Prepare
     const flags = prepare();

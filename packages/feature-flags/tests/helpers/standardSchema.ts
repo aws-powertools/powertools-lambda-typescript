@@ -51,10 +51,33 @@ const flexibleSchema = createSchema<
   value: { theme: typeof value === 'string' ? value : 'dark' },
 }));
 
+/** Transforms string input into numeric output. */
+const numberSchema = createSchema<string, number>((value) => ({
+  value: Number(value),
+}));
+
+/** Transforms string input into non-JSON Date output. */
+const dateSchema = createSchema<string, Date>((value) => ({
+  value: new Date(String(value)),
+}));
+
+/** Creates a dishonest validator that returns undefined for the selected input. */
+const createUndefinedOutputSchema = (input: string) =>
+  createSchema<string, string>((value): StandardSchemaV1.Result<string> => {
+    if (value === input) {
+      // @ts-expect-error Test validators that violate their declared output type.
+      return { value: undefined };
+    }
+    return { value: String(value) };
+  });
+
 export {
   asyncSettingsSchema,
   createSchema,
+  createUndefinedOutputSchema,
+  dateSchema,
   flexibleSchema,
+  numberSchema,
   schemaIssues,
   secretIssueMessage,
   settingsSchema,

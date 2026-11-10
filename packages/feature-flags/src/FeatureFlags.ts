@@ -49,11 +49,25 @@ class FeatureFlags {
   }
 
   /**
-   * Evaluates one flag with a schema and returns its validated output.
+   * Evaluates one flag and returns its value or the required fallback.
    *
-   * Validates the fallback before contacting the {@link Store | `Store`}.
+   * Handles {@link StoreUnavailableError | `StoreUnavailableError`} with the fallback.
+   * With a schema, validates the fallback before contacting the {@link Store | `Store`}
+   * and replaces the primitive type check with schema validation. Returns the
+   * validated output on both the found path and the fallback path, and rejects
+   * schema outputs that are undefined.
    *
-   * @param options - Supply the name, context, schema, and fallback
+   * @param {Object} options - Configure the flag evaluation
+   * @param {string} options.name - Identify the flag
+   * @param {EvaluationContext} options.context - Supply scalar facts for evaluation
+   * @param {JSONValue} options.default - Supply the fallback and, without a schema, the expected primitive type
+   * @param {StandardSchemaV1} options.schema - Validate the fallback and result with an optional schema
+   * @example
+   * ```typescript
+   * const enabled = await flags.evaluate({
+   *   name: 'checkout_v2', context: { tier: 'premium' }, default: false,
+   * });
+   * ```
    * @example
    * ```typescript
    * const settings = await flags.evaluate({
@@ -65,22 +79,6 @@ class FeatureFlags {
     options: EvaluateWithSchemaOptions<Schema>
   ): Promise<StandardSchemaV1.InferOutput<Schema>>;
 
-  /**
-   * Evaluates one flag and returns its value or the required fallback.
-   *
-   * Handles {@link StoreUnavailableError | `StoreUnavailableError`} with the fallback.
-   *
-   * @param {Object} options - Configure the flag evaluation
-   * @param {string} options.name - Identify the flag
-   * @param {EvaluationContext} options.context - Supply scalar facts for evaluation
-   * @param {JSONValue} options.default - Supply the fallback and expected primitive type
-   * @example
-   * ```typescript
-   * const enabled = await flags.evaluate({
-   *   name: 'checkout_v2', context: { tier: 'premium' }, default: false,
-   * });
-   * ```
-   */
   public evaluate<Fallback extends JSONValue>(
     options: EvaluateOptions<Fallback>
   ): Promise<EvaluateResult<Fallback>>;
@@ -142,6 +140,10 @@ class FeatureFlags {
    * Evaluates several flags with an independent fallback for each flag.
    *
    * Handles {@link StoreUnavailableError | `StoreUnavailableError`} with every fallback.
+   * Validates schema-backed fallbacks before contacting the {@link Store | `Store`}.
+   * Each schema replaces the primitive type check and supplies the output on both
+   * the found path and the fallback path. Rejects undefined schema outputs and
+   * throws for the whole batch if any flag fails validation.
    *
    * @param {Object} options - Configure the batch evaluation
    * @param {Object} options.flags - Supply flag names and their fallbacks
@@ -300,6 +302,9 @@ const validateWithSchema = async (
   const result = await schema['~standard'].validate(value);
   if (result.issues) {
     throw new FlagResultValidationError(name, source, result.issues);
+  }
+  if (result.value === undefined) {
+    throw new FlagResultValidationError(name, source, []);
   }
   // Schemas own the validated value contract; public overloads expose their output type.
   return result.value as JSONValue;

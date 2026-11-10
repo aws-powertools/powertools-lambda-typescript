@@ -74,7 +74,12 @@ class ConditionEvaluationError extends FeatureFlagsError {
   }
 }
 
-/** Reports schema validation failures using issue paths without exposing values. */
+/**
+ * Reports schema validation failures using issue paths without exposing values.
+ *
+ * Preserves the validator's issues as cause. Uses an empty issues array as cause
+ * and a single synthetic (root) path when a schema returns undefined without issues.
+ */
 class FlagResultValidationError extends FeatureFlagsError {
   public readonly flag: string;
   public readonly source: 'fallback' | 'result';
@@ -101,7 +106,7 @@ class FlagResultValidationError extends FeatureFlagsError {
       paths.push(segments.length > 0 ? segments.join('.') : '(root)');
     }
     super(
-      `Flag '${flag}' ${source} failed schema validation at ${paths.join(', ')}`,
+      `Flag '${flag}' ${source} failed schema validation at ${paths.length > 0 ? paths.join(', ') : '(root)'}`,
       {
         cause: issues,
       }

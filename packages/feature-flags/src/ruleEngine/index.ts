@@ -1,10 +1,7 @@
-import { SchemaValidationError } from '../errors.js';
 import type { Store, StoreResult } from '../types/index.js';
-import type { RuleEngineSnapshot } from '../types/RuleEngine.js';
 import { evaluate } from './evaluate.js';
-import { isJSONValue } from './json.js';
-import type { FlagDocument, RuleEngineStoreOptions } from './types.js';
-import { validate } from './validate.js';
+import type { RuleEngineStoreOptions } from './types.js';
+import { createValidationCache } from './validationCache.js';
 
 /**
  * Creates a local {@link Store | `Store`} that evaluates Python-format Flag Documents.
@@ -32,26 +29,12 @@ import { validate } from './validate.js';
  * ```
  */
 const ruleEngineStore = ({ source, logger }: RuleEngineStoreOptions): Store => {
-  let snapshot: RuleEngineSnapshot | undefined;
-
-  /** Retrieves the latest document and reuses validation only for unchanged JSON content. @internal */
-  const getSnapshot = async (): Promise<FlagDocument> => {
-    const document = await source();
-    // Check before stringifying: undefined, nonfinite numbers, and non-JSON objects can otherwise collide with valid JSON.
-    if (!isJSONValue(document))
-      throw new SchemaValidationError('Flag Document must contain JSON');
-    const key = JSON.stringify(document);
-    if (snapshot?.key === key) return snapshot.document;
-    // Validate an owned copy so neither source mutations nor concurrent retrievals change this call's rules.
-    const compiled = validate(structuredClone(document), logger);
-    snapshot = { key, document: compiled };
-    return compiled;
-  };
+  const validateDocument = createValidationCache(logger);
 
   return {
     name: 'rule-engine',
     getMany: async (names, context) => {
-      const document = await getSnapshot();
+      const document = validateDocument(await source());
       const results: [string, StoreResult][] = [];
       for (const name of new Set(names)) {
         results.push([
@@ -65,7 +48,7 @@ const ruleEngineStore = ({ source, logger }: RuleEngineStoreOptions): Store => {
       return Object.fromEntries(results);
     },
     getAll: async (context) => {
-      const document = await getSnapshot();
+      const document = validateDocument(await source());
       const results: [string, StoreResult][] = [];
       for (const [name, flag] of Object.entries(document)) {
         results.push([name, evaluate(name, flag, context, logger)]);

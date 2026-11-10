@@ -1,6 +1,7 @@
 export {
   ConditionEvaluationError,
   FeatureFlagsError,
+  FlagResultValidationError,
   FlagValueTypeError,
   InvalidContextError,
   SchemaValidationError,

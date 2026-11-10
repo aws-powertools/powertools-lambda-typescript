@@ -78,6 +78,6 @@ describe('Type: FeatureFlags', () => {
     // @ts-expect-error A default is required to avoid undefined results.
     const result = flags.evaluate({ name: 'flag' });
     // Assess
-    expectTypeOf(result).toExtend<Promise<JSONValue>>();
+    expectTypeOf(result).toExtend<Promise<unknown>>();
   });
 });

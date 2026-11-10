@@ -3,7 +3,9 @@ import type {
   GenericLogger,
   JSONValue,
 } from '@aws-lambda-powertools/commons/types';
+import type { StandardSchemaV1 } from '@standard-schema/spec';
 import {
+  FlagResultValidationError,
   FlagValueTypeError,
   InvalidContextError,
   StoreUnavailableError,
@@ -14,6 +16,7 @@ import type {
   EvaluateManyResult,
   EvaluateOptions,
   EvaluateResult,
+  EvaluateWithSchemaOptions,
   EvaluationContext,
   FeatureFlagsOptions,
   GetEnabledFeaturesOptions,
@@ -49,26 +52,50 @@ class FeatureFlags {
    * Evaluates one flag and returns its value or the required fallback.
    *
    * Handles {@link StoreUnavailableError | `StoreUnavailableError`} with the fallback.
+   * With a schema, validates the fallback before contacting the {@link Store | `Store`}
+   * and replaces the primitive type check with schema validation. Returns the
+   * validated output on both the found path and the fallback path, and rejects
+   * schema outputs that are undefined.
    *
    * @param {Object} options - Configure the flag evaluation
    * @param {string} options.name - Identify the flag
    * @param {EvaluationContext} options.context - Supply scalar facts for evaluation
-   * @param {JSONValue} options.default - Supply the fallback and expected primitive type
+   * @param {JSONValue} options.default - Supply the fallback and, without a schema, the expected primitive type
+   * @param {StandardSchemaV1} options.schema - Validate the fallback and result with an optional schema
    * @example
    * ```typescript
    * const enabled = await flags.evaluate({
    *   name: 'checkout_v2', context: { tier: 'premium' }, default: false,
    * });
    * ```
+   * @example
+   * ```typescript
+   * const settings = await flags.evaluate({
+   *   name: 'settings', default: { theme: 'light' }, schema: settingsSchema,
+   * });
+   * ```
    */
+  public evaluate<Schema extends StandardSchemaV1>(
+    options: EvaluateWithSchemaOptions<Schema>
+  ): Promise<StandardSchemaV1.InferOutput<Schema>>;
+
   public evaluate<Fallback extends JSONValue>(
     options: EvaluateOptions<Fallback>
   ): Promise<EvaluateResult<Fallback>>;
-  public async evaluate(
-    options: EvaluateOptions<JSONValue>
+  public async evaluate<Schema extends StandardSchemaV1>(
+    options: EvaluateOptions<JSONValue> | EvaluateWithSchemaOptions<Schema>
   ): Promise<JSONValue> {
-    const { name, context = {}, default: fallback } = options;
+    const { name, context = {} } = options;
     validateContext(context);
+    const fallback =
+      'schema' in options
+        ? await validateWithSchema(
+            name,
+            'fallback',
+            options.default,
+            options.schema
+          )
+        : options.default;
 
     let result: Record<string, StoreResult>;
     try {
@@ -99,35 +126,66 @@ class FeatureFlags {
       return fallback;
     }
 
-    validateFlagValue(name, fallback, flag.value);
+    let value = flag.value;
+    if ('schema' in options) {
+      value = await validateWithSchema(name, 'result', value, options.schema);
+    } else {
+      validateFlagValue(name, fallback, value);
+    }
     this.#logger?.debug({ name, store: this.#store.name, outcome: 'found' });
-    return flag.value;
+    return value;
   }
 
   /**
    * Evaluates several flags with an independent fallback for each flag.
    *
    * Handles {@link StoreUnavailableError | `StoreUnavailableError`} with every fallback.
+   * Validates schema-backed fallbacks before contacting the {@link Store | `Store`}.
+   * Each schema replaces the primitive type check and supplies the output on both
+   * the found path and the fallback path. Rejects undefined schema outputs and
+   * throws for the whole batch if any flag fails validation.
    *
    * @param {Object} options - Configure the batch evaluation
    * @param {Object} options.flags - Supply flag names and their fallbacks
    * @param {EvaluationContext} options.context - Supply scalar facts for evaluation
+   * @param {Object} options.schemas - Validate selected flags and their fallbacks
    * @example
    * ```typescript
    * const result = await flags.evaluateMany({
    *   flags: { checkout_v2: false, limit: 10 }, context: { tier: 'premium' },
    * });
+   * const settings = await flags.evaluateMany({
+   *   flags: { settings: { theme: 'light' }, banner: 'none' },
+   *   schemas: { settings: settingsSchema },
+   * });
    * ```
    */
-  public evaluateMany<Flags extends Record<string, JSONValue>>(
-    options: EvaluateManyOptions<Flags>
-  ): Promise<EvaluateManyResult<Flags>>;
+  public evaluateMany<
+    Flags extends Record<string, JSONValue>,
+    Schemas extends Partial<Record<string, StandardSchemaV1>> = Partial<
+      Record<string, never>
+    >,
+  >(
+    options: EvaluateManyOptions<Flags, Schemas>
+  ): Promise<EvaluateManyResult<Flags, Schemas>>;
   public async evaluateMany(
-    options: EvaluateManyOptions<Record<string, JSONValue>>
+    options: EvaluateManyOptions<Record<string, JSONValue>> & {
+      schemas?: Record<string, StandardSchemaV1>;
+    }
   ): Promise<Record<string, JSONValue>> {
-    const { flags, context = {} } = options;
+    const { flags, context = {}, schemas = {} } = options;
     validateContext(context);
     const names = Object.keys(flags);
+    const fallbacks: [string, JSONValue][] = [];
+    for (const name of names) {
+      const schema = Object.hasOwn(schemas, name) ? schemas[name] : undefined;
+      fallbacks.push([
+        name,
+        schema
+          ? await validateWithSchema(name, 'fallback', flags[name], schema)
+          : flags[name],
+      ]);
+    }
     let result: Record<string, StoreResult>;
     try {
       result = await this.#store.getMany(names, context);
@@ -143,20 +201,27 @@ class FeatureFlags {
         outcome: 'fallback',
         names,
       });
-      return { ...flags };
+      return Object.fromEntries(fallbacks);
     }
 
     const values: [string, JSONValue][] = [];
     const missing: string[] = [];
-    for (const name of names) {
+    for (const [name, fallback] of fallbacks) {
       const flag = result[name];
-      const fallback = flags[name];
       if (!flag?.found) {
         missing.push(name);
         values.push([name, fallback]);
       } else {
-        validateFlagValue(name, fallback, flag.value);
-        values.push([name, flag.value]);
+        const schema = Object.hasOwn(schemas, name) ? schemas[name] : undefined;
+        if (schema) {
+          values.push([
+            name,
+            await validateWithSchema(name, 'result', flag.value, schema),
+          ]);
+        } else {
+          validateFlagValue(name, fallback, flag.value);
+          values.push([name, flag.value]);
+        }
       }
     }
     if (missing.length > 0) {
@@ -219,6 +284,36 @@ class FeatureFlags {
     return enabled;
   }
 }
+
+/**
+ * Validates a fallback or Store result and returns the schema output.
+ * @param name - Identify the flag
+ * @param source - Identify the fallback or result
+ * @param value - Supply the value to validate
+ * @param schema - Supply the Standard Schema validator
+ * @internal
+ */
+const validateWithSchema = async (
+  name: string,
+  source: 'fallback' | 'result',
+  value: unknown,
+  schema: StandardSchemaV1
+): Promise<JSONValue> => {
+  let result: StandardSchemaV1.Result<unknown>;
+  try {
+    result = await schema['~standard'].validate(value);
+  } catch (cause) {
+    throw new FlagResultValidationError(name, source, [], { cause });
+  }
+  if (result.issues) {
+    throw new FlagResultValidationError(name, source, result.issues);
+  }
+  if (result.value === undefined) {
+    throw new FlagResultValidationError(name, source, []);
+  }
+  // Schemas own the validated value contract; public overloads expose their output type.
+  return result.value as JSONValue;
+};
 
 /**
  * Validates scalar context facts before contacting the Store.

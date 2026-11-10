@@ -161,7 +161,7 @@ describe('ruleEngineStore', () => {
     await expect(result).rejects.not.toThrow('secret-invalid');
   });
 
-  it('revalidates the same source object on every call', async () => {
+  it('revalidates a mutated source object', async () => {
     // Prepare
     const document: Record<string, JSONValue> = { checkout: { default: true } };
     const source = vi
@@ -180,7 +180,7 @@ describe('ruleEngineStore', () => {
     expect(source).toHaveBeenCalledTimes(2);
   });
 
-  it('warns again for an empty document on every retrieval', async () => {
+  it('warns once for unchanged empty document content', async () => {
     // Prepare
     const { store, source, logger } = prepare();
     source.mockResolvedValue({});
@@ -190,7 +190,6 @@ describe('ruleEngineStore', () => {
     // Assess
     expect(source).toHaveBeenCalledTimes(2);
     expect(logger.warn.mock.calls).toEqual([
-      [{ store: 'rule-engine', reason: 'empty-document' }],
       [{ store: 'rule-engine', reason: 'empty-document' }],
     ]);
   });
@@ -260,11 +259,12 @@ describe('ruleEngineStore', () => {
     expect(logger.warn).not.toHaveBeenCalled();
   });
 
-  it('warns about empty rules with an exact private payload', async () => {
+  it('warns once about unchanged empty rules with an exact private payload', async () => {
     // Prepare
     const { store, source, logger } = prepare();
     source.mockResolvedValue({ checkout: { default: false, rules: {} } });
     // Act
+    await store.getAll({ secret: 'secret-context' });
     await store.getAll({ secret: 'secret-context' });
     // Assess
     expect(logger.warn).toHaveBeenCalledExactlyOnceWith({
@@ -272,7 +272,8 @@ describe('ruleEngineStore', () => {
       reason: 'empty-rules',
       name: 'checkout',
     });
-    expect(logger.debug).toHaveBeenCalledExactlyOnceWith({
+    expect(logger.debug).toHaveBeenCalledTimes(2);
+    expect(logger.debug).toHaveBeenLastCalledWith({
       store: 'rule-engine',
       name: 'checkout',
       outcome: 'default',

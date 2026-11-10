@@ -1,6 +1,9 @@
+import { SchemaValidationError } from '../errors.js';
 import type { Store, StoreResult } from '../types/index.js';
+import type { RuleEngineSnapshot } from '../types/RuleEngine.js';
 import { evaluate } from './evaluate.js';
-import type { RuleEngineStoreOptions } from './types.js';
+import { isJSONValue } from './json.js';
+import type { FlagDocument, RuleEngineStoreOptions } from './types.js';
 import { validate } from './validate.js';
 
 /**
@@ -9,7 +12,11 @@ import { validate } from './validate.js';
  * Uses strict boolean/number equality, throws for incompatible operands, rejects numeric Rule names that JavaScript reorders, and rejects falsy non-object rules.
  *
  * Membership Actions check strict array membership, own object keys, or Unicode code-point substrings.
- * Validates the entire document on every retrieval and propagates source errors unchanged.
+ * Retrieves the source on every call and propagates source errors unchanged.
+ * Keeps only the latest validated, compiled snapshot, keyed by JSON content without sorting keys.
+ * Validates the entire document when content changes; invalid replacements throw without replacing the snapshot.
+ * Empty-document and empty-rules warnings fire on validation, once per new document content rather than every call.
+ * Each call evaluates its captured, owned snapshot and returns copies of structured values.
  * Time Actions and MODULO_RANGE are not supported yet.
  *
  * @param {Object} options - Configure retrieval and logging
@@ -24,34 +31,49 @@ import { validate } from './validate.js';
  * const enabled = await flags.evaluate({ name: 'checkout_v2', default: false });
  * ```
  */
-const ruleEngineStore = ({
-  source,
-  logger,
-}: RuleEngineStoreOptions): Store => ({
-  name: 'rule-engine',
-  getMany: async (names, context) => {
-    const document = validate(await source(), logger);
-    const results: [string, StoreResult][] = [];
-    for (const name of new Set(names)) {
-      results.push([
-        name,
-        Object.hasOwn(document, name)
-          ? evaluate(name, document[name], context, logger)
-          : { found: false },
-      ]);
-    }
-    // Object.fromEntries keeps __proto__ and other inherited names as own keys.
-    return Object.fromEntries(results);
-  },
-  getAll: async (context) => {
-    const document = validate(await source(), logger);
-    const results: [string, StoreResult][] = [];
-    for (const [name, flag] of Object.entries(document)) {
-      results.push([name, evaluate(name, flag, context, logger)]);
-    }
-    return Object.fromEntries(results);
-  },
-});
+const ruleEngineStore = ({ source, logger }: RuleEngineStoreOptions): Store => {
+  let snapshot: RuleEngineSnapshot | undefined;
+
+  /** Retrieves the latest document and reuses validation only for unchanged JSON content. @internal */
+  const getSnapshot = async (): Promise<FlagDocument> => {
+    const document = await source();
+    // Check before stringifying: undefined, nonfinite numbers, and non-JSON objects can otherwise collide with valid JSON.
+    if (!isJSONValue(document))
+      throw new SchemaValidationError('Flag Document must contain JSON');
+    const key = JSON.stringify(document);
+    if (snapshot?.key === key) return snapshot.document;
+    // Validate an owned copy so neither source mutations nor concurrent retrievals change this call's rules.
+    const compiled = validate(structuredClone(document), logger);
+    snapshot = { key, document: compiled };
+    return compiled;
+  };
+
+  return {
+    name: 'rule-engine',
+    getMany: async (names, context) => {
+      const document = await getSnapshot();
+      const results: [string, StoreResult][] = [];
+      for (const name of new Set(names)) {
+        results.push([
+          name,
+          Object.hasOwn(document, name)
+            ? evaluate(name, document[name], context, logger)
+            : { found: false },
+        ]);
+      }
+      // Object.fromEntries keeps __proto__ and other inherited names as own keys.
+      return Object.fromEntries(results);
+    },
+    getAll: async (context) => {
+      const document = await getSnapshot();
+      const results: [string, StoreResult][] = [];
+      for (const [name, flag] of Object.entries(document)) {
+        results.push([name, evaluate(name, flag, context, logger)]);
+      }
+      return Object.fromEntries(results);
+    },
+  };
+};
 
 export type { RuleEngineStoreOptions } from './types.js';
 export { ruleEngineStore };

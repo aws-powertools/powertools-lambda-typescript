@@ -3,6 +3,7 @@ import type { GenericLogger } from '@aws-lambda-powertools/commons/types';
 import { ConditionEvaluationError } from '../errors.js';
 import type { EvaluationContext, StoreResult } from '../types/index.js';
 import { actions } from './actions.js';
+import { cloneJSONValue } from './json.js';
 import type { Condition, Flag } from './types.js';
 
 /**
@@ -25,12 +26,12 @@ const evaluate = (
         matches(name, rule, condition, context)
       )
     ) {
-      const value = definition.when_match;
+      const value = cloneJSONValue(definition.when_match);
       logger?.debug({ store: 'rule-engine', name, outcome: 'rule', rule });
       return { found: true, value, enabled: isTruthy(value) };
     }
   }
-  const value = flag.default;
+  const value = cloneJSONValue(flag.default);
   logger?.debug({ store: 'rule-engine', name, outcome: 'default' });
   return { found: true, value, enabled: isTruthy(value) };
 };

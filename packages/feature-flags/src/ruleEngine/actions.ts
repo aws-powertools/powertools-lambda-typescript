@@ -7,6 +7,7 @@ import {
   isString,
 } from '@aws-lambda-powertools/commons';
 import { RuleActions } from '../constants.js';
+import type { ModuloRange, TimeAction } from '../types/RuleEngine.js';
 import type { Comparator, RuleAction } from './types.js';
 
 /**
@@ -153,7 +154,7 @@ const compareArrays = (
 };
 
 /** Dispatches each supported Action to its strict comparator. @internal */
-const actions: Record<RuleAction, Comparator> = {
+const actions: Record<Exclude<RuleAction, TimeAction>, Comparator> = {
   [RuleActions.EQUALS]: isStrictEqual,
   [RuleActions.NOT_EQUALS]: (context, value) => !isStrictEqual(context, value),
   [RuleActions.KEY_GREATER_THAN_VALUE]: (context, value) =>
@@ -180,6 +181,16 @@ const actions: Record<RuleAction, Comparator> = {
     compareArrays(context, value, (matches, entries) => entries.some(matches)),
   [RuleActions.NONE_IN_VALUE]: (context, value) =>
     compareArrays(context, value, (matches, entries) => !entries.some(matches)),
+  [RuleActions.MODULO_RANGE]: (context, value) => {
+    if (!isNumber(context)) throw new TypeError('Incompatible operands');
+    // Validation guarantees integer BASE, START, and END with a positive BASE.
+    const { BASE: base, START: start, END: end } = value as ModuloRange;
+    const remainder = context % base;
+    // Python gives negative remainders the divisor's sign. Avoid adding the base
+    // to positive remainders, which can lose precision for fractional contexts.
+    const modulo = remainder < 0 ? remainder + base : remainder;
+    return start <= modulo && modulo <= end;
+  },
 };
 
 export { actions };

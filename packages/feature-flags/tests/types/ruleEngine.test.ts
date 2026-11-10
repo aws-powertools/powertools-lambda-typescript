@@ -28,6 +28,34 @@ describe('Type: ruleEngineStore', () => {
     expectTypeOf(store).toEqualTypeOf<Store>();
   });
 
+  it('accepts an optional Date-returning schedule clock', () => {
+    // Prepare
+    const options = {
+      source: async () => ({}),
+      now: () => new Date('2026-06-01T18:00:00Z'),
+    } satisfies RuleEngineStoreOptions;
+    // Act
+    const store = ruleEngineStore(options);
+    // Assess
+    expectTypeOf(store).toEqualTypeOf<Store>();
+    expectTypeOf<RuleEngineStoreOptions['now']>().toEqualTypeOf<
+      (() => Date) | undefined
+    >();
+  });
+
+  it('rejects clocks that return strings instead of Date objects', () => {
+    // Prepare
+    const options = {
+      source: async () => ({}),
+      now: () => '2026-06-01T18:00:00Z',
+    };
+    // Act
+    // @ts-expect-error Schedule clocks must return Date objects.
+    const store = ruleEngineStore(options);
+    // Assess
+    expectTypeOf(store).toEqualTypeOf<Store>();
+  });
+
   it('validates non-object JSON sources at runtime', async () => {
     // Prepare
     const store = ruleEngineStore({ source: async () => 1 });

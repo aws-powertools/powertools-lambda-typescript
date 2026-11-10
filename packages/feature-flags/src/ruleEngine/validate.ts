@@ -8,11 +8,7 @@ import type {
   GenericLogger,
   JSONValue,
 } from '@aws-lambda-powertools/commons/types';
-import {
-  FlagDocumentFields,
-  RuleActions,
-  UnsupportedRuleActions,
-} from '../constants.js';
+import { FlagDocumentFields, RuleActions } from '../constants.js';
 import { SchemaValidationError } from '../errors.js';
 import type {
   Condition,
@@ -21,6 +17,7 @@ import type {
   Rule,
   RuleAction,
 } from './types.js';
+import { validateScheduleAndModulo } from './validateScheduleAndModulo.js';
 
 /**
  * Validates an entire Python-format Flag Document and returns typed definitions.
@@ -136,10 +133,6 @@ const validateCondition = (condition: unknown, location: string): Condition => {
   const identifier = `${location}, key '${isString(key) ? key : '<invalid>'}', action '${isString(action) ? action : '<invalid>'}'`;
   if (!isString(action))
     throw new SchemaValidationError(`${identifier} action must be a string`);
-  if (Object.hasOwn(UnsupportedRuleActions, action))
-    throw new SchemaValidationError(
-      `${identifier}: ${action} is not supported yet`
-    );
   if (!isRuleAction(action))
     throw new SchemaValidationError(`${identifier} action is unknown`);
   if (!isString(key) || key.length === 0)
@@ -163,6 +156,7 @@ const validateCondition = (condition: unknown, location: string): Condition => {
   ) {
     throw new SchemaValidationError(`${identifier} value must be an array`);
   }
+  validateScheduleAndModulo(action, key, value, identifier);
   return { action, key, value };
 };
 

@@ -313,27 +313,6 @@ describe('Rule Engine validation', () => {
     }
   );
 
-  it.each([
-    'SCHEDULE_BETWEEN_TIME_RANGE',
-    'SCHEDULE_BETWEEN_DATETIME_RANGE',
-    'SCHEDULE_BETWEEN_DAYS_OF_WEEK',
-    'MODULO_RANGE',
-  ])('rejects deferred action %s by name', (action) => {
-    // Prepare
-    const document = documentWithCondition({
-      action,
-      key: 'tier',
-      value: null,
-    });
-    // Act
-    const act = () => validate(document);
-    // Assess
-    expect(act).toThrow(SchemaValidationError);
-    expect(act).toThrow(
-      `Flag 'checkout', rule 'premium', condition 0, key 'tier', action '${action}': ${action} is not supported yet`
-    );
-  });
-
   it.each([undefined, null, 1, false, [], {}, ''])(
     'rejects missing or invalid key %j',
     (key) => {

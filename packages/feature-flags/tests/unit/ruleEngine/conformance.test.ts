@@ -11,6 +11,7 @@ import {
   ruleEngineStore,
   SchemaValidationError,
 } from '../../../src/index.js';
+import { conditionDocument } from './scheduleFixtures.js';
 
 /** Reconstructs a Python functional-suite document for one Action. */
 const actionDocument = (action: string, value: JSONValue): JSONValue => ({
@@ -141,6 +142,91 @@ const actionFixtures: ActionFixture[] = [
 
 describe('Python 3.36.0 conformance', () => {
   describe('parity', () => {
+    // Ported from Python v3.36.0 test_time_based_actions.py and the MODULO_RANGE
+    // cases in test_feature_flags.py. Schedule keys bypass caller context.
+    it.each<{
+      action: string;
+      key: string;
+      value: JSONValue;
+      instant: string;
+      context: EvaluationContext;
+      expected: boolean;
+    }>([
+      {
+        action: 'SCHEDULE_BETWEEN_TIME_RANGE',
+        key: 'CURRENT_TIME',
+        value: { START: '23:30', END: '23:00' },
+        instant: '2022-02-15T10:00:00Z',
+        context: {},
+        expected: true,
+      },
+      {
+        action: 'SCHEDULE_BETWEEN_TIME_RANGE',
+        key: 'CURRENT_TIME',
+        value: { START: '23:30', END: '23:00' },
+        instant: '2022-02-15T23:15:00Z',
+        context: { CURRENT_TIME: '10:00' },
+        expected: false,
+      },
+      {
+        action: 'SCHEDULE_BETWEEN_DATETIME_RANGE',
+        key: 'CURRENT_DATETIME',
+        value: { START: '2022-10-05T12:15:00', END: '2022-10-10T12:15:00' },
+        instant: '2022-10-07T10:00:00Z',
+        context: {},
+        expected: true,
+      },
+      {
+        action: 'SCHEDULE_BETWEEN_DAYS_OF_WEEK',
+        key: 'CURRENT_DAY_OF_WEEK',
+        value: { DAYS: ['SATURDAY', 'SUNDAY'], TIMEZONE: 'Europe/Copenhagen' },
+        instant: '2022-11-19T09:00:00Z',
+        context: {},
+        expected: true,
+      },
+      {
+        action: 'MODULO_RANGE',
+        key: 'tenant_id',
+        value: { BASE: 100, START: 10, END: 35 },
+        instant: '2022-11-19T09:00:00Z',
+        context: { tenant_id: 345345435 },
+        expected: true,
+      },
+      {
+        action: 'MODULO_RANGE',
+        key: 'tenant_id',
+        value: { BASE: 10, START: 9, END: 9 },
+        instant: '2022-11-19T09:00:00Z',
+        context: { tenant_id: -1 },
+        expected: true,
+      },
+      {
+        action: 'MODULO_RANGE',
+        key: 'tenant_id',
+        value: { BASE: 5, START: 2, END: 3 },
+        instant: '2022-11-19T09:00:00Z',
+        context: { tenant_id: 7.5 },
+        expected: true,
+      },
+    ])(
+      'preserves time and modulo parity for $action at $instant',
+      async ({ action, key, value, instant, context, expected }) => {
+        // Prepare
+        const store = ruleEngineStore({
+          source: async () => conditionDocument([{ action, key, value }]),
+          now: () => new Date(instant),
+        });
+        // Act
+        const result = await store.getAll(context);
+        // Assess
+        expect(result.my_feature).toEqual({
+          found: true,
+          value: expected,
+          enabled: expected,
+        });
+      }
+    );
+
     it.each(actionFixtures)(
       'matches the Python action-table outcomes for $action',
       async ({ action, value, match, nonMatch }) => {
@@ -470,6 +556,51 @@ describe('Python 3.36.0 conformance', () => {
   });
 
   describe('documented differences from Python', () => {
+    // Issue #5903 forbids Z even on date-only bounds, which Python's Z replacement
+    // mistakenly validates as a naive midnight before evaluation fails to parse it.
+    it('rejects date-only Z bounds instead of accepting Python validation holes', async () => {
+      // Prepare
+      const store = ruleEngineStore({
+        source: async () =>
+          conditionDocument([
+            {
+              action: 'SCHEDULE_BETWEEN_DATETIME_RANGE',
+              key: 'CURRENT_DATETIME',
+              value: { START: '2026-06-01Z', END: '2026-06-02Z' },
+            },
+          ]),
+        now: () => new Date('2026-06-01T18:00:00Z'),
+      });
+      // Act
+      const result = store.getAll({});
+      // Assess
+      await expect(result).rejects.toBeInstanceOf(SchemaValidationError);
+    });
+
+    // Issue #5903 requires named IANA timezone strings, not dateutil's falsy defaults
+    // or POSIX/offset strings. This also prevents null from selecting the host zone.
+    it.each<JSONValue>([null, '', false, 0, [], 'UTC+2', '+01:00'])(
+      'rejects non-IANA TIMEZONE %j instead of applying dateutil defaults or offsets',
+      async (timezone) => {
+        // Prepare
+        const store = ruleEngineStore({
+          source: async () =>
+            conditionDocument([
+              {
+                action: 'SCHEDULE_BETWEEN_TIME_RANGE',
+                key: 'CURRENT_TIME',
+                value: { START: '17:00', END: '19:00', TIMEZONE: timezone },
+              },
+            ]),
+          now: () => new Date('2026-06-01T18:00:00Z'),
+        });
+        // Act
+        const result = store.getAll({});
+        // Assess
+        await expect(result).rejects.toBeInstanceOf(SchemaValidationError);
+      }
+    );
+
     it.each([
       { action: 'EQUALS', context: true, value: 1, expected: false },
       { action: 'NOT_EQUALS', context: true, value: 1, expected: true },
@@ -499,6 +630,18 @@ describe('Python 3.36.0 conformance', () => {
     );
 
     it.each([
+      // Issue #5903 requires numeric modulo contexts; Python accepts booleans as integers.
+      {
+        action: 'MODULO_RANGE',
+        context: true,
+        value: { BASE: 10, START: 0, END: 9 },
+      },
+      // The existing incompatible-operand difference also applies to modulo.
+      {
+        action: 'MODULO_RANGE',
+        context: '7',
+        value: { BASE: 10, START: 0, END: 9 },
+      },
       { action: 'STARTSWITH', context: 1, value: 100 },
       { action: 'KEY_LESS_THAN_VALUE', context: 'string', value: 100 },
       { action: 'IN', context: 1, value: 'premium' },

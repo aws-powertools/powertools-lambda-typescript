@@ -10,9 +10,11 @@ type RuleEngineStoreOptions = {
   source: () => Promise<JSONValue>;
   /** Logs validation warnings and evaluation outcomes without values. */
   logger?: GenericLogger;
+  /** Supplies the clock for schedule Actions, ignoring caller context. Defaults to () => new Date(). */
+  now?: () => Date;
 };
 
-/** Identifies a supported non-time Action. @internal */
+/** Identifies a supported Action. @internal */
 type RuleAction = (typeof RuleActions)[keyof typeof RuleActions];
 
 /** Compares a context operand with a document operand. @internal */

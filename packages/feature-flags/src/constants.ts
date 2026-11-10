@@ -10,7 +10,7 @@ const FlagDocumentFields = {
   VALUE: 'value',
 } as const;
 
-/** Names the supported non-time Actions. @internal */
+/** Names the supported Actions. @internal */
 const RuleActions = {
   EQUALS: 'EQUALS',
   NOT_EQUALS: 'NOT_EQUALS',
@@ -29,14 +29,29 @@ const RuleActions = {
   ALL_IN_VALUE: 'ALL_IN_VALUE',
   ANY_IN_VALUE: 'ANY_IN_VALUE',
   NONE_IN_VALUE: 'NONE_IN_VALUE',
-} as const;
-
-/** Names the Actions reserved for time and modulo support. @internal */
-const UnsupportedRuleActions = {
   SCHEDULE_BETWEEN_TIME_RANGE: 'SCHEDULE_BETWEEN_TIME_RANGE',
   SCHEDULE_BETWEEN_DATETIME_RANGE: 'SCHEDULE_BETWEEN_DATETIME_RANGE',
   SCHEDULE_BETWEEN_DAYS_OF_WEEK: 'SCHEDULE_BETWEEN_DAYS_OF_WEEK',
   MODULO_RANGE: 'MODULO_RANGE',
 } as const;
 
-export { FlagDocumentFields, RuleActions, UnsupportedRuleActions };
+/** Maps schedule Actions to their fixed clock keys. @internal */
+const TimeActionKeys = {
+  SCHEDULE_BETWEEN_TIME_RANGE: 'CURRENT_TIME',
+  SCHEDULE_BETWEEN_DATETIME_RANGE: 'CURRENT_DATETIME',
+  SCHEDULE_BETWEEN_DAYS_OF_WEEK: 'CURRENT_DAY_OF_WEEK',
+} as const;
+
+/** Lists Python's TimeValues.days(), including its harmless DAYS entry. @internal */
+const TimeDays = [
+  'DAYS',
+  'SUNDAY',
+  'MONDAY',
+  'TUESDAY',
+  'WEDNESDAY',
+  'THURSDAY',
+  'FRIDAY',
+  'SATURDAY',
+] as const;
+
+export { FlagDocumentFields, RuleActions, TimeActionKeys, TimeDays };

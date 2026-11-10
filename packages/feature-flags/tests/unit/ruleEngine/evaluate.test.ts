@@ -4,6 +4,7 @@ import {
   ConditionEvaluationError,
   type ContextValue,
 } from '../../../src/index.js';
+import { actions } from '../../../src/ruleEngine/actions.js';
 import { evaluate } from '../../../src/ruleEngine/evaluate.js';
 import type { Flag, RuleAction } from '../../../src/ruleEngine/types.js';
 
@@ -24,6 +25,155 @@ const evaluateCondition = (
   const flag = prepareFlag(action, value);
   return evaluate('checkout', flag, { tier: context });
 };
+
+/** Describes a membership comparison at the internal comparator boundary. */
+type MembershipCase = {
+  action: 'IN' | 'VALUE_IN_KEY';
+  name: string;
+  container: JSONValue;
+  needle: JSONValue;
+  expected: boolean | 'throw';
+};
+
+/** Covers JSON container and needle types without widening public context types. */
+const membershipFixtures: Omit<MembershipCase, 'action'>[] = [
+  {
+    name: 'array hit',
+    container: ['premium'],
+    needle: 'premium',
+    expected: true,
+  },
+  {
+    name: 'array miss',
+    container: ['gold'],
+    needle: 'premium',
+    expected: false,
+  },
+  {
+    name: 'strict boolean/number array mismatch',
+    container: [1],
+    needle: true,
+    expected: false,
+  },
+  {
+    name: 'object key hit',
+    container: { premium: 1 },
+    needle: 'premium',
+    expected: true,
+  },
+  {
+    name: 'object key miss',
+    container: { premium: 1 },
+    needle: 'gold',
+    expected: false,
+  },
+  {
+    name: 'inherited toString key',
+    container: {},
+    needle: 'toString',
+    expected: false,
+  },
+  {
+    name: 'inherited __proto__ key',
+    container: {},
+    needle: '__proto__',
+    expected: false,
+  },
+  {
+    name: 'own __proto__ key',
+    container: Object.fromEntries([['__proto__', 1]]),
+    needle: '__proto__',
+    expected: true,
+  },
+  {
+    name: 'stringified numeric object key',
+    container: { 1: 'value' },
+    needle: '1',
+    expected: true,
+  },
+  {
+    name: 'numeric object needle',
+    container: { 1: 'value' },
+    needle: 1,
+    expected: false,
+  },
+  {
+    name: 'boolean object needle',
+    container: { true: 'value' },
+    needle: true,
+    expected: false,
+  },
+  {
+    name: 'null object needle',
+    container: { null: 'value' },
+    needle: null,
+    expected: false,
+  },
+  { name: 'array object needle', container: {}, needle: [], expected: 'throw' },
+  {
+    name: 'object object needle',
+    container: {},
+    needle: {},
+    expected: 'throw',
+  },
+  {
+    name: 'substring hit',
+    container: 'premium',
+    needle: 'rem',
+    expected: true,
+  },
+  {
+    name: 'substring miss',
+    container: 'premium',
+    needle: 'gold',
+    expected: false,
+  },
+  { name: 'empty substring', container: 'premium', needle: '', expected: true },
+  { name: 'two empty strings', container: '', needle: '', expected: true },
+  {
+    name: 'empty string container',
+    container: '',
+    needle: 'premium',
+    expected: false,
+  },
+  {
+    name: 'numeric string needle',
+    container: 'premium',
+    needle: 1,
+    expected: 'throw',
+  },
+  {
+    name: 'array string needle',
+    container: 'premium',
+    needle: [],
+    expected: 'throw',
+  },
+  {
+    name: 'number container',
+    container: 1,
+    needle: 'premium',
+    expected: 'throw',
+  },
+  {
+    name: 'boolean container',
+    container: true,
+    needle: 'premium',
+    expected: 'throw',
+  },
+  {
+    name: 'null container',
+    container: null,
+    needle: 'premium',
+    expected: 'throw',
+  },
+];
+
+/** Exercises both membership directions for each JSON container and needle pair. */
+const membershipCases: MembershipCase[] = [];
+for (const action of ['IN', 'VALUE_IN_KEY'] as const) {
+  for (const fixture of membershipFixtures)
+    membershipCases.push({ action, ...fixture });
+}
 
 describe('Rule Engine evaluation', () => {
   it('returns the first matching Rule in insertion order', () => {
@@ -279,6 +429,12 @@ describe('Rule Engine evaluation', () => {
     { action: 'IN', context: 'b', value: [{ b: 1 }], expected: false },
     {
       action: 'KEY_IN_VALUE',
+      context: 'secret-context',
+      value: {},
+      expected: false,
+    },
+    {
+      action: 'KEY_IN_VALUE',
       context: [1, 2],
       value: [[1, 2]],
       expected: true,
@@ -359,6 +515,43 @@ describe('Rule Engine evaluation', () => {
     }
   );
 
+  it.each<{ action: RuleAction; expected: boolean }>([
+    { action: 'IN', expected: true },
+    { action: 'KEY_IN_VALUE', expected: true },
+    { action: 'NOT_IN', expected: false },
+    { action: 'KEY_NOT_IN_VALUE', expected: false },
+  ])('checks keys when $action has an object value', ({ action, expected }) => {
+    // Prepare
+    const flag = prepareFlag(action, { premium: 1, gold: 2 });
+    // Act
+    const result = evaluate('checkout', flag, { tier: 'premium' });
+    // Assess
+    expect(result).toEqual({ found: true, value: expected, enabled: expected });
+  });
+
+  it.each<{ action: RuleAction; value: JSONValue; expected: boolean }>([
+    { action: 'ALL_IN_VALUE', value: [{ premium: 1 }], expected: false },
+    { action: 'ANY_IN_VALUE', value: [{ premium: 1 }], expected: false },
+    { action: 'NONE_IN_VALUE', value: [{ premium: 1 }], expected: true },
+    { action: 'ALL_IN_VALUE', value: ['premium plan'], expected: false },
+    { action: 'ANY_IN_VALUE', value: ['premium plan'], expected: false },
+    { action: 'NONE_IN_VALUE', value: ['premium plan'], expected: true },
+  ])(
+    'keeps $action membership array-only for $value',
+    ({ action, value, expected }) => {
+      // Prepare
+      const flag = prepareFlag(action, value);
+      // Act
+      const result = evaluate('checkout', flag, { tier: ['premium'] });
+      // Assess
+      expect(result).toEqual({
+        found: true,
+        value: expected,
+        enabled: expected,
+      });
+    }
+  );
+
   it.each<{ action: RuleAction; context: ContextValue; value: JSONValue }>([
     {
       action: 'KEY_GREATER_THAN_VALUE',
@@ -380,14 +573,14 @@ describe('Rule Engine evaluation', () => {
     { action: 'STARTSWITH', context: 987654, value: 'secret-operand' },
     { action: 'STARTSWITH', context: 'secret-context', value: 987654 },
     { action: 'ENDSWITH', context: 'secret-context', value: null },
-    { action: 'IN', context: 'secret-context', value: 'secret-operand' },
-    { action: 'KEY_IN_VALUE', context: 'secret-context', value: {} },
+    { action: 'IN', context: 987654, value: 'secret-operand' },
+    { action: 'KEY_IN_VALUE', context: 'secret-context', value: 987654 },
     { action: 'NOT_IN', context: 'secret-context', value: 987654 },
     { action: 'KEY_NOT_IN_VALUE', context: 'secret-context', value: null },
     {
       action: 'VALUE_IN_KEY',
       context: 'secret-context',
-      value: 'secret-operand',
+      value: 987654,
     },
     { action: 'VALUE_NOT_IN_KEY', context: 987654, value: 'secret-operand' },
     { action: 'ALL_IN_VALUE', context: 'secret-context', value: [] },
@@ -411,6 +604,120 @@ describe('Rule Engine evaluation', () => {
         `Flag 'checkout', rule 'premium', key 'tier', action '${action}': incompatible operands`
       );
       expect(act).not.toThrow(/secret-context|secret-operand|987654/);
+    }
+  );
+
+  it.each(membershipCases)(
+    'checks $name for $action',
+    ({ action, container, needle, expected }) => {
+      // Prepare
+      const comparator = actions[action];
+      // Act
+      const act = () =>
+        action === 'IN'
+          ? comparator(needle, container)
+          : comparator(container, needle);
+      // Assess
+      if (expected === 'throw') {
+        expect(act).toThrow(TypeError);
+        expect(act).toThrow('Incompatible operands');
+      } else {
+        expect(act()).toBe(expected);
+      }
+    }
+  );
+
+  it.each([
+    {
+      name: 'a high surrogate inside a pair',
+      container: '😀',
+      needle: '\ud83d',
+      expected: false,
+    },
+    {
+      name: 'a low surrogate inside a pair',
+      container: '😀',
+      needle: '\ude00',
+      expected: false,
+    },
+    {
+      name: 'an astral substring',
+      container: 'a😀b',
+      needle: '😀',
+      expected: true,
+    },
+    {
+      name: 'an ASCII prefix before an astral character',
+      container: 'a😀',
+      needle: 'a',
+      expected: true,
+    },
+    {
+      name: 'a needle ending inside a pair',
+      container: 'a😀',
+      needle: 'a\ud83d',
+      expected: false,
+    },
+    {
+      name: 'a needle starting inside a pair',
+      container: '😀b',
+      needle: '\ude00b',
+      expected: false,
+    },
+    {
+      name: 'a standalone high surrogate',
+      container: '\ud83d',
+      needle: '\ud83d',
+      expected: true,
+    },
+    {
+      name: 'a standalone low surrogate',
+      container: '\ude00',
+      needle: '\ude00',
+      expected: true,
+    },
+  ])(
+    'checks substrings by code point for $name',
+    ({ container, needle, expected }) => {
+      // Prepare
+      const inFlag = prepareFlag('IN', container);
+      const valueInKeyFlag = prepareFlag('VALUE_IN_KEY', needle);
+      // Act
+      const inResult = evaluate('checkout', inFlag, { tier: needle });
+      const valueInKeyResult = evaluate('checkout', valueInKeyFlag, {
+        tier: container,
+      });
+      // Assess
+      expect(inResult).toEqual({
+        found: true,
+        value: expected,
+        enabled: expected,
+      });
+      expect(valueInKeyResult).toEqual({
+        found: true,
+        value: expected,
+        enabled: expected,
+      });
+    }
+  );
+
+  it.each<{ action: RuleAction; context: ContextValue; value: JSONValue }>([
+    { action: 'NOT_IN', context: 987654, value: 'secret-container' },
+    { action: 'KEY_NOT_IN_VALUE', context: 987654, value: 'secret-container' },
+    { action: 'VALUE_NOT_IN_KEY', context: 'secret-container', value: 987654 },
+  ])(
+    'propagates incompatible operands through $action negation',
+    ({ action, context, value }) => {
+      // Prepare
+      const flag = prepareFlag(action, value);
+      // Act
+      const act = () => evaluate('checkout', flag, { tier: context });
+      // Assess
+      expect(act).toThrow(ConditionEvaluationError);
+      expect(act).toThrow(
+        `Flag 'checkout', rule 'premium', key 'tier', action '${action}': incompatible operands`
+      );
+      expect(act).not.toThrow(/secret-container|987654/);
     }
   );
 

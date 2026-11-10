@@ -6,6 +6,7 @@ import type { JSONValue } from '@aws-lambda-powertools/commons/types';
 import { describe, expect, it } from 'vitest';
 import {
   ConditionEvaluationError,
+  type ContextValue,
   type EvaluationContext,
   ruleEngineStore,
   SchemaValidationError,
@@ -155,6 +156,113 @@ describe('Python 3.36.0 conformance', () => {
         });
         expect(unmatched).toEqual({
           my_feature: { found: true, value: false, enabled: false },
+        });
+      }
+    );
+
+    it.each<{
+      action: string;
+      kind: string;
+      context: ContextValue;
+      value: JSONValue;
+      expected: boolean;
+    }>([
+      {
+        action: 'IN',
+        kind: 'object keys',
+        context: 'premium',
+        value: { premium: 1 },
+        expected: true,
+      },
+      {
+        action: 'KEY_IN_VALUE',
+        kind: 'object keys',
+        context: 'premium',
+        value: { premium: 1 },
+        expected: true,
+      },
+      {
+        action: 'NOT_IN',
+        kind: 'object keys',
+        context: 'premium',
+        value: { premium: 1 },
+        expected: false,
+      },
+      {
+        action: 'KEY_NOT_IN_VALUE',
+        kind: 'object keys',
+        context: 'premium',
+        value: { premium: 1 },
+        expected: false,
+      },
+      {
+        action: 'IN',
+        kind: 'substrings',
+        context: 'rem',
+        value: 'premium',
+        expected: true,
+      },
+      {
+        action: 'KEY_IN_VALUE',
+        kind: 'substrings',
+        context: 'rem',
+        value: 'premium',
+        expected: true,
+      },
+      {
+        action: 'NOT_IN',
+        kind: 'substrings',
+        context: 'gold',
+        value: 'premium',
+        expected: true,
+      },
+      {
+        action: 'KEY_NOT_IN_VALUE',
+        kind: 'substrings',
+        context: 'rem',
+        value: 'premium',
+        expected: false,
+      },
+      {
+        action: 'VALUE_IN_KEY',
+        kind: 'string context',
+        context: 'premium',
+        value: 'rem',
+        expected: true,
+      },
+      {
+        action: 'VALUE_IN_KEY',
+        kind: 'string context',
+        context: 'premium',
+        value: 'gold',
+        expected: false,
+      },
+      {
+        action: 'VALUE_NOT_IN_KEY',
+        kind: 'string context',
+        context: 'premium',
+        value: 'gold',
+        expected: true,
+      },
+      {
+        action: 'VALUE_NOT_IN_KEY',
+        kind: 'string context',
+        context: 'premium',
+        value: 'rem',
+        expected: false,
+      },
+    ])(
+      'matches Python $kind membership for $action',
+      async ({ action, context, value, expected }) => {
+        // Prepare
+        const store = ruleEngineStore({
+          source: async () => actionDocument(action, value),
+        });
+        // Act
+        const result = await store.getAll({ fact: context });
+        // Assess
+        expect(result).toEqual({
+          my_feature: { found: true, value: expected, enabled: expected },
         });
       }
     );
@@ -374,6 +482,7 @@ describe('Python 3.36.0 conformance', () => {
     it.each([
       { action: 'STARTSWITH', context: 1, value: 100 },
       { action: 'KEY_LESS_THAN_VALUE', context: 'string', value: 100 },
+      { action: 'IN', context: 1, value: 'premium' },
       {
         action: 'ALL_IN_VALUE',
         context: 'not a list value',

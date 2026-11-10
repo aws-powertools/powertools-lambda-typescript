@@ -8,6 +8,7 @@ import { validate } from './validate.js';
  * Supports Powertools for Python 3.36.0 non-time Actions and missing-key semantics.
  * Uses strict boolean/number equality, throws for incompatible operands, rejects numeric Rule names that JavaScript reorders, and rejects falsy non-object rules.
  *
+ * Membership Actions check strict array membership, own object keys, or Unicode code-point substrings.
  * Validates the entire document on every retrieval and propagates source errors unchanged.
  * Time Actions and MODULO_RANGE are not supported yet.
  *

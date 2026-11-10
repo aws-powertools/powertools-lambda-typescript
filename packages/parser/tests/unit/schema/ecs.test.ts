@@ -160,4 +160,15 @@ describe('Schema: ECS', () => {
     // Act & Assess
     expect(() => EcsTaskStateChangeDetailSchema.parse(event)).toThrow();
   });
+
+  it('throws if a task attribute has no name', () => {
+    // Prepare
+    const event = {
+      ...structuredClone(detail),
+      attributes: [{ value: 'x86_64' }],
+    };
+
+    // Act & Assess
+    expect(() => EcsTaskStateChangeDetailSchema.parse(event)).toThrow();
+  });
 });

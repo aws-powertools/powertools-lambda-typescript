@@ -8,7 +8,8 @@ import { EventBridgeSchema } from './eventbridge.js';
 /**
  * Parses the `detail` of an Amazon ECS `ECS Task State Change` event.
  *
- * Fields the EventBridge schema registry marks as required are required here; every
+ * Top-level fields the EventBridge schema registry marks as required are required
+ * here; nested objects follow the shapes of the ECS API `Task` data type. Every
  * other field is optional. The stop fields (`stopCode`, `stoppedReason`, `stoppingAt`,
  * `executionStoppedAt`) appear once the task is stopping, `stoppedAt` once it is
  * `STOPPED`, and `containers[].exitCode` only for containers that started.
@@ -57,6 +58,7 @@ import { EventBridgeSchema } from './eventbridge.js';
  *
  * @see {@link EcsTaskStateChangeDetail | `EcsTaskStateChangeDetail`}
  * @see {@link https://docs.aws.amazon.com/AmazonECS/latest/developerguide/ecs_task_events.html}
+ * @see {@link https://docs.aws.amazon.com/AmazonECS/latest/APIReference/API_Task.html}
  */
 const EcsTaskStateChangeDetailSchema = z.object({
   attachments: z
@@ -79,7 +81,7 @@ const EcsTaskStateChangeDetailSchema = z.object({
   attributes: z
     .array(
       z.object({
-        name: z.string().optional(),
+        name: z.string(),
         value: z.string().optional(),
       })
     )

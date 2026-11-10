@@ -556,6 +556,25 @@ describe('Python 3.36.0 conformance', () => {
   });
 
   describe('documented differences from Python', () => {
+    // Issue #5903 requires integer JSON numbers for modulo bounds; Python accepts bool as int.
+    it('rejects boolean modulo bounds instead of treating them as integers', async () => {
+      // Prepare
+      const store = ruleEngineStore({
+        source: async () =>
+          conditionDocument([
+            {
+              action: 'MODULO_RANGE',
+              key: 'tenant_id',
+              value: { BASE: true, START: false, END: false },
+            },
+          ]),
+      });
+      // Act
+      const result = store.getAll({ tenant_id: 0 });
+      // Assess
+      await expect(result).rejects.toBeInstanceOf(SchemaValidationError);
+    });
+
     // Issue #5903 forbids Z even on date-only bounds, which Python's Z replacement
     // mistakenly validates as a naive midnight before evaluation fails to parse it.
     it('rejects date-only Z bounds instead of accepting Python validation holes', async () => {

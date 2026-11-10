@@ -1,6 +1,7 @@
+import { StoreNames } from '../constants.js';
 import type { Store, StoreResult } from '../types/index.js';
+import type { RuleEngineStoreOptions } from '../types/RuleEngine.js';
 import { evaluate } from './evaluate.js';
-import type { RuleEngineStoreOptions } from './types.js';
 import { validate } from './validate.js';
 
 /**
@@ -13,6 +14,7 @@ import { validate } from './validate.js';
  * Time Actions and MODULO_RANGE are not supported yet.
  *
  * @param {Object} options - Configure retrieval and logging
+ * @param {string} options.name - Name the Store, defaulting to `rule-engine`
  * @param {Function} options.source - Retrieve a Flag Document for each Store call
  * @param {GenericLogger} options.logger - Log warnings and outcomes without values
  * @example
@@ -27,8 +29,9 @@ import { validate } from './validate.js';
 const ruleEngineStore = ({
   source,
   logger,
+  name = StoreNames.RULE_ENGINE,
 }: RuleEngineStoreOptions): Store => ({
-  name: 'rule-engine',
+  name,
   getMany: async (names, context) => {
     const document = validate(await source(), logger);
     const results: [string, StoreResult][] = [];
@@ -53,5 +56,5 @@ const ruleEngineStore = ({
   },
 });
 
-export type { RuleEngineStoreOptions } from './types.js';
+export type { RuleEngineStoreOptions } from '../types/RuleEngine.js';
 export { ruleEngineStore };

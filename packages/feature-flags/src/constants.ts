@@ -1,3 +1,10 @@
+/** Names the built-in Stores. @internal */
+const StoreNames = {
+  RULE_ENGINE: 'rule-engine',
+  APPCONFIG: 'appconfig',
+  APPCONFIG_AGENT: 'appconfig-agent',
+} as const;
+
 /** Names the fields in a Python-format Flag Document. @internal */
 const FlagDocumentFields = {
   DEFAULT: 'default',
@@ -39,4 +46,30 @@ const UnsupportedRuleActions = {
   MODULO_RANGE: 'MODULO_RANGE',
 } as const;
 
-export { FlagDocumentFields, RuleActions, UnsupportedRuleActions };
+/** Lists retrieval error names that identify availability failures. @internal */
+const AvailabilityErrorNames = [
+  'ThrottlingException',
+  'TooManyRequestsException',
+  'InternalServerException',
+  'ServiceUnavailableException',
+  'TimeoutError',
+  'AbortError',
+] as const;
+
+/** Lists Node network error codes that identify availability failures. @internal */
+const AvailabilityErrorCodes = [
+  'ECONNRESET',
+  'ECONNREFUSED',
+  'ETIMEDOUT',
+  'ENOTFOUND',
+  'EAI_AGAIN',
+] as const;
+
+export {
+  AvailabilityErrorCodes,
+  AvailabilityErrorNames,
+  FlagDocumentFields,
+  RuleActions,
+  StoreNames,
+  UnsupportedRuleActions,
+};

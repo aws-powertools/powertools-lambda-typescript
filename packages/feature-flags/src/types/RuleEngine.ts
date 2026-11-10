@@ -6,6 +6,8 @@ import type { RuleActions } from '../constants.js';
 
 /** Configures retrieval and optional logging for a local rule engine Store. */
 type RuleEngineStoreOptions = {
+  /** Names the Store, defaulting to `rule-engine`. */
+  name?: string;
   /** Retrieves a Python-format Flag Document for each Store call. */
   source: () => Promise<JSONValue>;
   /** Logs validation warnings and evaluation outcomes without values. */

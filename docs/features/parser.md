@@ -83,6 +83,7 @@ When using the decorator or middleware, you can specify a schema to parse the ev
 | **PreTokenGenerationTriggerSchemaV2AndV3**      | Lambda Event Source payload for Amazon Cognito Pre Token Generation trigger v2 and v3                                 |
 | **ConnectOutboundCampaignsSchema**              | Lambda Event Source payload for Amazon Connect Outbound Campaigns custom actions                                      |
 | **DynamoDBStreamSchema**                        | Lambda Event Source payload for Amazon DynamoDB Streams                                                               |
+| **EcsTaskStateChangeSchema**                    | Amazon ECS `ECS Task State Change` event delivered by Amazon EventBridge                                              |
 | **EventBridgeSchema**                           | Lambda Event Source payload for Amazon EventBridge                                                                    |
 | **EventBridgeWithMetadataSchema**               | Nonempty batch of EventBridge `WITH_METADATA` records containing standard EventBridge events.                         |
 | **EventBridgeWithMetadataRecordSchema**         | One EventBridge `WITH_METADATA` record, including single-object delivery with `MaxBatchSize: 1`.                      |

@@ -1,0 +1,107 @@
+{
+  "version": "0",
+  "id": "791e85a2-5eb4-860d-7a75-1c915b8a9b81",
+  "detail-type": "ECS Task State Change",
+  "source": "aws.ecs",
+  "account": "123456789012",
+  "time": "2026-11-10T17:33:13Z",
+  "region": "eu-central-1",
+  "resources": [
+    "arn:aws:ecs:eu-central-1:123456789012:task/example-cluster/955a1cbb110241cb9985128773d4ee79"
+  ],
+  "detail": {
+    "attachments": [
+      {
+        "id": "0b6871e9-2f42-4642-b627-43225bc45c67",
+        "type": "eni",
+        "status": "DELETED",
+        "details": [
+          {
+            "name": "subnetId",
+            "value": "subnet-0b08f9a8165d1de70"
+          },
+          {
+            "name": "networkInterfaceId",
+            "value": "eni-06842982209883bf0"
+          },
+          {
+            "name": "macAddress",
+            "value": "06:ff:e1:96:60:11"
+          },
+          {
+            "name": "privateDnsName",
+            "value": "ip-10-0-197-170.eu-central-1.compute.internal"
+          },
+          {
+            "name": "privateIPv4Address",
+            "value": "10.0.197.170"
+          }
+        ]
+      }
+    ],
+    "attributes": [
+      {
+        "name": "ecs.cpu-architecture",
+        "value": "x86_64"
+      }
+    ],
+    "availabilityZone": "eu-central-1b",
+    "capacityProviderName": "FARGATE",
+    "clusterArn": "arn:aws:ecs:eu-central-1:123456789012:cluster/example-cluster",
+    "computeId": "9556a89483434567b51c6f655bd212e6",
+    "connectivity": "CONNECTED",
+    "connectivityAt": "2026-11-10T17:32:23.792Z",
+    "containers": [
+      {
+        "containerArn": "arn:aws:ecs:eu-central-1:123456789012:container/example-cluster/955a1cbb110241cb9985128773d4ee79/fab8cef5-a3e3-4e59-90e6-494f25527224",
+        "exitCode": 1,
+        "lastStatus": "STOPPED",
+        "name": "app",
+        "image": "public.ecr.aws/docker/library/busybox:latest",
+        "imageDigest": "sha256:a46257e06c82ad85242d0d38077d0a52d9896389ca60a1a59d3463db586e5fa4",
+        "runtimeId": "955a1cbb110241cb9985128773d4ee79-0527074092",
+        "taskArn": "arn:aws:ecs:eu-central-1:123456789012:task/example-cluster/955a1cbb110241cb9985128773d4ee79",
+        "networkInterfaces": [
+          {
+            "attachmentId": "0b6871e9-2f42-4642-b627-43225bc45c67",
+            "privateIpv4Address": "10.0.197.170"
+          }
+        ],
+        "cpu": "0"
+      }
+    ],
+    "cpu": "256",
+    "createdAt": "2026-11-10T17:32:19.967Z",
+    "desiredStatus": "STOPPED",
+    "enableExecuteCommand": false,
+    "ephemeralStorage": {
+      "sizeInGiB": 20
+    },
+    "executionStoppedAt": "2026-11-10T17:32:50.53Z",
+    "group": "family:exit1",
+    "launchType": "FARGATE",
+    "lastStatus": "STOPPED",
+    "memory": "512",
+    "overrides": {
+      "containerOverrides": [
+        {
+          "command": ["sh", "-c", "sleep 15; exit 1"],
+          "name": "app"
+        }
+      ]
+    },
+    "platformVersion": "1.4.0",
+    "pullStartedAt": "2026-11-10T17:32:32.711Z",
+    "pullStoppedAt": "2026-11-10T17:32:35.493Z",
+    "startedAt": "2026-11-10T17:32:35.532Z",
+    "startedBy": "powertools-probe",
+    "stoppingAt": "2026-11-10T17:33:00.569Z",
+    "stoppedAt": "2026-11-10T17:33:13.465Z",
+    "stoppedReason": "Essential container in task exited",
+    "stopCode": "EssentialContainerExited",
+    "taskArn": "arn:aws:ecs:eu-central-1:123456789012:task/example-cluster/955a1cbb110241cb9985128773d4ee79",
+    "taskDefinitionArn": "arn:aws:ecs:eu-central-1:123456789012:task-definition/exit1:1",
+    "updatedAt": "2026-11-10T17:33:13.465Z",
+    "version": 5
+  }
+}

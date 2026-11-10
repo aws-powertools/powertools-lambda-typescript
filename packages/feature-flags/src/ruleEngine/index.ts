@@ -1,6 +1,6 @@
 import type { Store, StoreResult } from '../types/index.js';
+import type { RuleEngineStoreOptions } from '../types/RuleEngine.js';
 import { evaluate } from './evaluate.js';
-import type { RuleEngineStoreOptions } from './types.js';
 import { validate } from './validate.js';
 
 /**
@@ -55,5 +55,5 @@ const ruleEngineStore = ({
   },
 });
 
-export type { RuleEngineStoreOptions } from './types.js';
+export type { RuleEngineStoreOptions } from '../types/RuleEngine.js';
 export { ruleEngineStore };

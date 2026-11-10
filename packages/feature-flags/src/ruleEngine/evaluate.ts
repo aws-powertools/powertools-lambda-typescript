@@ -2,8 +2,8 @@ import { isTruthy } from '@aws-lambda-powertools/commons';
 import type { GenericLogger } from '@aws-lambda-powertools/commons/types';
 import { ConditionEvaluationError } from '../errors.js';
 import type { EvaluationContext, StoreResult } from '../types/index.js';
+import type { Condition, Flag } from '../types/RuleEngine.js';
 import { actions } from './actions.js';
-import type { Condition, Flag } from './types.js';
 
 /**
  * Evaluates one flag using its first fully matching Rule or its Flag Default.

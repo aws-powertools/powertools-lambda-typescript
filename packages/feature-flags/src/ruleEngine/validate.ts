@@ -20,7 +20,7 @@ import type {
   FlagDocument,
   Rule,
   RuleAction,
-} from './types.js';
+} from '../types/RuleEngine.js';
 
 /**
  * Validates an entire Python-format Flag Document and returns typed definitions.

@@ -1,2 +1,2 @@
-export type { AppConfigStoreOptions } from './appConfigStore.js';
+export type { AppConfigStoreOptions } from '../types/AppConfigStore.js';
 export { appConfigStore } from './appConfigStore.js';

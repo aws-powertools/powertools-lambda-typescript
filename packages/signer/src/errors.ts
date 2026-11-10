@@ -15,8 +15,9 @@ class SignerError extends Error {
 /**
  * Error thrown when the signer is misconfigured.
  *
- * This is thrown eagerly at construction when the region cannot be determined,
- * and lazily during signing when credentials are missing or cannot be resolved.
+ * This is thrown eagerly at construction when the region cannot be determined
+ * or the SigV4a region set is invalid, and lazily during signing when the
+ * required AWS credentials environment variables are missing.
  */
 class SignerConfigError extends SignerError {
   public constructor(message: string, options?: ErrorOptions) {

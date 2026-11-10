@@ -5,11 +5,12 @@ description: Utility
 
 <!-- markdownlint-disable MD043 --->
 
-This utility provides a way to sign HTTP requests to AWS services using the [AWS Signature Version 4 (SigV4)](https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_sigv4_signing.html){target="_blank"} signing process, so you can call IAM-authenticated endpoints such as Amazon API Gateway, AWS Lambda function URLs, or AWS AppSync from within your Lambda functions.
+This utility provides a way to sign HTTP requests to AWS services using the [AWS Signature Version 4 (SigV4) and Signature Version 4A (SigV4a)](https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_sigv4_signing.html){target="_blank"} signing processes.
+You can call IAM-authenticated endpoints such as Amazon API Gateway, AWS Lambda function URLs, AWS AppSync, or Amazon S3 Multi-Region Access Points from within your Lambda functions.
 
 ## Key features
 
-* Sign web-standard `Request` objects with AWS Signature Version 4
+* Sign web-standard `Request` objects with AWS Signature Version 4 or Version 4A
 * Drop-in signed `fetch` for sending signed requests in one step
 * Works with any HTTP client by exposing the signed request and headers
 * Reads credentials and region from the Lambda runtime by default, with no extra dependencies
@@ -59,9 +60,21 @@ Set `service: 's3'` and use the bucket's region when signing S3 requests. S3 use
 
 The signer preserves the request URL and follows S3's interpretation of its path. S3 treats a raw `+` as a space; use `%2B` in the URL to address an object key containing a literal `+`.
 
+### Signing for multiple regions with SigV4a
+
+Use `SigV4aSigner` from `@aws-lambda-powertools/signer/sigv4a` for services that support SigV4a, such as [Amazon S3 Multi-Region Access Points](https://docs.aws.amazon.com/AmazonS3/latest/userguide/MultiRegionAccessPointRequests.html){target="_blank"}. SigV4a uses ECDSA signatures that are valid across a configured set of AWS regions.
+
+```typescript hl_lines="2 6"
+--8<-- "examples/snippets/signer/sigv4a.ts"
+```
+
+The `regionSet` option is required. Pass a non-empty array of regions, wildcard patterns such as `['us-west-*']`, or `['*']` to allow all regions. The signer includes these values in the signed `X-Amz-Region-Set` header. It does not use `AWS_REGION` to determine this set.
+
+`SigV4aSigner` supports the same request inputs, credentials, and `createSignedFetcher` integration as `SigV4Signer`. You can also call `sign()` directly to obtain a signed `Request` for another HTTP client.
+
 ### Configuring the region
 
-The region defaults to the `AWS_REGION` environment variable that Lambda sets. You can override it, for example to sign requests for a service in a different region.
+For `SigV4Signer`, the region defaults to the `AWS_REGION` environment variable that Lambda sets. You can override it, for example to sign requests for a service in a different region.
 
 ```typescript hl_lines="5"
 --8<-- "examples/snippets/signer/region.ts"
@@ -81,11 +94,11 @@ When running outside of Lambda, the standard AWS credentials environment variabl
 
 The signer throws typed errors that all extend `SignerError`:
 
-| Error                 | When it is thrown                                                                                          |
-| --------------------- | ---------------------------------------------------------------------------------------------------------- |
-| `SignerConfigError`   | The region cannot be determined (at construction), or credentials are missing or cannot be resolved.       |
-| `RequestSigningError` | Signing the request fails, for example because the request body cannot be read or replayed.                |
-| `SignerError`         | Base class for the errors above. Catch this to handle any signer error.                                    |
+| Error                 | When it is thrown                                                                                                              |
+| --------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
+| `SignerConfigError`   | The region cannot be determined or the SigV4a region set is invalid (at construction), or environment credentials are missing. |
+| `RequestSigningError` | Signing the request fails, for example because the request body cannot be read or replayed.                                    |
+| `SignerError`         | Base class for the errors above. Catch this to handle any signer error.                                                        |
 
 You can import them from the `@aws-lambda-powertools/signer/errors` subpath.
 

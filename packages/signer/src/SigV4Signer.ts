@@ -67,11 +67,26 @@ class SigV4Signer implements Signer {
     this.#credentials = options.credentials ?? credentialsFromEnv;
   }
 
+  /**
+   * Signs a request and preserves its fetch options in the returned request.
+   *
+   * @param input - The URL string, URL, or request to sign.
+   * @param init - Optional request options matching the `fetch` init argument.
+   */
   public async sign(
     input: string | URL | Request,
     init?: RequestInit
   ): Promise<Request> {
-    const request = new Request(input, init);
+    const request = new Request(
+      input,
+      input instanceof Request
+        ? {
+            ...init,
+            referrer: init?.referrer ?? input.referrer,
+            referrerPolicy: init?.referrerPolicy ?? input.referrerPolicy,
+          }
+        : init
+    );
     const credentials = await this.#resolveCredentials();
     const httpRequest = await this.#toHttpRequest(request);
 
@@ -178,9 +193,12 @@ class SigV4Signer implements Signer {
       headers.set(key, value);
     }
 
-    return new Request(original.url, {
+    return new Request(original, {
       method: signed.method,
       headers,
+      // Request resets referrer settings when init contains overrides.
+      referrer: original.referrer,
+      referrerPolicy: original.referrerPolicy,
       body: signed.body as BodyInit | null | undefined,
     });
   }

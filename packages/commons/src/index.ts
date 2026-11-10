@@ -41,6 +41,7 @@ export {
   METRICS_KEY,
   TRACER_KEY,
 } from './middleware/constants.js';
+export { compareStringsByCodePoint } from './stringUtils.js';
 export {
   getType,
   isIntegerNumber,

@@ -1,3 +1,4 @@
+import { compareStringsByCodePoint } from '@aws-lambda-powertools/commons';
 import type {
   JSONArray,
   JSONObject,
@@ -18,28 +19,6 @@ import type {
   JSONObject as JSONObjectType,
 } from './types.js';
 import { arityCheck, typeCheck } from './utils.js';
-
-/**
- * Compares strings lexicographically by Unicode code point without normalization.
- *
- * @param left - The first string to compare
- * @param right - The second string to compare
- * @internal
- */
-const compareStrings = (left: string, right: string): number => {
-  let index = 0;
-  while (index < left.length && index < right.length) {
-    // The bounds above ensure both code points exist at this index.
-    const leftCodePoint = left.codePointAt(index) as number;
-    const rightCodePoint = right.codePointAt(index) as number;
-    if (leftCodePoint !== rightCodePoint) {
-      return leftCodePoint - rightCodePoint;
-    }
-    index += leftCodePoint > 0xffff ? 2 : 1;
-  }
-
-  return left.length - right.length;
-};
 
 /**
  * A class that contains the built-in JMESPath functions.
@@ -234,7 +213,7 @@ class Functions {
     }
     // Math.max doesn't work with strings (returns NaN), so we use reduce for lexicographic comparison
     return (arg as string[]).reduce((a, b) =>
-      compareStrings(a, b) > 0 ? a : b
+      compareStringsByCodePoint(a, b) > 0 ? a : b
     );
   }
 
@@ -277,7 +256,9 @@ class Functions {
         typeof max.visited === 'string' &&
         typeof current.visited === 'string'
       ) {
-        return compareStrings(max.visited, current.visited) > 0 ? max : current;
+        return compareStringsByCodePoint(max.visited, current.visited) > 0
+          ? max
+          : current;
       }
       // We can safely cast visited to number | string here because we've already
       // checked the type at runtime above and we know that it's either a number or a string
@@ -324,7 +305,7 @@ class Functions {
     }
     // Math.min doesn't work with strings (returns NaN), so we use reduce for lexicographic comparison
     return (arg as string[]).reduce((a, b) =>
-      compareStrings(a, b) < 0 ? a : b
+      compareStringsByCodePoint(a, b) < 0 ? a : b
     );
   }
 
@@ -367,7 +348,9 @@ class Functions {
         typeof min.visited === 'string' &&
         typeof current.visited === 'string'
       ) {
-        return compareStrings(min.visited, current.visited) < 0 ? min : current;
+        return compareStringsByCodePoint(min.visited, current.visited) < 0
+          ? min
+          : current;
       }
       // We can safely cast visited to number | string here because we've already
       // checked the type at runtime above and we know that it's either a number or a string
@@ -419,7 +402,7 @@ class Functions {
       if (typeof a === 'string') {
         // We can safely cast a and b to string here because the signature decorator
         // already enforces that all elements are of the same type
-        return compareStrings(a, b as string);
+        return compareStringsByCodePoint(a, b as string);
       }
 
       // We can safely cast a and b to number here because the signature decorator
@@ -465,7 +448,7 @@ class Functions {
           return a.index - b.index; // Make the sort stable
         }
         if (typeof a.visited === 'string' && typeof b.visited === 'string') {
-          return compareStrings(a.visited, b.visited);
+          return compareStringsByCodePoint(a.visited, b.visited);
         }
         // We can safely cast visited to number | string here because we've already
         // checked the type at runtime above and we know that it's either a number or a string

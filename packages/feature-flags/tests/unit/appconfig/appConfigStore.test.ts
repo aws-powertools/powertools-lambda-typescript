@@ -13,7 +13,11 @@ import { Uint8ArrayBlobAdapter } from '@smithy/util-stream';
 import { mockClient } from 'aws-sdk-client-mock';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { appConfigStore } from '../../../src/appconfig/index.js';
-import { FeatureFlags } from '../../../src/index.js';
+import {
+  FeatureFlags,
+  FeatureFlagsError,
+  SchemaValidationError,
+} from '../../../src/index.js';
 
 describe('appConfigStore', () => {
   const client = mockClient(AppConfigDataClient);
@@ -58,21 +62,89 @@ describe('appConfigStore', () => {
     });
   });
 
-  it('selects an embedded Flag Document', async () => {
+  it('selects an embedded Flag Document with the supplied search function', async () => {
     // Prepare
+    const document = { settings: { flags: { checkout: { default: true } } } };
+    const envelopeSearchFn = vi.fn().mockReturnValue(document.settings.flags);
     client.on(GetLatestConfigurationCommand).resolves({
-      Configuration: Uint8ArrayBlobAdapter.fromString(
-        JSON.stringify({ settings: { flags: { checkout: { default: true } } } })
-      ),
+      Configuration: Uint8ArrayBlobAdapter.fromString(JSON.stringify(document)),
     });
     const flags = new FeatureFlags({
-      store: appConfigStore({ ...options, envelope: 'settings.flags' }),
+      store: appConfigStore({
+        ...options,
+        envelope: 'settings.flags',
+        envelopeSearchFn,
+      }),
     });
     // Act
     const result = await flags.evaluate({ name: 'checkout', default: false });
     // Assess
     expect(result).toBe(true);
+    expect(envelopeSearchFn).toHaveBeenCalledExactlyOnceWith(
+      'settings.flags',
+      document
+    );
   });
+
+  it.each([{ envelope: 'secret-expression' }, { envelopeSearchFn: vi.fn() }])(
+    'rejects incomplete envelope options %j before retrieval',
+    (envelopeOptions) => {
+      // Prepare
+      const getSpy = vi.spyOn(AppConfigProvider.prototype, 'get');
+      // Act
+      // @ts-expect-error Exercise JavaScript callers that supply only one envelope option.
+      const act = () => appConfigStore({ ...options, ...envelopeOptions });
+      // Assess
+      expect(act).toThrow(FeatureFlagsError);
+      expect(act).toThrow(
+        "Options 'envelope' and 'envelopeSearchFn' must be provided together"
+      );
+      expect(act).not.toThrow('secret-expression');
+      expect(getSpy).not.toHaveBeenCalled();
+      expect(client.calls()).toHaveLength(0);
+    }
+  );
+
+  it('propagates a supplied search function error unchanged', async () => {
+    // Prepare
+    const error = new Error('search failed');
+    const envelopeSearchFn = vi.fn(() => {
+      throw error;
+    });
+    const flags = new FeatureFlags({
+      store: appConfigStore({
+        ...options,
+        envelope: 'settings.flags',
+        envelopeSearchFn,
+      }),
+    });
+    // Act
+    const result = flags.evaluate({ name: 'checkout', default: false });
+    // Assess
+    await expect(result).rejects.toBe(error);
+  });
+
+  it.each([undefined, null])(
+    'rejects an absent search result %j',
+    async (selection) => {
+      // Prepare
+      const envelopeSearchFn = vi.fn().mockReturnValue(selection);
+      const flags = new FeatureFlags({
+        store: appConfigStore({
+          ...options,
+          envelope: 'settings.flags',
+          envelopeSearchFn,
+        }),
+      });
+      // Act
+      const result = flags.evaluate({ name: 'checkout', default: false });
+      // Assess
+      await expect(result).rejects.toBeInstanceOf(SchemaValidationError);
+      await expect(result).rejects.toThrow(
+        "Envelope 'settings.flags' did not select a Flag Document"
+      );
+    }
+  );
 
   it.each([
     { name: 'ThrottlingException' },

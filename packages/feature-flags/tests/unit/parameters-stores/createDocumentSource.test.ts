@@ -48,15 +48,21 @@ describe('createDocumentSource', () => {
   it('selects an embedded Flag Document', async () => {
     // Prepare
     const document = { settings: { flags: { checkout: { default: true } } } };
+    const envelopeSearchFn = vi.fn().mockReturnValue(document.settings.flags);
     const source = createDocumentSource({
       storeName: 'appconfig',
       retrieve: async () => document,
       envelope: 'settings.flags',
+      envelopeSearchFn,
     });
     // Act
     const result = await source();
     // Assess
     expect(result).toBe(document.settings.flags);
+    expect(envelopeSearchFn).toHaveBeenCalledExactlyOnceWith(
+      'settings.flags',
+      document
+    );
   });
 
   it('rejects an envelope miss without using the whole document', async () => {
@@ -68,6 +74,7 @@ describe('createDocumentSource', () => {
         secret: 'secret-document',
       }),
       envelope: 'settings.flags',
+      envelopeSearchFn: () => undefined,
     });
     // Act
     const result = source();

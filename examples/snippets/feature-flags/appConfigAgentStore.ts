@@ -1,7 +1,7 @@
 import { FeatureFlags } from '@aws-lambda-powertools/feature-flags';
 import { appConfigAgentStore } from '@aws-lambda-powertools/feature-flags/appconfig-agent';
 
-// Install Parameters and JMESPath, and attach the AppConfig Agent Lambda extension.
+// Install Parameters and attach the AppConfig Agent Lambda extension.
 const store = appConfigAgentStore({
   application: 'my-app',
   environment: 'prod',

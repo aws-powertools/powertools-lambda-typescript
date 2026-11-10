@@ -4,15 +4,57 @@ import { describe, expect, it } from 'vitest';
 
 describe('AppConfig bundle boundaries', () => {
   it.each([
-    { entry: 'index.ts', format: 'esm', includesSdk: false },
-    { entry: 'index.ts', format: 'cjs', includesSdk: false },
-    { entry: 'appconfig-agent/index.ts', format: 'esm', includesSdk: false },
-    { entry: 'appconfig-agent/index.ts', format: 'cjs', includesSdk: false },
-    { entry: 'appconfig/index.ts', format: 'esm', includesSdk: true },
-    { entry: 'appconfig/index.ts', format: 'cjs', includesSdk: true },
+    {
+      entry: 'index.ts',
+      format: 'esm',
+      includesSdk: false,
+      includesJmespath: false,
+    },
+    {
+      entry: 'index.ts',
+      format: 'cjs',
+      includesSdk: false,
+      includesJmespath: false,
+    },
+    {
+      entry: 'appconfig-agent/index.ts',
+      format: 'esm',
+      includesSdk: false,
+      includesJmespath: false,
+    },
+    {
+      entry: 'appconfig-agent/index.ts',
+      format: 'cjs',
+      includesSdk: false,
+      includesJmespath: false,
+    },
+    {
+      entry: 'appconfig/index.ts',
+      format: 'esm',
+      includesSdk: true,
+      includesJmespath: false,
+    },
+    {
+      entry: 'appconfig/index.ts',
+      format: 'cjs',
+      includesSdk: true,
+      includesJmespath: false,
+    },
+    {
+      entry: 'envelope/index.ts',
+      format: 'esm',
+      includesSdk: false,
+      includesJmespath: true,
+    },
+    {
+      entry: 'envelope/index.ts',
+      format: 'cjs',
+      includesSdk: false,
+      includesJmespath: true,
+    },
   ] as const)(
-    'bundles $entry as $format with includesSdk=$includesSdk',
-    async ({ entry, format, includesSdk }) => {
+    'bundles $entry as $format with includesSdk=$includesSdk and includesJmespath=$includesJmespath',
+    async ({ entry, format, includesSdk, includesJmespath }) => {
       // Prepare
       // Resolve workspace dependencies to source, independent of CI's cached build output.
       const alias = {
@@ -30,6 +72,12 @@ describe('AppConfig bundle boundaries', () => {
         ),
         '@aws-lambda-powertools/jmespath': fileURLToPath(
           new URL('../../../jmespath/src/index.ts', import.meta.url)
+        ),
+        '@aws-lambda-powertools/jmespath/functions': fileURLToPath(
+          new URL(
+            '../../../jmespath/src/PowertoolsFunctions.ts',
+            import.meta.url
+          )
         ),
         '@aws-lambda-powertools/parameters/appconfig-agent': fileURLToPath(
           new URL(
@@ -61,6 +109,10 @@ describe('AppConfig bundle boundaries', () => {
         path.includes('@aws-sdk/client-appconfigdata')
       );
       expect(sdkInputs.length > 0).toBe(includesSdk);
+      const jmespathInputs = Object.keys(result.metafile.inputs).filter(
+        (path) => path.includes('/jmespath/')
+      );
+      expect(jmespathInputs.length > 0).toBe(includesJmespath);
     }
   );
 });

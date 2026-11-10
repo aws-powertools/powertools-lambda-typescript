@@ -61,6 +61,16 @@
         "default": "./lib/esm/appconfig-agent/index.js"
       }
     },
+    "./envelope": {
+      "require": {
+        "types": "./lib/cjs/envelope/index.d.ts",
+        "default": "./lib/cjs/envelope/index.js"
+      },
+      "import": {
+        "types": "./lib/esm/envelope/index.d.ts",
+        "default": "./lib/esm/envelope/index.js"
+      }
+    },
     "./errors": {
       "require": {
         "types": "./lib/cjs/errors.d.ts",
@@ -95,6 +105,10 @@
       "appconfig-agent": [
         "lib/cjs/appconfig-agent/index.d.ts",
         "lib/esm/appconfig-agent/index.d.ts"
+      ],
+      "envelope": [
+        "lib/cjs/envelope/index.d.ts",
+        "lib/esm/envelope/index.d.ts"
       ],
       "errors": [
         "lib/cjs/errors.d.ts",

@@ -1,5 +1,6 @@
 import type { JSONValue } from '@aws-lambda-powertools/commons/types';
 import { StoreUnavailableError } from '../errors.js';
+import type { EnvelopeOptions } from '../types/Envelope.js';
 import { isAvailabilityFailure } from './classify.js';
 import { applyEnvelope } from './envelope.js';
 
@@ -8,19 +9,19 @@ import { applyEnvelope } from './envelope.js';
  * @param {Object} options - Configure retrieval and document selection
  * @param {string} options.storeName - Name the Store in availability errors
  * @param {Function} options.retrieve - Retrieve JSON with missing configurations rejected
- * @param {string} options.envelope - Select an embedded Flag Document with JMESPath
+ * @param {string} options.envelope - Select an embedded Flag Document
+ * @param {Function} options.envelopeSearchFn - Apply the envelope expression
  * @internal
  */
 const createDocumentSource =
   ({
     storeName,
     retrieve,
-    envelope,
+    ...envelopeOptions
   }: {
     storeName: string;
     retrieve: () => Promise<JSONValue>;
-    envelope?: string;
-  }): (() => Promise<JSONValue>) =>
+  } & EnvelopeOptions): (() => Promise<JSONValue>) =>
   async () => {
     let document: JSONValue;
     try {
@@ -33,7 +34,7 @@ const createDocumentSource =
       }
       throw error;
     }
-    return applyEnvelope(document, envelope);
+    return applyEnvelope(document, envelopeOptions);
   };
 
 export { createDocumentSource };

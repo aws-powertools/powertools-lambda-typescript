@@ -1,7 +1,7 @@
 import { FeatureFlags } from '@aws-lambda-powertools/feature-flags';
 import { appConfigStore } from '@aws-lambda-powertools/feature-flags/appconfig';
 
-// Install Parameters, JMESPath, and the AppConfigData SDK client for this sub-path.
+// Install Parameters and the AppConfigData SDK client for this sub-path.
 const store = appConfigStore({
   application: 'my-app',
   environment: 'prod',

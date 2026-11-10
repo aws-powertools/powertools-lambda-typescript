@@ -6,7 +6,11 @@ import {
 } from '@aws-lambda-powertools/parameters/errors';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { appConfigAgentStore } from '../../../src/appconfig-agent/index.js';
-import { FeatureFlags } from '../../../src/index.js';
+import {
+  FeatureFlags,
+  FeatureFlagsError,
+  SchemaValidationError,
+} from '../../../src/index.js';
 
 describe('appConfigAgentStore', () => {
   const fetchMock = vi.fn<typeof fetch>();
@@ -45,19 +49,86 @@ describe('appConfigAgentStore', () => {
     );
   });
 
-  it('selects an embedded Flag Document', async () => {
+  it('selects an embedded Flag Document with the supplied search function', async () => {
     // Prepare
-    fetchMock.mockResolvedValue(
-      new Response('{"settings":{"flags":{"checkout":{"default":true}}}}')
-    );
+    const document = { settings: { flags: { checkout: { default: true } } } };
+    const envelopeSearchFn = vi.fn().mockReturnValue(document.settings.flags);
+    fetchMock.mockResolvedValue(Response.json(document));
     const flags = new FeatureFlags({
-      store: appConfigAgentStore({ ...options, envelope: 'settings.flags' }),
+      store: appConfigAgentStore({
+        ...options,
+        envelope: 'settings.flags',
+        envelopeSearchFn,
+      }),
     });
     // Act
     const result = await flags.evaluate({ name: 'checkout', default: false });
     // Assess
     expect(result).toBe(true);
+    expect(envelopeSearchFn).toHaveBeenCalledExactlyOnceWith(
+      'settings.flags',
+      document
+    );
   });
+
+  it.each([{ envelope: 'secret-expression' }, { envelopeSearchFn: vi.fn() }])(
+    'rejects incomplete envelope options %j before retrieval',
+    (envelopeOptions) => {
+      // Prepare
+      const config = { ...options, ...envelopeOptions };
+      // Act
+      // @ts-expect-error Exercise JavaScript callers that supply only one envelope option.
+      const act = () => appConfigAgentStore(config);
+      // Assess
+      expect(act).toThrow(FeatureFlagsError);
+      expect(act).toThrow(
+        "Options 'envelope' and 'envelopeSearchFn' must be provided together"
+      );
+      expect(act).not.toThrow('secret-expression');
+      expect(fetchMock).not.toHaveBeenCalled();
+    }
+  );
+
+  it('propagates a supplied search function error unchanged', async () => {
+    // Prepare
+    const error = new Error('search failed');
+    const envelopeSearchFn = vi.fn(() => {
+      throw error;
+    });
+    const flags = new FeatureFlags({
+      store: appConfigAgentStore({
+        ...options,
+        envelope: 'settings.flags',
+        envelopeSearchFn,
+      }),
+    });
+    // Act
+    const result = flags.evaluate({ name: 'checkout', default: false });
+    // Assess
+    await expect(result).rejects.toBe(error);
+  });
+
+  it.each([undefined, null])(
+    'rejects an absent search result %j',
+    async (selection) => {
+      // Prepare
+      const envelopeSearchFn = vi.fn().mockReturnValue(selection);
+      const flags = new FeatureFlags({
+        store: appConfigAgentStore({
+          ...options,
+          envelope: 'settings.flags',
+          envelopeSearchFn,
+        }),
+      });
+      // Act
+      const result = flags.evaluate({ name: 'checkout', default: false });
+      // Assess
+      await expect(result).rejects.toBeInstanceOf(SchemaValidationError);
+      await expect(result).rejects.toThrow(
+        "Envelope 'settings.flags' did not select a Flag Document"
+      );
+    }
+  );
 
   it.each([500, 503, 429])(
     'returns the Fallback for Agent status %i',

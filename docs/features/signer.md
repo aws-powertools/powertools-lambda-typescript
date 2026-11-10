@@ -41,6 +41,8 @@ If all you want is to sign and immediately send the request, use `createSignedFe
 
 Because the returned function is a drop-in `fetch`, you can also pass it to libraries that accept a custom `fetch` implementation.
 
+The signed request preserves fetch options such as `signal`, `redirect`, and `cache`. Abort and timeout signals continue to apply to the returned request and to requests sent through `createSignedFetcher`.
+
 ## Using other HTTP clients
 
 Signing and sending are deliberately kept separate, so you can use the signed request with any HTTP client (for example `axios`, `got`, a generated SDK client, or a request interceptor). Call `sign()` to obtain a signed `Request`, then read its `url`, `method`, and `headers`.

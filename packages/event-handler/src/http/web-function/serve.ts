@@ -1,11 +1,14 @@
+import { AsyncLocalStorage } from 'node:async_hooks';
 import { randomUUID } from 'node:crypto';
 import {
   createServer,
   type IncomingMessage,
-  type OutgoingHttpHeaders,
   type Server,
   type ServerResponse,
 } from 'node:http';
+import { Readable } from 'node:stream';
+import { pipeline } from 'node:stream/promises';
+import type streamWeb from 'node:stream/web';
 import { InvokeStore, InvokeStoreBase } from '@aws/lambda-invoke-store';
 import {
   enableInvokeStore,
@@ -17,12 +20,67 @@ import type {
   WebFunctionServeOptions,
   WebFunctionShutdownOptions,
 } from '../../types/http.js';
+import { WEB_FUNCTION_DEFAULTS } from '../constants.js';
+import { webHeadersToApiGatewayHeaders } from '../converters.js';
 import type { Router } from '../Router.js';
 
-const DEFAULT_ENDPOINT = '127.0.0.1:3000';
-const DEFAULT_TIMEOUT_SECONDS = 60;
-const DEFAULT_MEMORY_SIZE = '2048';
-const DEFAULT_SHUTDOWN_TIMEOUT_MS = 500;
+/**
+ * Values stored in a request's InvokeStore context.
+ */
+type RequestStoreContext = Record<string | symbol, unknown>;
+
+/**
+ * InvokeStore that keeps the context of each request in its own
+ * `AsyncLocalStorage` slot.
+ *
+ * Used when the store that already exists in the process doesn't isolate
+ * concurrent requests, for example one that the AWS SDK created before
+ * {@link serve | `serve()`} ran locally.
+ */
+class RequestScopedStore extends InvokeStoreBase {
+  readonly #storage = new AsyncLocalStorage<RequestStoreContext>();
+
+  public getContext(): RequestStoreContext | undefined {
+    return this.#storage.getStore();
+  }
+
+  public hasContext(): boolean {
+    return this.#storage.getStore() !== undefined;
+  }
+
+  public get<T = unknown>(key: string | symbol): T | undefined {
+    return this.#storage.getStore()?.[key] as T | undefined;
+  }
+
+  public set<T = unknown>(key: string | symbol, value: T): void {
+    if (this.isProtectedKey(key)) {
+      throw new Error(
+        `Cannot modify protected Lambda context field: ${String(key)}`
+      );
+    }
+    const context = this.#storage.getStore();
+    if (context === undefined) {
+      throw new Error('No context available');
+    }
+    context[key] = value;
+  }
+
+  public run<T>(context: RequestStoreContext, fn: () => T): T {
+    return this.#storage.run(context, fn);
+  }
+}
+
+/**
+ * Checks whether a store keeps the contexts of concurrent requests apart, by
+ * looking for a context that outlives the `run()` call that set it.
+ *
+ * @param store - The store to check
+ */
+const isRequestScoped = (store: InvokeStoreBase): boolean => {
+  const probe: RequestStoreContext = {};
+  store.run(probe, () => undefined);
+  return store.getContext() !== probe;
+};
 
 /**
  * Creates the Lambda context for a single request.
@@ -50,7 +108,7 @@ const createContext = (requestId: string, timeoutMs: number): Context => {
     invokedFunctionArn: '',
     memoryLimitInMB: getStringFromEnv({
       key: 'AWS_LAMBDA_FUNCTION_MEMORY_SIZE',
-      defaultValue: DEFAULT_MEMORY_SIZE,
+      defaultValue: WEB_FUNCTION_DEFAULTS.MEMORY_SIZE,
     }),
     awsRequestId: requestId,
     logGroupName: getStringFromEnv({
@@ -94,7 +152,9 @@ const toWebRequest = (req: IncomingMessage, signal: AbortSignal): Request => {
 
 /**
  * Writes a Web Response to a Node.js response, streaming the body with
- * backpressure and stopping when the client disconnects.
+ * backpressure.
+ *
+ * A client that disconnects mid-response ends the write without an error.
  *
  * @param response - The Web Response returned by the router
  * @param res - The outgoing Node.js response
@@ -103,38 +163,32 @@ const writeWebResponse = async (
   response: Response,
   res: ServerResponse
 ): Promise<void> => {
-  const headers: OutgoingHttpHeaders = {};
-  for (const [name, value] of response.headers) {
-    if (name !== 'set-cookie') headers[name] = value;
-  }
-  const cookies = response.headers.getSetCookie();
-  if (cookies.length > 0) headers['set-cookie'] = cookies;
-  res.writeHead(response.status, headers);
+  const { headers, cookies } = webHeadersToApiGatewayHeaders(
+    response.headers,
+    'ApiGatewayV2'
+  );
+  res.writeHead(
+    response.status,
+    cookies === undefined ? headers : { ...headers, 'set-cookie': cookies }
+  );
 
   if (response.body === null) {
     res.end();
     return;
   }
 
-  const reader = response.body.getReader();
-  const cancel = () => {
-    reader.cancel().catch(() => undefined);
-  };
-  res.once('close', cancel);
   try {
-    for (;;) {
-      const { done, value } = await reader.read();
-      if (done || res.destroyed) break;
-      if (!res.write(value)) {
-        await new Promise((resolve) => {
-          res.once('drain', resolve);
-          res.once('close', resolve);
-        });
-      }
+    await pipeline(
+      Readable.fromWeb(response.body as streamWeb.ReadableStream),
+      res
+    );
+  } catch (error) {
+    if (
+      (error as NodeJS.ErrnoException).code === 'ERR_STREAM_PREMATURE_CLOSE'
+    ) {
+      return;
     }
-    res.end();
-  } finally {
-    res.off('close', cancel);
+    throw error;
   }
 };
 
@@ -142,13 +196,20 @@ const writeWebResponse = async (
  * Gets the InvokeStore that isolates concurrent requests and turns on
  * per-request scoping in Powertools utilities.
  *
- * On a Web Function the runtime has already created the store and this
- * returns it. When running locally the store is created here, with isolation
- * forced, before scoping is enabled, so that no utility ever reads scoped
- * state while the store is missing.
+ * On a Web Function the runtime has already created an isolating store and
+ * this returns it. When running locally the store is created here, with
+ * isolation forced. If a store that doesn't isolate requests already exists,
+ * for example because the AWS SDK created one, it's replaced for Powertools
+ * with a {@link RequestScopedStore | `RequestScopedStore`}. Scoping is only
+ * enabled once an isolating store is in place, so that no utility ever reads
+ * scoped state while the store is missing.
  */
 const getRequestStore = async (): Promise<InvokeStoreBase> => {
-  const store = await InvokeStore.getInstanceAsync(true);
+  let store = await InvokeStore.getInstanceAsync(true);
+  if (!isRequestScoped(store)) {
+    store = new RequestScopedStore();
+    globalThis.awslambda.InvokeStore = store;
+  }
   enableInvokeStore();
   return store;
 };
@@ -163,21 +224,22 @@ const getRequestStore = async (): Promise<InvokeStoreBase> => {
  * ends once nothing keeps the event loop alive, or when Lambda kills it.
  *
  * @param server - The server to close
- * @param getInFlight - Returns a promise that settles when no request is in flight
+ * @param waitUntilIdle - Returns a promise that settles when no request is in flight
  * @param options - The shutdown options
  */
 const handleShutdown = (
   server: Server,
-  getInFlight: () => Promise<void>,
+  waitUntilIdle: () => Promise<void>,
   options: WebFunctionShutdownOptions
 ): void => {
-  const timeoutMs = options.timeoutMs ?? DEFAULT_SHUTDOWN_TIMEOUT_MS;
+  const timeoutMs =
+    options.timeoutMs ?? WEB_FUNCTION_DEFAULTS.SHUTDOWN_TIMEOUT_MS;
   process.once('SIGTERM', async () => {
     server.close();
     server.closeIdleConnections();
     let timer: NodeJS.Timeout | undefined;
     await Promise.race([
-      getInFlight(),
+      waitUntilIdle(),
       new Promise((resolve) => {
         timer = setTimeout(resolve, timeoutMs);
       }),
@@ -232,13 +294,14 @@ const serve = async <TEnv extends Env>(
   app: Router<TEnv>,
   options?: WebFunctionServeOptions
 ): Promise<Server> => {
-  const timeoutMs = (options?.timeoutSeconds ?? DEFAULT_TIMEOUT_SECONDS) * 1000;
+  const timeoutMs =
+    (options?.timeoutSeconds ?? WEB_FUNCTION_DEFAULTS.TIMEOUT_SECONDS) * 1000;
   const store = await getRequestStore();
   const { REQUEST_ID } = InvokeStoreBase.PROTECTED_KEYS;
 
   let inFlight = 0;
   let onIdle: (() => void) | undefined;
-  const getInFlight = () =>
+  const waitUntilIdle = () =>
     inFlight === 0
       ? Promise.resolve()
       : new Promise<void>((resolve) => {
@@ -253,7 +316,7 @@ const serve = async <TEnv extends Env>(
       if (!res.writableFinished) abortController.abort();
     });
 
-    const resolve = async () => {
+    const respond = async () => {
       const response = await app.resolveRequest(
         toWebRequest(req, abortController.signal),
         createContext(requestId, timeoutMs),
@@ -264,9 +327,9 @@ const serve = async <TEnv extends Env>(
 
     // The Web Function runtime already runs each request in its own context.
     if (store.hasContext()) {
-      return resolve();
+      return respond();
     }
-    return store.run({ [REQUEST_ID]: requestId }, resolve);
+    return store.run({ [REQUEST_ID]: requestId }, respond);
   };
 
   const server = createServer((req, res) => {
@@ -286,12 +349,12 @@ const serve = async <TEnv extends Env>(
   });
 
   if (options?.shutdown !== false) {
-    handleShutdown(server, getInFlight, options?.shutdown ?? {});
+    handleShutdown(server, waitUntilIdle, options?.shutdown ?? {});
   }
 
   const endpoint = getStringFromEnv({
     key: 'AWS_LAMBDA_HTTP_ENDPOINT',
-    defaultValue: DEFAULT_ENDPOINT,
+    defaultValue: WEB_FUNCTION_DEFAULTS.ENDPOINT,
   });
   const separator = endpoint.lastIndexOf(':');
   const host = endpoint.slice(0, separator);
@@ -308,4 +371,4 @@ const serve = async <TEnv extends Env>(
   return server;
 };
 
-export { createContext, serve };
+export { createContext, RequestScopedStore, serve };

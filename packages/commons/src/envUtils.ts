@@ -3,6 +3,7 @@ import {
   AWS_EXECUTION_ENV_VAR,
   AWS_LAMBDA_INITIALIZATION_TYPE_ENV_VAR,
   AWS_LAMBDA_MAX_CONCURRENCY,
+  INVOKE_STORE_OPT_IN_KEY,
   POWERTOOLS_DEV_ENV_VAR,
   POWERTOOLS_SERVICE_NAME_ENV_VAR,
   WEB_FUNCTION_EXECUTION_ENV_SUFFIX,
@@ -327,14 +328,12 @@ const isRequestXRaySampled = (): boolean => {
 };
 
 /**
- * Key of the global flag set by {@link enableInvokeStore | `enableInvokeStore()`}.
+ * The global object, viewed as a record keyed by symbols.
  *
- * Registered with `Symbol.for()` so that every copy of this package loaded in
- * the process shares the flag, for example when a bundler duplicates it.
+ * Safe because it's only used to read and write the boolean stored under
+ * {@link INVOKE_STORE_OPT_IN_KEY}, which no other code owns.
  */
-const INVOKE_STORE_OPT_IN = Symbol.for(
-  'aws-lambda-powertools.commons.useInvokeStore'
-);
+const invokeStoreOptIn = globalThis as Record<symbol, unknown>;
 
 /**
  * Opt the current process into keeping invocation-scoped state in the Lambda
@@ -349,7 +348,7 @@ const INVOKE_STORE_OPT_IN = Symbol.for(
  * @internal
  */
 const enableInvokeStore = (): void => {
-  (globalThis as Record<symbol, unknown>)[INVOKE_STORE_OPT_IN] = true;
+  invokeStoreOptIn[INVOKE_STORE_OPT_IN_KEY] = true;
 };
 
 /**
@@ -383,7 +382,7 @@ const shouldUseInvokeStore = (): boolean => {
   ) {
     return true;
   }
-  return (globalThis as Record<symbol, unknown>)[INVOKE_STORE_OPT_IN] === true;
+  return invokeStoreOptIn[INVOKE_STORE_OPT_IN_KEY] === true;
 };
 
 /**

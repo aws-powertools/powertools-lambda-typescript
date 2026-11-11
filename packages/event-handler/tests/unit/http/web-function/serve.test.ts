@@ -4,19 +4,24 @@ import { type AddressInfo, connect } from 'node:net';
 import { setTimeout as sleep } from 'node:timers/promises';
 import { InvokeStore, InvokeStoreBase } from '@aws/lambda-invoke-store';
 import { shouldUseInvokeStore } from '@aws-lambda-powertools/commons/utils/env';
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { HttpStatusCodes, Router } from '../../../../src/http/index.js';
 import {
   createContext,
+  RequestScopedStore,
   serve,
 } from '../../../../src/http/web-function/serve.js';
 import type { WebFunctionServeOptions } from '../../../../src/types/http.js';
 
+const INVOKE_STORE_OPT_IN_KEY = Symbol.for(
+  'aws-lambda-powertools.commons.useInvokeStore'
+);
 const servers: Server[] = [];
 const spies: { mockRestore: () => void }[] = [];
 
 /**
- * Closes the servers and restores the spies created by a test.
+ * Closes the servers, restores the spies, and resets the process-wide state
+ * that `serve()` changes, so that each test starts from scratch.
  */
 const cleanUp = () => {
   for (const server of servers.splice(0)) {
@@ -25,6 +30,8 @@ const cleanUp = () => {
   }
   for (const spy of spies.splice(0)) spy.mockRestore();
   vi.unstubAllEnvs();
+  InvokeStore._testing?.reset();
+  delete (globalThis as Record<symbol, unknown>)[INVOKE_STORE_OPT_IN_KEY];
 };
 
 /**
@@ -39,13 +46,22 @@ const start = async (app: Router, options?: WebFunctionServeOptions) => {
 };
 
 /**
- * Sends a raw HTTP request and returns the raw response.
+ * Opens a raw TCP connection to the server and sends a request on it.
  */
-const sendRaw = async (baseUrl: string, payload: string) => {
+const openRaw = async (baseUrl: string, payload: string) => {
   const { port } = new URL(baseUrl);
   const socket = connect(Number(port), '127.0.0.1');
   await once(socket, 'connect');
-  socket.end(payload);
+  socket.write(payload);
+  return socket;
+};
+
+/**
+ * Sends a raw HTTP request and returns the raw response.
+ */
+const sendRaw = async (baseUrl: string, payload: string) => {
+  const socket = await openRaw(baseUrl, payload);
+  socket.end();
   let response = '';
   for await (const chunk of socket) response += chunk;
   return response;
@@ -65,7 +81,24 @@ const captureShutdownListener = () => {
   return listeners;
 };
 
+/**
+ * Registers a route whose handler never returns, and resolves when a request
+ * reaches it.
+ */
+const addHangingRoute = (app: Router) => {
+  const started = Promise.withResolvers<void>();
+  app.get('/hang', () => {
+    started.resolve();
+    return new Promise(() => {});
+  });
+  return started.promise;
+};
+
 describe('Function: serve', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
   afterEach(cleanUp);
 
   it('routes requests received on the address in AWS_LAMBDA_HTTP_ENDPOINT', async () => {
@@ -107,6 +140,7 @@ describe('Function: serve', () => {
   it('rejects when the address is already in use', async () => {
     // Prepare
     const occupied = createServer();
+    servers.push(occupied);
     occupied.listen(0, '127.0.0.1');
     await once(occupied, 'listening');
     const { port } = occupied.address() as AddressInfo;
@@ -116,7 +150,6 @@ describe('Function: serve', () => {
     await expect(serve(new Router(), { shutdown: false })).rejects.toThrow(
       'EADDRINUSE'
     );
-    occupied.close();
   });
 
   it('passes the request body to the handler', async () => {
@@ -202,38 +235,77 @@ describe('Function: serve', () => {
     expect(new TextDecoder().decode(second?.value)).toBe('second');
   });
 
-  it('writes response bodies larger than the socket buffer', async () => {
+  it('stops reading the response body while the client is not reading', async () => {
     // Prepare
     const app = new Router();
-    const bytes = new Uint8Array(4 * 1024 * 1024).fill(7);
-    app.get('/large', () => bytes.buffer);
+    const chunk = new Uint8Array(64 * 1024);
+    let pulls = 0;
+    app.get('/firehose', () => {
+      return new ReadableStream(
+        {
+          pull(controller) {
+            pulls++;
+            controller.enqueue(chunk);
+          },
+        },
+        { highWaterMark: 0 }
+      );
+    });
     const baseUrl = await start(app);
+    const socket = await openRaw(
+      baseUrl,
+      'GET /firehose HTTP/1.1\r\nHost: localhost\r\n\r\n'
+    );
+    socket.pause();
 
     // Act
-    const res = await fetch(`${baseUrl}/large`);
+    await sleep(200);
+    const pullsWhilePaused = pulls;
+    await sleep(100);
 
     // Assess
-    expect(new Uint8Array(await res.arrayBuffer())).toEqual(bytes);
+    expect(pullsWhilePaused).toBeGreaterThan(0);
+    expect(pulls - pullsWhilePaused).toBeLessThan(5);
+    socket.destroy();
   });
 
-  it('stops the response stream and aborts the request when the client disconnects', async () => {
+  it('aborts the request signal when the client disconnects', async () => {
     // Prepare
     const app = new Router();
-    const aborted = vi.fn();
-    const cancelled = vi.fn();
+    const aborted = Promise.withResolvers<void>();
     app.get('/forever', ({ req }) => {
-      req.signal.addEventListener('abort', aborted);
-      let timer: NodeJS.Timeout;
+      req.signal.addEventListener('abort', () => aborted.resolve());
       return new ReadableStream({
-        start(controller) {
-          timer = setInterval(
-            () => controller.enqueue(new TextEncoder().encode('tick')),
-            10
-          );
-        },
+        pull: (controller) =>
+          sleep(10).then(() =>
+            controller.enqueue(new TextEncoder().encode('tick'))
+          ),
+      });
+    });
+    const baseUrl = await start(app);
+    const client = new AbortController();
+    const res = await fetch(`${baseUrl}/forever`, { signal: client.signal });
+    await res.body?.getReader().read();
+
+    // Act
+    client.abort();
+
+    // Assess
+    await expect(aborted.promise).resolves.toBeUndefined();
+  });
+
+  it('cancels the response stream without failing when the client disconnects', async () => {
+    // Prepare
+    const app = new Router();
+    const cancelled = Promise.withResolvers<void>();
+    app.get('/forever', () => {
+      return new ReadableStream({
+        pull: (controller) =>
+          sleep(10).then(() =>
+            controller.enqueue(new TextEncoder().encode('tick'))
+          ),
         cancel() {
-          clearInterval(timer);
-          cancelled();
+          cancelled.resolve();
           throw new Error('cancel failed');
         },
       });
@@ -247,10 +319,28 @@ describe('Function: serve', () => {
     client.abort();
 
     // Assess
-    await vi.waitFor(() => {
-      expect(aborted).toHaveBeenCalled();
-      expect(cancelled).toHaveBeenCalled();
+    await cancelled.promise;
+    await sleep(20);
+    expect(console.error).not.toHaveBeenCalled();
+  });
+
+  it('does not abort the request signal when the response completes', async () => {
+    // Prepare
+    const app = new Router();
+    let signal: AbortSignal | undefined;
+    app.get('/test', ({ req }) => {
+      signal = req.signal;
+      return { ok: true };
     });
+    const baseUrl = await start(app);
+
+    // Act
+    const res = await fetch(`${baseUrl}/test`);
+    await res.json();
+    await sleep(20);
+
+    // Assess
+    expect(signal?.aborted).toBe(false);
   });
 
   it('responds with a 500 when the request cannot be converted', async () => {
@@ -290,9 +380,11 @@ describe('Function: serve', () => {
     // Assess
     expect(res.status).toBe(HttpStatusCodes.OK);
     await expect(res.text()).rejects.toThrow();
-    expect(console.error).toHaveBeenCalledWith(
-      'Failed to serve request',
-      expect.objectContaining({ message: 'stream failed' })
+    await vi.waitFor(() =>
+      expect(console.error).toHaveBeenCalledWith(
+        'Failed to serve request',
+        expect.objectContaining({ message: 'stream failed' })
+      )
     );
   });
 
@@ -351,6 +443,29 @@ describe('Function: serve', () => {
     expect(await res.json()).toEqual({ greeting: 'hello' });
   });
 
+  it.each([
+    { timeoutSeconds: 5, min: 4_000, max: 5_000 },
+    { timeoutSeconds: undefined, min: 59_000, max: 60_000 },
+  ])(
+    'reports the remaining time of a $timeoutSeconds second timeout',
+    async ({ timeoutSeconds, min, max }) => {
+      // Prepare
+      const app = new Router();
+      app.get('/time', ({ context }) => ({
+        remaining: context.getRemainingTimeInMillis(),
+      }));
+      const baseUrl = await start(app, { timeoutSeconds });
+
+      // Act
+      const res = await fetch(`${baseUrl}/time`);
+
+      // Assess
+      const { remaining } = (await res.json()) as { remaining: number };
+      expect(remaining).toBeGreaterThanOrEqual(min);
+      expect(remaining).toBeLessThanOrEqual(max);
+    }
+  );
+
   describe('request context', () => {
     it('uses the request ID that Lambda assigned', async () => {
       // Prepare
@@ -389,30 +504,56 @@ describe('Function: serve', () => {
       );
     });
 
-    it('keeps the Powertools state of concurrent requests apart', async () => {
+    it('opts Powertools into keeping state per request', async () => {
       // Prepare
-      const app = new Router();
-      app.get('/id', async () => {
-        await sleep(20);
-        return { requestId: globalThis.awslambda?.InvokeStore?.getRequestId() };
-      });
-      const baseUrl = await start(app);
+      const before = shouldUseInvokeStore();
 
       // Act
-      const responses = await Promise.all(
-        ['REQ1', 'REQ2', 'REQ3'].map((id) =>
-          fetch(`${baseUrl}/id`, { headers: { 'lambda-web-request-id': id } })
-        )
-      );
+      await start(new Router());
 
       // Assess
+      expect(before).toBe(false);
       expect(shouldUseInvokeStore()).toBe(true);
-      expect(await Promise.all(responses.map((res) => res.json()))).toEqual([
-        { requestId: 'REQ1' },
-        { requestId: 'REQ2' },
-        { requestId: 'REQ3' },
-      ]);
     });
+
+    it.each([
+      { description: 'no store exists yet', createStore: async () => {} },
+      {
+        description: 'a store that does not isolate requests already exists',
+        createStore: async () => {
+          // Like the AWS SDK does, without AWS_LAMBDA_MAX_CONCURRENCY
+          await InvokeStore.getInstanceAsync();
+        },
+      },
+    ])(
+      'keeps the request IDs of concurrent requests apart when $description',
+      async ({ createStore }) => {
+        // Prepare
+        await createStore();
+        const app = new Router();
+        app.get('/id', async () => {
+          await sleep(20);
+          return {
+            requestId: globalThis.awslambda?.InvokeStore?.getRequestId(),
+          };
+        });
+        const baseUrl = await start(app);
+
+        // Act
+        const responses = await Promise.all(
+          ['REQ1', 'REQ2', 'REQ3'].map((id) =>
+            fetch(`${baseUrl}/id`, { headers: { 'lambda-web-request-id': id } })
+          )
+        );
+
+        // Assess
+        expect(await Promise.all(responses.map((res) => res.json()))).toEqual([
+          { requestId: 'REQ1' },
+          { requestId: 'REQ2' },
+          { requestId: 'REQ3' },
+        ]);
+      }
+    );
 
     it('reuses the request context created by the Web Functions runtime', async () => {
       // Prepare
@@ -448,6 +589,45 @@ describe('Function: serve', () => {
   });
 });
 
+describe('Class: RequestScopedStore', () => {
+  it('scopes values to the context of the current run', () => {
+    // Prepare
+    const store = new RequestScopedStore();
+
+    // Act
+    const inside = store.run({}, () => {
+      store.set('key', 'value');
+      return { value: store.get('key'), hasContext: store.hasContext() };
+    });
+
+    // Assess
+    expect(inside).toEqual({ value: 'value', hasContext: true });
+    expect(store.hasContext()).toBe(false);
+    expect(store.getContext()).toBeUndefined();
+    expect(store.get('key')).toBeUndefined();
+  });
+
+  it('throws when setting a value outside of a run', () => {
+    // Prepare
+    const store = new RequestScopedStore();
+
+    // Act & Assess
+    expect(() => store.set('key', 'value')).toThrow('No context available');
+  });
+
+  it('throws when setting a protected key', () => {
+    // Prepare
+    const store = new RequestScopedStore();
+
+    // Act & Assess
+    expect(() =>
+      store.run({}, () =>
+        store.set(InvokeStoreBase.PROTECTED_KEYS.REQUEST_ID, 'REQ123')
+      )
+    ).toThrow('Cannot modify protected Lambda context field');
+  });
+});
+
 describe('Function: createContext', () => {
   afterEach(() => {
     vi.unstubAllEnvs();
@@ -457,7 +637,7 @@ describe('Function: createContext', () => {
     // Prepare
     vi.stubEnv('AWS_LAMBDA_FUNCTION_NAME', 'my-web-function');
     vi.stubEnv('AWS_LAMBDA_FUNCTION_VERSION', 'rev-abc12');
-    vi.stubEnv('AWS_LAMBDA_FUNCTION_MEMORY_SIZE', '2048');
+    vi.stubEnv('AWS_LAMBDA_FUNCTION_MEMORY_SIZE', '1024');
     vi.stubEnv('AWS_LAMBDA_LOG_GROUP_NAME', '/aws/lambda/web/my-web-function');
     vi.stubEnv('AWS_LAMBDA_LOG_STREAM_NAME', 'stream');
 
@@ -470,7 +650,7 @@ describe('Function: createContext', () => {
         awsRequestId: 'REQ123',
         functionName: 'my-web-function',
         functionVersion: 'rev-abc12',
-        memoryLimitInMB: '2048',
+        memoryLimitInMB: '1024',
         logGroupName: '/aws/lambda/web/my-web-function',
         logStreamName: 'stream',
         invokedFunctionArn: '',
@@ -527,6 +707,10 @@ describe('Function: createContext', () => {
 });
 
 describe('Function: serve - shutdown', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
   afterEach(cleanUp);
 
   it('does not handle SIGTERM when shutdown is false', async () => {
@@ -540,9 +724,13 @@ describe('Function: serve - shutdown', () => {
     expect(listeners).toHaveLength(0);
   });
 
-  it('stops accepting connections on SIGTERM', async () => {
+  it('stops accepting connections on SIGTERM without exiting the process', async () => {
     // Prepare
     const listeners = captureShutdownListener();
+    const exit = vi.spyOn(process, 'exit').mockImplementation(() => {
+      throw new Error('process.exit called');
+    });
+    spies.push(exit);
     vi.stubEnv('AWS_LAMBDA_HTTP_ENDPOINT', '127.0.0.1:0');
     const server = await serve(new Router());
     servers.push(server);
@@ -552,6 +740,22 @@ describe('Function: serve - shutdown', () => {
 
     // Assess
     expect(server.listening).toBe(false);
+    expect(exit).not.toHaveBeenCalled();
+  });
+
+  it('runs onShutdown right away when no request is in flight', async () => {
+    // Prepare
+    const listeners = captureShutdownListener();
+    const onShutdown = vi.fn();
+    await start(new Router(), { shutdown: { onShutdown } });
+    const startedAt = performance.now();
+
+    // Act
+    await listeners[0]();
+
+    // Assess
+    expect(onShutdown).toHaveBeenCalledOnce();
+    expect(performance.now() - startedAt).toBeLessThan(100);
   });
 
   it('runs onShutdown after the in-flight requests finish', async () => {
@@ -589,27 +793,47 @@ describe('Function: serve - shutdown', () => {
     expect(order).toEqual(['request', 'shutdown']);
   });
 
-  it('runs onShutdown when requests are still in flight after timeoutMs', async () => {
+  it.each([
+    { timeoutMs: 50, min: 40, max: 400 },
+    { timeoutMs: undefined, min: 450, max: 1_000 },
+  ])(
+    'runs onShutdown after $timeoutMs ms when requests are still in flight',
+    async ({ timeoutMs, min, max }) => {
+      // Prepare
+      const listeners = captureShutdownListener();
+      const onShutdown = vi.fn();
+      const app = new Router();
+      const started = addHangingRoute(app);
+      const baseUrl = await start(app, { shutdown: { timeoutMs, onShutdown } });
+      fetch(`${baseUrl}/hang`).catch(() => {});
+      await started;
+      const startedAt = performance.now();
+
+      // Act
+      await listeners[0]();
+
+      // Assess
+      const elapsed = performance.now() - startedAt;
+      expect(onShutdown).toHaveBeenCalledOnce();
+      expect(elapsed).toBeGreaterThanOrEqual(min);
+      expect(elapsed).toBeLessThan(max);
+    }
+  );
+
+  it('closes the connections still open after onShutdown', async () => {
     // Prepare
     const listeners = captureShutdownListener();
-    const onShutdown = vi.fn();
-    const started = Promise.withResolvers<void>();
     const app = new Router();
-    app.get('/never', () => {
-      started.resolve();
-      return new Promise(() => {});
-    });
-    const baseUrl = await start(app, {
-      shutdown: { timeoutMs: 20, onShutdown },
-    });
-    fetch(`${baseUrl}/never`).catch(() => {});
-    await started.promise;
+    const started = addHangingRoute(app);
+    const baseUrl = await start(app, { shutdown: { timeoutMs: 20 } });
+    const pending = fetch(`${baseUrl}/hang`);
+    await started;
 
     // Act
     await listeners[0]();
 
     // Assess
-    expect(onShutdown).toHaveBeenCalledOnce();
+    await expect(pending).rejects.toThrow();
   });
 
   it('logs an error when onShutdown fails', async () => {

@@ -10,6 +10,7 @@ Event handler for Amazon API Gateway REST and HTTP APIs, Application Loader Bala
 * Lightweight routing to reduce boilerplate for API Gateway REST/HTTP API, ALB and Lambda Function URLs.
 * Built-in middleware engine for request/response transformation and validation.
 * Works with micro function (one or a few routes) and monolithic functions (see [Considerations](#considerations)).
+* Runs as an HTTP server on [Lambda Web Functions](#lambda-web-functions), with no event conversion.
 
 ## Getting started
 

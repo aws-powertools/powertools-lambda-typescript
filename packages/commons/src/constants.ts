@@ -4,6 +4,16 @@ const AWS_EXECUTION_ENV_VAR = 'AWS_EXECUTION_ENV' as const;
  * runtime, e.g. `AWS_Lambda_nodejs24.x-lambda-web`.
  */
 const WEB_FUNCTION_EXECUTION_ENV_SUFFIX = '-lambda-web' as const;
+/**
+ * Key of the global flag that opts the process into keeping invocation-scoped
+ * state in the Lambda `InvokeStore`.
+ *
+ * Registered with `Symbol.for()` so that every copy of this package loaded in
+ * the process shares the flag, for example when a bundler duplicates it.
+ */
+const INVOKE_STORE_OPT_IN_KEY = Symbol.for(
+  'aws-lambda-powertools.commons.useInvokeStore'
+);
 const AWS_LAMBDA_INITIALIZATION_TYPE_ENV_VAR =
   'AWS_LAMBDA_INITIALIZATION_TYPE' as const;
 const AWS_LAMBDA_MAX_CONCURRENCY = 'AWS_LAMBDA_MAX_CONCURRENCY' as const;
@@ -17,6 +27,7 @@ export {
   AWS_EXECUTION_ENV_VAR,
   AWS_LAMBDA_INITIALIZATION_TYPE_ENV_VAR,
   AWS_LAMBDA_MAX_CONCURRENCY,
+  INVOKE_STORE_OPT_IN_KEY,
   POWERTOOLS_DEV_ENV_VAR,
   POWERTOOLS_SDK_UA_APP_ID_DISABLED_ENV_VAR,
   POWERTOOLS_SERVICE_NAME_ENV_VAR,

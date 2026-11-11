@@ -1,29 +1,22 @@
 import {
   FeatureFlags,
-  type Store,
-  type StoreResult,
+  ruleEngineStore,
 } from '@aws-lambda-powertools/feature-flags';
 
-const store: Store = {
-  name: 'in-memory',
-  getMany: async (names, _context) => {
-    const result: Record<string, StoreResult> = {};
-    for (const name of names) {
-      result[name] =
-        name === 'checkout_v2'
-          ? { found: true, value: true, enabled: true }
-          : { found: false };
-    }
-    return result;
-  },
-  getAll: async (_context) => ({
-    checkout_v2: { found: true, value: true, enabled: true },
+const flags = new FeatureFlags({
+  store: ruleEngineStore({
+    source: async () => ({
+      checkout_v2: { default: true },
+      limit: { default: 20, boolean_type: false },
+    }),
   }),
-};
-
-const flags = new FeatureFlags({ store });
-const result = await flags.evaluateMany({
-  flags: { checkout_v2: false, limit: 10, banner: 'none' },
-  context: { tier: 'premium' },
 });
-console.log(result);
+
+export const handler = async () => {
+  const result = await flags.evaluateMany({
+    flags: { checkout_v2: false, limit: 10, banner: 'none' },
+    context: { tier: 'premium' },
+  });
+  // { checkout_v2: true, limit: 20, banner: 'none' }
+  return result;
+};

@@ -160,12 +160,36 @@ Local emulators that replicate the Lambda runtime environment (e.g. AWS SAM CLI)
 Unlike `getAppConfig`, which uses the AWS SDK, the agent handles caching, polling, and prefetching for you, so `getConfig` doesn't support the `maxAge` and `forceFetch` options and always fetches from the agent's local endpoint.
 
 When the requested configuration doesn't exist, `getConfig` returns `undefined` - you can use the nullish coalescing operator (`??`) to provide a fallback value, or set the [`throwOnMissing` option](#throwing-on-missing-values) to throw a `ParameterNotFoundError` instead. Any other failure to reach the agent or retrieve the value throws a `GetParameterError`.
-When the agent responds with a non-success HTTP status other than 404, it throws an `AppConfigAgentError`, a subclass of `GetParameterError`, whose `statusCode` holds the HTTP status so you can distinguish throttling or availability errors from authorization errors.
+For other non-success HTTP responses, except structured missing-flag errors described below, it throws an `AppConfigAgentError`, a subclass of `GetParameterError`. Its `statusCode` holds the HTTP status so you can distinguish throttling or availability errors from authorization errors.
 
 You can configure the agent's behavior using [the environment variables it exposes](https://docs.aws.amazon.com/appconfig/latest/userguide/appconfig-integration-lambda-extensions-config.html).
 For example, you can reduce cold start latency by setting `AWS_APPCONFIG_EXTENSION_PREFETCH_LIST` to the path of your configuration (i.e. `/applications/my-app/environments/my-env/configurations/my-configuration`), so that the agent starts fetching it before your handler runs.
 
 If you configured the agent to run on a port other than the default `2772` using the `AWS_APPCONFIG_EXTENSION_HTTP_PORT` environment variable, `getConfig` will use that port. You can also pass a `timeout` option (in milliseconds, default `3000`) to control how long to wait for the agent to respond.
+
+#### Feature flags and multi-variant context
+
+Use the `agentOptions` object to pass additional options to the AppConfig Agent request. Set `flags` to retrieve specific feature flags through repeated `?flag=` query parameters, and `context` to send caller context for multi-variant evaluation in one `Context` header. These options cannot override the application, environment, or configuration profile.
+
+```typescript hl_lines="8-11" title="Retrieving feature flags with caller context"
+--8<-- "examples/snippets/parameters/getConfigAgentOptions.ts"
+```
+
+Context keys must match `^[A-Za-z_][A-Za-z0-9_.-]*$`. Values can be strings, finite numbers, or booleans. Powertools quotes strings and escapes non-ASCII characters to preserve commas, quotes, padding, and newlines without allowing header injection. Invalid context or flag keys throw `GetParameterError` before any request.
+
+With a non-empty `flags` array, an empty HTTP 200 body or a structured HTTP 400 `NoSuchFlag` response returns `undefined`. Set `throwOnMissing` to throw `FlagNotFoundError` instead. Its `flags` property lists the missing names from the structured body, or all requested names for an empty HTTP 200 body.
+For several requested flags, any missing flag makes the whole request count as missing, regardless of profile type.
+An HTTP 404 still returns `undefined`, or throws `ParameterNotFoundError` with `throwOnMissing`, for a missing application, environment, or profile. Check `FlagNotFoundError` first because it extends `ParameterNotFoundError`, so existing catch blocks keep working.
+
+```typescript hl_lines="18-25" title="Distinguishing missing flags from missing configurations"
+--8<-- "examples/snippets/parameters/getConfigMissingFlags.ts"
+```
+
+For basic JSON profiles, one unknown flag can fail the entire selective request; multi-variant profiles can omit unknown flags from a multi-flag response. Other non-success responses remain `AppConfigAgentError`. An empty `flags` array or `context` object adds no query parameters or headers.
+
+Flag retrieval requires [AppConfig Agent version `2.0.45` or later](https://docs.aws.amazon.com/appconfig/latest/userguide/appconfig-integration-retrieving-feature-flags.html). Multi-variant context evaluation needs a recent Agent; AWS recommends using the latest version.
+
+Outside Lambda or with `POWERTOOLS_DEV` enabled, `agentOptions` are validated but ignored. The `POWERTOOLS_APPCONFIG_AGENT_RETURN_VALUE` environment value still goes through the requested transform without filtering flags or evaluating context.
 
 ## Advanced
 

@@ -31,7 +31,39 @@ class ParameterNotFoundError extends GetParameterError {
 }
 
 /**
+ * The {@link getConfig | `getConfig()`} function throws this error when `throwOnMissing` is set and the AppConfig Agent reports that one or more requested flags do not exist.
+ *
+ * The `flags` property lists the missing flag names.
+ * It extends {@link ParameterNotFoundError | `ParameterNotFoundError`}, so existing catch blocks keep working.
+ * Use `instanceof FlagNotFoundError` to distinguish missing flags from a missing configuration.
+ *
+ * @example
+ * ```typescript
+ * import { FlagNotFoundError } from '@aws-lambda-powertools/parameters/errors';
+ *
+ * if (error instanceof FlagNotFoundError) {
+ *   console.warn('Use fallback for missing flags', error.flags);
+ * }
+ * ```
+ */
+class FlagNotFoundError extends ParameterNotFoundError {
+  public readonly flags: readonly string[];
+
+  public constructor(
+    message: string,
+    flags: readonly string[],
+    options?: ErrorOptions
+  ) {
+    super(message, options);
+    this.name = 'FlagNotFoundError';
+    this.flags = flags;
+  }
+}
+
+/**
  * Represents the error that `getConfig` throws when the AppConfig Agent responds with a non-success HTTP status other than 404.
+ *
+ * A structured HTTP 400 `NoSuchFlag` response with requested flags returns `undefined`, or throws a {@link FlagNotFoundError | `FlagNotFoundError`} when `throwOnMissing` is set.
  *
  * The `statusCode` property holds the HTTP status returned by the agent.
  * It extends {@link GetParameterError | `GetParameterError`}, so existing catch blocks keep working.
@@ -84,6 +116,7 @@ class TransformParameterError extends Error {
 
 export {
   AppConfigAgentError,
+  FlagNotFoundError,
   GetParameterError,
   ParameterNotFoundError,
   SetParameterError,

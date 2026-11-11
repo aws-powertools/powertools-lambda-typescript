@@ -3,12 +3,23 @@ import type { getConfig } from '../appconfig-agent/getConfig.js';
 import type { GetMaybeUndefined } from './BaseProvider.js';
 
 /**
+ * Configure feature flag retrieval and multi-variant evaluation in the AWS AppConfig Agent.
+ */
+type AppConfigAgentRequestOptions = {
+  /** Flag keys to retrieve, sent as repeated `?flag=` query parameters. */
+  flags?: readonly string[];
+  /** Caller context for multi-variant evaluation, sent in the `Context` header. */
+  context?: Record<string, string | number | boolean>;
+};
+
+/**
  * Options for the {@link getConfig | `getConfig()`} function.
  *
  * @property environment - The environment ID or the environment name.
  * @property application - The application ID or the application name, if not provided it will be inferred from the service name in the environment.
  * @property transform - Optional transform to be applied, can be `json` or `binary`.
  * @property timeout - Optional timeout in milliseconds for the request to the AWS AppConfig Agent (default: `3000`).
+ * @property agentOptions - Additional options to pass to the AWS AppConfig Agent request. Supports the Agent's `flag` query parameters and `Context` header.
  */
 type GetConfigOptions = {
   /**
@@ -20,6 +31,12 @@ type GetConfigOptions = {
    */
   application?: string;
   /**
+   * Additional options to pass to the AWS AppConfig Agent request. Supports the Agent's `flag` query parameters and `Context` header.
+   *
+   * Outside Lambda or with `POWERTOOLS_DEV` enabled, these options are validated but ignored when returning the local environment value.
+   */
+  agentOptions?: AppConfigAgentRequestOptions;
+  /**
    * Optional transform to be applied, can be `json` or `binary`.
    */
   transform?: 'json' | 'binary';
@@ -28,9 +45,9 @@ type GetConfigOptions = {
    */
   timeout?: number;
   /**
-   * Optional flag to throw a `ParameterNotFoundError` when the configuration does not exist (default: `false`).
+   * Optional flag to throw a `ParameterNotFoundError` for a missing configuration, or a `FlagNotFoundError` for missing requested flags (default: `false`).
    *
-   * By default, a missing configuration returns `undefined`.
+   * By default, a missing configuration or requested flag returns `undefined`.
    */
   throwOnMissing?: boolean;
 };
@@ -70,5 +87,6 @@ type AppConfigAgentGetConfigOutput<
 export type {
   AppConfigAgentGetConfigOutput,
   AppConfigAgentGetOutput,
+  AppConfigAgentRequestOptions,
   GetConfigOptions,
 };

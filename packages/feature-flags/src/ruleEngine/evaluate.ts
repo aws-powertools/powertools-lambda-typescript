@@ -1,10 +1,12 @@
 import { isTruthy } from '@aws-lambda-powertools/commons';
 import type { GenericLogger } from '@aws-lambda-powertools/commons/types';
+import { StoreNames } from '../constants.js';
 import { ConditionEvaluationError } from '../errors.js';
 import type { EvaluationContext, StoreResult } from '../types/index.js';
+import type { Condition, Flag } from '../types/RuleEngine.js';
 import { actions } from './actions.js';
+import { cloneJSONValue } from './json.js';
 import { currentDate, isTimeAction, timeActions } from './time.js';
-import type { Condition, Flag } from './types.js';
 
 /**
  * Evaluates one flag using its first fully matching Rule or its Flag Default.
@@ -28,13 +30,18 @@ const evaluate = (
         matches(name, rule, condition, context, now)
       )
     ) {
-      const value = definition.when_match;
-      logger?.debug({ store: 'rule-engine', name, outcome: 'rule', rule });
+      const value = cloneJSONValue(definition.when_match);
+      logger?.debug({
+        store: StoreNames.RULE_ENGINE,
+        name,
+        outcome: 'rule',
+        rule,
+      });
       return { found: true, value, enabled: isTruthy(value) };
     }
   }
-  const value = flag.default;
-  logger?.debug({ store: 'rule-engine', name, outcome: 'default' });
+  const value = cloneJSONValue(flag.default);
+  logger?.debug({ store: StoreNames.RULE_ENGINE, name, outcome: 'default' });
   return { found: true, value, enabled: isTruthy(value) };
 };
 

@@ -2,9 +2,9 @@ import { isRecord, isString } from '@aws-lambda-powertools/commons';
 import type { JSONValue } from '@aws-lambda-powertools/commons/types';
 import { RuleActions, TimeActionKeys, TimeDays } from '../constants.js';
 import { SchemaValidationError } from '../errors.js';
+import type { RuleAction } from '../types/RuleEngine.js';
 import { parseNaiveDatetime } from './datetime.js';
 import { isTimeAction } from './time.js';
-import type { RuleAction } from './types.js';
 
 /**
  * Validates an optional IANA timezone before evaluation can read the clock.

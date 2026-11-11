@@ -1,14 +1,9 @@
-import {
-  isNull,
-  isNumber,
-  isRecord,
-  isString,
-} from '@aws-lambda-powertools/commons';
+import { isRecord, isString } from '@aws-lambda-powertools/commons';
 import type {
   GenericLogger,
   JSONValue,
 } from '@aws-lambda-powertools/commons/types';
-import { FlagDocumentFields, RuleActions } from '../constants.js';
+import { FlagDocumentFields, RuleActions, StoreNames } from '../constants.js';
 import { SchemaValidationError } from '../errors.js';
 import type {
   Condition,
@@ -16,7 +11,8 @@ import type {
   FlagDocument,
   Rule,
   RuleAction,
-} from './types.js';
+} from '../types/RuleEngine.js';
+import { isJSONValue } from './json.js';
 import { validateScheduleAndModulo } from './validateScheduleAndModulo.js';
 
 /**
@@ -54,7 +50,7 @@ const validate = (document: unknown, logger?: GenericLogger): FlagDocument => {
     entries.push([name, { default: defaultValue, rules }]);
   }
   if (entries.length === 0)
-    logger?.warn({ store: 'rule-engine', reason: 'empty-document' });
+    logger?.warn({ store: StoreNames.RULE_ENGINE, reason: 'empty-document' });
   return Object.fromEntries(entries);
 };
 
@@ -115,7 +111,11 @@ const validateRules = (
     ]);
   }
   if (entries.length === 0)
-    logger?.warn({ store: 'rule-engine', reason: 'empty-rules', name });
+    logger?.warn({
+      store: StoreNames.RULE_ENGINE,
+      reason: 'empty-rules',
+      name,
+    });
   return Object.fromEntries(entries);
 };
 
@@ -185,30 +185,6 @@ const validateResult = (
   if (!isJSONValue(value))
     throw new SchemaValidationError(`${location} must contain JSON`);
   return value;
-};
-
-/**
- * Checks JSON values at the source boundary, including callers that bypass types.
- * @param value - Supply the value to check
- * @param ancestors - Track containers to reject cycles without rejecting shared values
- * @internal
- */
-const isJSONValue = (
-  value: unknown,
-  ancestors = new Set<unknown>()
-): value is JSONValue => {
-  if (isNull(value) || isString(value) || typeof value === 'boolean')
-    return true;
-  if (isNumber(value)) return Number.isFinite(value);
-  if (!Array.isArray(value) && !isRecord(value)) return false;
-  if (ancestors.has(value)) return false;
-  ancestors.add(value);
-  const entries = Array.isArray(value)
-    ? Array.from(value)
-    : Object.values(value);
-  const valid = entries.every((entry) => isJSONValue(entry, ancestors));
-  ancestors.delete(value);
-  return valid;
 };
 
 export { validate };

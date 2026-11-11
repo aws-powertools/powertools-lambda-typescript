@@ -6,7 +6,7 @@ import {
 } from '../../../src/index.js';
 import { actions } from '../../../src/ruleEngine/actions.js';
 import { evaluate } from '../../../src/ruleEngine/evaluate.js';
-import type { Flag, RuleAction } from '../../../src/ruleEngine/types.js';
+import type { Flag, RuleAction } from '../../../src/types/RuleEngine.js';
 
 /** Creates an isolated boolean flag for a comparator test. */
 const prepareFlag = (action: RuleAction, value: JSONValue): Flag => ({

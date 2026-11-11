@@ -51,6 +51,26 @@
         "default": "./lib/esm/appconfig/index.js"
       }
     },
+    "./appconfig-agent": {
+      "require": {
+        "types": "./lib/cjs/appconfig-agent/index.d.ts",
+        "default": "./lib/cjs/appconfig-agent/index.js"
+      },
+      "import": {
+        "types": "./lib/esm/appconfig-agent/index.d.ts",
+        "default": "./lib/esm/appconfig-agent/index.js"
+      }
+    },
+    "./envelope": {
+      "require": {
+        "types": "./lib/cjs/envelope/index.d.ts",
+        "default": "./lib/cjs/envelope/index.js"
+      },
+      "import": {
+        "types": "./lib/esm/envelope/index.d.ts",
+        "default": "./lib/esm/envelope/index.js"
+      }
+    },
     "./errors": {
       "require": {
         "types": "./lib/cjs/errors.d.ts",
@@ -81,6 +101,14 @@
       "appconfig": [
         "lib/cjs/appconfig/index.d.ts",
         "lib/esm/appconfig/index.d.ts"
+      ],
+      "appconfig-agent": [
+        "lib/cjs/appconfig-agent/index.d.ts",
+        "lib/esm/appconfig-agent/index.d.ts"
+      ],
+      "envelope": [
+        "lib/cjs/envelope/index.d.ts",
+        "lib/esm/envelope/index.d.ts"
       ],
       "errors": [
         "lib/cjs/errors.d.ts",
@@ -115,7 +143,8 @@
     "nodejs"
   ],
   "dependencies": {
-    "@aws-lambda-powertools/commons": "2.36.0"
+    "@aws-lambda-powertools/commons": "2.36.0",
+    "@standard-schema/spec": "^1.1.0"
   },
   "devDependencies": {
     "@aws-lambda-powertools/testing-utils": "file:../testing"

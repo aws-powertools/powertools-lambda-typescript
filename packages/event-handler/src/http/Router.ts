@@ -52,7 +52,6 @@ import type {
   TypedRouteHandler,
   ValidationConfig,
   WebRequestEvent,
-  WebRequestSource,
 } from '../types/http.js';
 import type { HandlerResponse, ResolveOptions } from '../types/index.js';
 import { HttpStatusCodes, HttpVerbs } from './constants.js';
@@ -91,7 +90,7 @@ import {
  *
  * @internal
  */
-type ResolvedResponse = Pick<RequestContext, 'res' | 'isBase64Encoded'> & {
+type ResolvedResponse = DispatchedResponse & {
   responseType: ResponseType;
 };
 
@@ -101,7 +100,7 @@ type ResolvedResponse = Pick<RequestContext, 'res' | 'isBase64Encoded'> & {
  *
  * @internal
  */
-type HandledResponse = Pick<RequestContext, 'res' | 'isBase64Encoded'>;
+type DispatchedResponse = Pick<RequestContext, 'res' | 'isBase64Encoded'>;
 
 /**
  * Where a routed request came from: a classified Lambda event, or a Web
@@ -109,7 +108,7 @@ type HandledResponse = Pick<RequestContext, 'res' | 'isBase64Encoded'>;
  *
  * @internal
  */
-type RequestSource = ClassifiedEvent | Pick<WebRequestSource, 'responseType'>;
+type RequestSource = ClassifiedEvent | { responseType: 'WebFunction' };
 
 class Router<TEnv extends Env = Env> {
   /**
@@ -277,8 +276,10 @@ class Router<TEnv extends Env = Env> {
   /**
    * Builds the middleware context from the request and where it came from.
    *
-   * For a Web Request, `event` is built from the request on first access, so
-   * routes that never read it don't pay for it.
+   * For a Web Request, `event` is built from the request when it's first
+   * read, by a handler, a middleware, or the router itself when it copies the
+   * request context for an error handler. It can also be replaced by assigning
+   * to it, like the event of any other request.
    *
    * @param source - The event and its integration, or the marker of a Web Request
    * @param context - The Lambda context
@@ -314,6 +315,9 @@ class Router<TEnv extends Env = Env> {
         get event() {
           event ??= webRequestToEvent(options.req);
           return event;
+        },
+        set event(value: WebRequestEvent) {
+          event = value;
         },
         ...fields,
       };
@@ -366,7 +370,7 @@ class Router<TEnv extends Env = Env> {
       throw err;
     }
 
-    const { res, isBase64Encoded } = await this.#handle(
+    const { res, isBase64Encoded } = await this.#dispatch(
       classified,
       req,
       context,
@@ -379,17 +383,17 @@ class Router<TEnv extends Env = Env> {
    * Core routing logic: matches the route, executes middleware and the
    * handler, and handles errors.
    *
-   * @param source - The event the request was built from, if any
+   * @param source - The event the request was built from, or the marker of a Web Request
    * @param req - The Web Request to route
    * @param context - The Lambda context
    * @param options - Optional resolve options for scope binding
    */
-  async #handle(
+  async #dispatch(
     source: RequestSource,
     req: Request,
     context: Context,
     options?: HttpResolveOptions
-  ): Promise<HandledResponse> {
+  ): Promise<DispatchedResponse> {
     const requestStore = new Store<RequestStoreOf<TEnv>>();
     const storeAccessors = this.#createStoreAccessors(requestStore);
     const requestContext = this.#buildRequestContext(source, context, {
@@ -582,13 +586,14 @@ class Router<TEnv extends Env = Env> {
     context: Context,
     options?: ResolveOptions
   ): Promise<Response> {
-    if (!isHttpMethod(request.method.toUpperCase())) {
-      this.logger.error(new InvalidHttpMethodError(request.method));
+    const method = request.method.toUpperCase();
+    if (!isHttpMethod(method)) {
+      this.logger.error(new InvalidHttpMethodError(method));
       return new Response(null, {
         status: HttpStatusCodes.METHOD_NOT_ALLOWED,
       });
     }
-    const { res } = await this.#handle(
+    const { res } = await this.#dispatch(
       { responseType: 'WebFunction' },
       request,
       context,

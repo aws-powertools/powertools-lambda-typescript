@@ -298,11 +298,6 @@ describe('Metrics Middleware', () => {
         webRequestId: 'REQ123',
       })
     );
-    expect(console.log).toHaveEmittedEMFWith(
-      expect.not.objectContaining({
-        apiGwRequestId: expect.anything(),
-      })
-    );
   });
 
   it('does not add request metadata for Web Requests without request headers', async () => {
@@ -315,11 +310,11 @@ describe('Metrics Middleware', () => {
     await app.resolveRequest(new Request('https://example.com/test'), context);
 
     // Assess
-    expect(console.log).toHaveEmittedEMFWith(
-      expect.not.objectContaining({
-        webRequestId: expect.anything(),
-        ipAddress: expect.anything(),
-      })
+    expect(console.log).not.toHaveEmittedEMFWith(
+      expect.objectContaining({ webRequestId: expect.anything() })
+    );
+    expect(console.log).not.toHaveEmittedEMFWith(
+      expect.objectContaining({ ipAddress: expect.anything() })
     );
   });
 

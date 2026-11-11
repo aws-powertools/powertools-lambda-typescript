@@ -343,6 +343,53 @@ describe('Class: Router - resolveRequest', () => {
       expect(sameEvent).toBe(true);
     });
 
+    it('builds the event view when it is first read', async () => {
+      // Prepare
+      const app = new Router();
+      let headers: unknown;
+      app.use(async ({ reqCtx, next }) => {
+        reqCtx.req.headers.set('x-added-by', 'middleware');
+        await next();
+      });
+      app.get('/test', ({ event }) => {
+        headers = event.headers;
+        return { ok: true };
+      });
+
+      // Act
+      await app.resolveRequest(new Request(`${BASE_URL}/test`), context);
+
+      // Assess
+      expect(headers).toEqual({ 'x-added-by': 'middleware' });
+    });
+
+    it('replaces the event view when a middleware assigns one', async () => {
+      // Prepare
+      const app = new Router();
+      let tenant: string | undefined;
+      app.use(async ({ reqCtx, next }) => {
+        reqCtx.event = {
+          ...reqCtx.event,
+          headers: { ...reqCtx.event.headers, 'x-tenant': 'acme' },
+        };
+        await next();
+      });
+      app.get('/test', ({ event }) => {
+        tenant = event.headers?.['x-tenant'];
+        return { ok: true };
+      });
+
+      // Act
+      const res = await app.resolveRequest(
+        new Request(`${BASE_URL}/test`),
+        context
+      );
+
+      // Assess
+      expect(res.status).toBe(HttpStatusCodes.OK);
+      expect(tenant).toBe('acme');
+    });
+
     it('passes the event view to error handlers', async () => {
       // Prepare
       const app = new Router();

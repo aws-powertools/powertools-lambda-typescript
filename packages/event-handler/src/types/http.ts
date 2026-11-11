@@ -214,22 +214,17 @@ type WebRequestEvent = {
   isBase64Encoded: false;
   /**
    * Always empty: a Web Request carries no API Gateway or ALB request context.
+   *
+   * Typed so that code reading fields of an API Gateway request context
+   * without narrowing on `reqCtx.responseType` keeps compiling; those fields
+   * are always `undefined` for Web Requests.
    */
   requestContext: Record<string, never>;
 };
 
 /**
- * Identifies a request that reached the router as a Web
- * {@link Request | `Request`} rather than as a Lambda event, for example on a
- * Lambda Web Function.
- *
- * @internal
+ * Fields of the request context shared by every request source.
  */
-type WebRequestSource = {
-  responseType: 'WebFunction';
-  event: WebRequestEvent;
-};
-
 type RequestContextBase<TEnv extends Env = Env> = {
   req: Request;
   context: Context;
@@ -248,7 +243,17 @@ type RequestContext<TEnv extends Env = Env> =
         responseType: T;
       };
     }[ResponseType]
-  | (RequestContextBase<TEnv> & WebRequestSource);
+  | (RequestContextBase<TEnv> & {
+      /**
+       * Event-shaped view of the Web Request.
+       *
+       * @deprecated Read the request from `reqCtx.req` instead. In the next
+       * major version, `reqCtx.event` is `undefined` for requests that don't
+       * come from a Lambda event.
+       */
+      event: WebRequestEvent;
+      responseType: 'WebFunction';
+    });
 
 type TypedRequestContext<
   TEnv extends Env = Env,
@@ -751,6 +756,5 @@ export type {
   ValidationErrorDetail,
   ValidationResult,
   WebRequestEvent,
-  WebRequestSource,
   WebResponseToProxyResultOptions,
 };

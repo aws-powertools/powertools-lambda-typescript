@@ -19,6 +19,7 @@ import type {
   ResponseType,
   ResponseTypeMap,
   V1Headers,
+  WebRequestEvent,
   WebResponseToProxyResultOptions,
 } from '../types/http.js';
 import {
@@ -260,6 +261,39 @@ const getSetCookies = (webHeaders: Headers): string[] =>
   webHeaders
     .getSetCookie()
     .flatMap((value) => value.split(SET_COOKIE_SEPARATOR_REGEX));
+
+/**
+ * Builds the event-shaped view of a Web Request exposed as `reqCtx.event`
+ * when a request is routed with {@link Router.resolveRequest | `resolveRequest()`}.
+ *
+ * Repeated query string parameters are joined with `,`, like in API Gateway
+ * HTTP API events.
+ *
+ * @param req - The Web Request
+ * @internal
+ */
+const webRequestToEvent = (req: Request): WebRequestEvent => {
+  const headers: Record<string, string> = {};
+  for (const [name, value] of req.headers) {
+    headers[name] = value;
+  }
+
+  let queryStringParameters: Record<string, string> | undefined;
+  for (const [name, value] of new URL(req.url).searchParams) {
+    queryStringParameters ??= {};
+    queryStringParameters[name] = Object.hasOwn(queryStringParameters, name)
+      ? `${queryStringParameters[name]},${value}`
+      : value;
+  }
+
+  return {
+    headers,
+    queryStringParameters,
+    body: undefined,
+    isBase64Encoded: false,
+    requestContext: {},
+  };
+};
 
 /**
  * Converts Web API Headers to API Gateway V1 headers format.
@@ -683,5 +717,6 @@ export {
   handlerResultToWebResponse,
   proxyEventToWebRequest,
   webHeadersToApiGatewayHeaders,
+  webRequestToEvent,
   webResponseToProxyResult,
 };

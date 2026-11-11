@@ -22,6 +22,10 @@ import { getConfig } from '../../src/appconfig-agent/index.js';
 import { Transform } from '../../src/index.js';
 import { getSecret } from '../../src/secrets/index.js';
 import { getParameter, getParameters } from '../../src/ssm/index.js';
+import type {
+  AppConfigAgentRequestOptions,
+  GetConfigOptions,
+} from '../../src/types/AppConfigAgent.js';
 
 describe('Return types', () => {
   const appConfigclient = mockClient(AppConfigDataClient);
@@ -417,8 +421,75 @@ describe('Return types', () => {
         // @ts-expect-error - transform must be one of the supported literals
         transform: 'yaml',
       });
+      await getConfig('my-config', {
+        environment: 'prod',
+        // @ts-expect-error - Agent context does not support arrays
+        agentOptions: { context: { tier: ['pro'] } },
+      });
+      await getConfig('my-config', {
+        environment: 'prod',
+        // @ts-expect-error - Agent context does not support nested objects
+        agentOptions: { context: { tier: { name: 'pro' } } },
+      });
     };
 
     expectTypeOf(_invalidUsages).toBeFunction();
+  });
+
+  it('accepts optional agentOptions and readonly flag keys', () => {
+    // Prepare
+    const options = { environment: 'prod' } satisfies GetConfigOptions;
+    const agentOptions = {
+      flags: ['ui_refresh'] as const,
+      context: { tier: 'pro', opted_in: true, limit: 10 },
+    } satisfies AppConfigAgentRequestOptions;
+
+    // Act
+    const optionsWithAgent = { ...options, agentOptions };
+
+    // Assess
+    expectTypeOf(options).toExtend<GetConfigOptions>();
+    expectTypeOf(optionsWithAgent).toExtend<GetConfigOptions>();
+  });
+
+  it('preserves transform inference with agentOptions', async () => {
+    // Prepare
+    stubFetchForAppConfigAgent('{"enabled":true}');
+    const agentOptions = { flags: ['ui_refresh'], context: { tier: 'pro' } };
+
+    // Act
+    const raw = await getConfig('my-config', {
+      environment: 'prod',
+      agentOptions,
+    });
+    const json = await getConfig('my-config', {
+      environment: 'prod',
+      agentOptions,
+      transform: 'json',
+    });
+    const requiredJson = await getConfig('my-config', {
+      environment: 'prod',
+      agentOptions,
+      transform: 'json',
+      throwOnMissing: true,
+    });
+    const explicit = await getConfig<{ enabled: boolean }>('my-config', {
+      environment: 'prod',
+      agentOptions,
+      transform: 'json',
+    });
+    stubFetchForAppConfigAgent(toBase64(encoder.encode('my-value')));
+    const binary = await getConfig('my-config', {
+      environment: 'prod',
+      agentOptions,
+      transform: 'binary',
+    });
+
+    // Assess
+    expectTypeOf(raw).toEqualTypeOf<string | undefined>();
+    expectTypeOf(json).toEqualTypeOf<JSONValue | undefined>();
+    expectTypeOf(requiredJson).toEqualTypeOf<JSONValue>();
+    expectTypeOf(explicit).toEqualTypeOf<{ enabled: boolean } | undefined>();
+    expectTypeOf(binary).toEqualTypeOf<string | undefined>();
   });
 });

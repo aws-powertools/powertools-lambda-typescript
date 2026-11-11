@@ -167,6 +167,23 @@ For example, you can reduce cold start latency by setting `AWS_APPCONFIG_EXTENSI
 
 If you configured the agent to run on a port other than the default `2772` using the `AWS_APPCONFIG_EXTENSION_HTTP_PORT` environment variable, `getConfig` will use that port. You can also pass a `timeout` option (in milliseconds, default `3000`) to control how long to wait for the agent to respond.
 
+#### Feature flags and multi-variant context
+
+Use the `agentOptions` object to pass additional options to the AppConfig Agent request. Set `flags` to retrieve specific feature flags through repeated `?flag=` query parameters, and `context` to send caller context for multi-variant evaluation in one `Context` header. These options cannot override the application, environment, or configuration profile.
+
+```typescript hl_lines="8-11" title="Retrieving feature flags with caller context"
+--8<-- "examples/snippets/parameters/getConfigAgentOptions.ts"
+```
+
+Context keys must match `^[A-Za-z_][A-Za-z0-9_.-]*$`. Values can be strings, finite numbers, or booleans. Powertools quotes strings and escapes non-ASCII characters to preserve commas, quotes, padding, and newlines without allowing header injection. Invalid context or flag keys throw `GetParameterError` before any request.
+
+With a non-empty `flags` array, an empty HTTP 200 body or a structured HTTP 400 `NoSuchFlag` response returns `undefined`. Set `throwOnMissing` to throw `ParameterNotFoundError` instead.
+For basic JSON profiles, one unknown flag can fail the entire selective request; multi-variant profiles can omit unknown flags from a multi-flag response. Other non-success responses remain `AppConfigAgentError`. An empty `flags` array or `context` object adds no query parameters or headers.
+
+Flag retrieval requires [AppConfig Agent version `2.0.45` or later](https://docs.aws.amazon.com/appconfig/latest/userguide/appconfig-integration-retrieving-feature-flags.html). Multi-variant context evaluation needs a recent Agent; AWS recommends using the latest version.
+
+Outside Lambda or with `POWERTOOLS_DEV` enabled, `agentOptions` are validated but ignored. The `POWERTOOLS_APPCONFIG_AGENT_RETURN_VALUE` environment value still goes through the requested transform without filtering flags or evaluating context.
+
 ## Advanced
 
 ### Adjusting cache TTL

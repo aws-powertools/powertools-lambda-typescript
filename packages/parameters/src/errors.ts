@@ -33,6 +33,8 @@ class ParameterNotFoundError extends GetParameterError {
 /**
  * Represents the error that `getConfig` throws when the AppConfig Agent responds with a non-success HTTP status other than 404.
  *
+ * A structured HTTP 400 `NoSuchFlag` response with requested flags follows the missing-parameter behavior instead.
+ *
  * The `statusCode` property holds the HTTP status returned by the agent.
  * It extends {@link GetParameterError | `GetParameterError`}, so existing catch blocks keep working.
  *

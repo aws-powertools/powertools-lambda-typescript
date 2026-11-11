@@ -1,6 +1,8 @@
 import { InvokeStore, InvokeStoreBase } from '@aws/lambda-invoke-store';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { INVOKE_STORE_OPT_IN_KEY } from '../../src/constants.js';
 import {
+  enableInvokeStore,
   getBooleanFromEnv,
   getNumberFromEnv,
   getServiceName,
@@ -428,6 +430,10 @@ describe('Functions: envUtils', () => {
   });
 
   describe('Function: shouldUseInvokeStore', () => {
+    afterEach(() => {
+      delete (globalThis as Record<symbol, unknown>)[INVOKE_STORE_OPT_IN_KEY];
+    });
+
     it('returns false when AWS_LAMBDA_MAX_CONCURRENCY is not set', () => {
       // Act
       const result = shouldUseInvokeStore();
@@ -464,5 +470,16 @@ describe('Functions: envUtils', () => {
         expect(result).toBe(expected);
       }
     );
+
+    it('returns true once the process opted in with enableInvokeStore', () => {
+      // Prepare
+      enableInvokeStore();
+
+      // Act
+      const result = shouldUseInvokeStore();
+
+      // Assess
+      expect(result).toBe(true);
+    });
   });
 });

@@ -49,5 +49,7 @@ export type {
   RouteHandler,
   TracerOptions,
   TypedRequestContext,
+  WebFunctionServeOptions,
+  WebFunctionShutdownOptions,
   WebRequestEvent,
 } from './http.js';

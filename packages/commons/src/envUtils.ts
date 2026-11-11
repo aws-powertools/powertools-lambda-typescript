@@ -3,6 +3,7 @@ import {
   AWS_EXECUTION_ENV_VAR,
   AWS_LAMBDA_INITIALIZATION_TYPE_ENV_VAR,
   AWS_LAMBDA_MAX_CONCURRENCY,
+  INVOKE_STORE_OPT_IN_KEY,
   POWERTOOLS_DEV_ENV_VAR,
   POWERTOOLS_SERVICE_NAME_ENV_VAR,
   WEB_FUNCTION_EXECUTION_ENV_SUFFIX,
@@ -327,11 +328,35 @@ const isRequestXRaySampled = (): boolean => {
 };
 
 /**
+ * The global object, viewed as a record keyed by symbols.
+ *
+ * Safe because it's only used to read and write the boolean stored under
+ * {@link INVOKE_STORE_OPT_IN_KEY}, which no other code owns.
+ */
+const invokeStoreOptIn = globalThis as Record<symbol, unknown>;
+
+/**
+ * Opt the current process into keeping invocation-scoped state in the Lambda
+ * `InvokeStore`.
+ *
+ * For runtimes that isolate concurrent requests in the store but can't be
+ * detected from the environment, such as a Lambda Web Function server running
+ * locally. Call it only after an isolating store exists
+ * (`InvokeStore.getInstanceAsync(true)`), otherwise invocation-scoped reads and
+ * writes throw.
+ *
+ * @internal
+ */
+const enableInvokeStore = (): void => {
+  invokeStoreOptIn[INVOKE_STORE_OPT_IN_KEY] = true;
+};
+
+/**
  * Determine whether invocations may run concurrently in the same execution
  * environment, and state that must not leak between them should be held in the
  * Lambda `InvokeStore` rather than on an instance.
  *
- * Concurrency is detected when either:
+ * Concurrency is detected when any of these holds:
  * - the `AWS_LAMBDA_MAX_CONCURRENCY` environment variable is set (Lambda Managed
  *   Instances), which the runtime also uses to decide whether to back the
  *   `InvokeStore` with an `AsyncLocalStorage`
@@ -339,6 +364,7 @@ const isRequestXRaySampled = (): boolean => {
  *   ending in `-lambda-web`. The Web Functions runtime always backs the
  *   `InvokeStore` with an `AsyncLocalStorage` and runs every HTTP request in its
  *   own context, but doesn't set `AWS_LAMBDA_MAX_CONCURRENCY`
+ * - {@link enableInvokeStore | `enableInvokeStore()`} was called
  */
 const shouldUseInvokeStore = (): boolean => {
   const maxConcurrency = getStringFromEnv({
@@ -348,10 +374,15 @@ const shouldUseInvokeStore = (): boolean => {
   if (maxConcurrency !== '') {
     return true;
   }
-  return getStringFromEnv({
-    key: AWS_EXECUTION_ENV_VAR,
-    defaultValue: '',
-  }).endsWith(WEB_FUNCTION_EXECUTION_ENV_SUFFIX);
+  if (
+    getStringFromEnv({
+      key: AWS_EXECUTION_ENV_VAR,
+      defaultValue: '',
+    }).endsWith(WEB_FUNCTION_EXECUTION_ENV_SUFFIX)
+  ) {
+    return true;
+  }
+  return invokeStoreOptIn[INVOKE_STORE_OPT_IN_KEY] === true;
 };
 
 /**
@@ -370,6 +401,7 @@ const getXRayTraceIdFromEnv = (): string | undefined => {
 };
 
 export {
+  enableInvokeStore,
   getBooleanFromEnv,
   getNumberFromEnv,
   getServiceName,

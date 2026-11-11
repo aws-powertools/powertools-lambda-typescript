@@ -95,6 +95,30 @@ const getMissingFlags = (value: string): string[] => {
 };
 
 /**
+ * Find requested flags that the Agent omitted from a successful multi-flag response.
+ *
+ * @param value - Non-empty response body from an HTTP 200 response
+ * @param requestedFlags - Flag names in caller-provided order
+ * @internal
+ */
+const getMissingFlagsFromResponse = (
+  value: string,
+  requestedFlags: readonly string[]
+): string[] => {
+  try {
+    const body: unknown = JSON.parse(value);
+    if (!isRecord(body)) return [];
+    const missingFlags: string[] = [];
+    for (const flag of new Set(requestedFlags)) {
+      if (!Object.hasOwn(body, flag)) missingFlags.push(flag);
+    }
+    return missingFlags;
+  } catch {
+    return [];
+  }
+};
+
+/**
  * Fetch a configuration from the AWS AppConfig Agent local HTTP endpoint.
  *
  * Returns the raw response body, or `undefined` when the configuration or requested
@@ -146,8 +170,12 @@ const fetchConfigFromAgent = async (
     if (requestedFlags.length > 0) {
       if (res.status === 400) {
         missingFlags = getMissingFlags(value);
-      } else if (res.status === 200 && value === '') {
-        missingFlags = requestedFlags;
+      } else if (res.status === 200) {
+        if (value === '') {
+          missingFlags = requestedFlags;
+        } else if (requestedFlags.length > 1) {
+          missingFlags = getMissingFlagsFromResponse(value, requestedFlags);
+        }
       }
     }
     if (missingFlags.length > 0) {
@@ -264,6 +292,7 @@ const fetchConfigFromAgent = async (
  * With non-empty `flags`, an empty HTTP 200 body or a structured HTTP 400 `NoSuchFlag` response returns `undefined`,
  * or throws a {@link FlagNotFoundError | `FlagNotFoundError`} when `throwOnMissing` is set. Its `flags` property lists
  * the missing names from the structured response, or all requested names for an empty HTTP 200 body.
+ * For several requested flags, any missing flag makes the whole request count as missing, regardless of profile type.
  * With `throwOnMissing`, a missing application, environment, or profile (HTTP 404) still throws {@link ParameterNotFoundError | `ParameterNotFoundError`}.
  * Check `FlagNotFoundError` first because it extends `ParameterNotFoundError`.
  * Without flags, an empty successful response remains an empty string before transformation.

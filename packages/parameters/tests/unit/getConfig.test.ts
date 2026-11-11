@@ -508,6 +508,195 @@ describe('Function: getConfig', () => {
     }
   );
 
+  it.each(
+    [
+      { scenario: 'partial', body: '{"a":{"enabled":true}}' },
+      { scenario: 'all unknown', body: '{}' },
+    ].flatMap((testCase) =>
+      ([undefined, 'json', 'binary'] as const).map((transform) => ({
+        ...testCase,
+        transform,
+      }))
+    )
+  )(
+    'returns undefined for $scenario multi-flag responses with transform $transform',
+    async ({ body, transform }) => {
+      // Prepare
+      fetchMock.mockResolvedValue(new Response(body));
+
+      // Act
+      const result = await getConfig('my-config', {
+        application: 'my-app',
+        environment: 'my-env',
+        agentOptions: { flags: ['a', 'b'] },
+        transform,
+      });
+
+      // Assess
+      expect(result).toBeUndefined();
+    }
+  );
+
+  it.each(
+    [
+      {
+        scenario: 'partial',
+        body: '{"a":{"enabled":true}}',
+        missingFlags: ['b'],
+      },
+      { scenario: 'all unknown', body: '{}', missingFlags: ['a', 'b'] },
+    ].flatMap((testCase) =>
+      ([undefined, 'json', 'binary'] as const).map((transform) => ({
+        ...testCase,
+        transform,
+      }))
+    )
+  )(
+    'throws FlagNotFoundError for $scenario multi-flag responses with transform $transform',
+    async ({ body, missingFlags, transform }) => {
+      // Prepare
+      fetchMock.mockResolvedValue(new Response(body));
+
+      // Act
+      const result = getConfig('my-config', {
+        application: 'my-app',
+        environment: 'my-env',
+        agentOptions: { flags: ['a', 'b'] },
+        transform,
+        throwOnMissing: true,
+      });
+
+      // Assess
+      await expect(result).rejects.toBeInstanceOf(FlagNotFoundError);
+      await expect(result).rejects.toMatchObject({
+        message: 'One or more flags not found in configuration my-config',
+        flags: missingFlags,
+      });
+    }
+  );
+
+  it('returns the original body for complete multi-flag responses', async () => {
+    // Prepare
+    const body = '\n{ "b": {"enabled": false}, "a": {"enabled": true} }\n';
+    fetchMock.mockResolvedValue(new Response(body));
+
+    // Act
+    const result = await getConfig('my-config', {
+      application: 'my-app',
+      environment: 'my-env',
+      agentOptions: { flags: ['a', 'b'] },
+      throwOnMissing: true,
+    });
+
+    // Assess
+    expect(result).toBe(body);
+  });
+
+  it('applies the JSON transform to complete multi-flag responses', async () => {
+    // Prepare
+    const body = '\n{ "b": {"enabled": false}, "a": {"enabled": true} }\n';
+    fetchMock.mockResolvedValue(new Response(body));
+
+    // Act
+    const result = await getConfig('my-config', {
+      application: 'my-app',
+      environment: 'my-env',
+      agentOptions: { flags: ['a', 'b'] },
+      transform: 'json',
+      throwOnMissing: true,
+    });
+
+    // Assess
+    expect(result).toStrictEqual({
+      a: { enabled: true },
+      b: { enabled: false },
+    });
+  });
+
+  it.each([
+    'not JSON',
+    '[{"a":{"enabled":true}}]',
+    'null',
+    'true',
+    '123',
+    '"value"',
+  ])('preserves non-object multi-flag response %s', async (body) => {
+    // Prepare
+    fetchMock.mockResolvedValue(new Response(body));
+
+    // Act
+    const result = await getConfig('my-config', {
+      application: 'my-app',
+      environment: 'my-env',
+      agentOptions: { flags: ['a', 'b'] },
+      throwOnMissing: true,
+    });
+
+    // Assess
+    expect(result).toBe(body);
+  });
+
+  it('reports duplicate missing multi-flag names once in request order', async () => {
+    // Prepare
+    fetchMock.mockResolvedValue(new Response('{"a":{"enabled":true}}'));
+
+    // Act
+    const result = getConfig('my-config', {
+      application: 'my-app',
+      environment: 'my-env',
+      agentOptions: { flags: ['a', 'c', 'b', 'c', 'b'] },
+      throwOnMissing: true,
+    });
+
+    // Assess
+    await expect(result).rejects.toBeInstanceOf(FlagNotFoundError);
+    await expect(result).rejects.toMatchObject({ flags: ['c', 'b'] });
+  });
+
+  it('ignores inherited property names in multi-flag responses', async () => {
+    // Prepare
+    fetchMock.mockResolvedValue(new Response('{"a":{"enabled":true}}'));
+
+    // Act
+    const result = getConfig('my-config', {
+      application: 'my-app',
+      environment: 'my-env',
+      agentOptions: { flags: ['a', 'toString', 'constructor', '__proto__'] },
+      throwOnMissing: true,
+    });
+
+    // Assess
+    await expect(result).rejects.toBeInstanceOf(FlagNotFoundError);
+    await expect(result).rejects.toMatchObject({
+      flags: ['toString', 'constructor', '__proto__'],
+    });
+  });
+
+  it.each(['not JSON', '{"enabled":true}', '{}', '[]'])(
+    'returns a single-flag response %s without parsing',
+    async (body) => {
+      // Prepare
+      fetchMock.mockResolvedValue(new Response(body));
+      const parseSpy = vi.spyOn(JSON, 'parse');
+
+      try {
+        // Act
+        const result = await getConfig('my-config', {
+          application: 'my-app',
+          environment: 'my-env',
+          agentOptions: { flags: ['a'] },
+          throwOnMissing: true,
+        });
+
+        // Assess
+        expect(result).toBe(body);
+        expect(parseSpy).not.toHaveBeenCalled();
+      } finally {
+        parseSpy.mockRestore();
+      }
+    }
+  );
+
   it.each([
     'not JSON',
     'null',
@@ -644,7 +833,10 @@ describe('Function: getConfig', () => {
       const result = getConfig('my-config', {
         application: 'my-app',
         environment: 'my-env',
-        agentOptions: { flags: ['ui_refresh'], context: { tier: 'pro' } },
+        agentOptions: {
+          flags: ['ui_refresh', 'another_flag'],
+          context: { tier: 'pro' },
+        },
       });
 
       // Assess
@@ -672,7 +864,10 @@ describe('Function: getConfig', () => {
         application: 'my-app',
         environment: 'my-env',
         transform: 'json',
-        agentOptions: { flags: ['missing'], context: { tier: 'pro' } },
+        agentOptions: {
+          flags: ['missing', 'also_missing'],
+          context: { tier: 'pro' },
+        },
       });
 
       // Assess

@@ -178,6 +178,7 @@ Use the `agentOptions` object to pass additional options to the AppConfig Agent 
 Context keys must match `^[A-Za-z_][A-Za-z0-9_.-]*$`. Values can be strings, finite numbers, or booleans. Powertools quotes strings and escapes non-ASCII characters to preserve commas, quotes, padding, and newlines without allowing header injection. Invalid context or flag keys throw `GetParameterError` before any request.
 
 With a non-empty `flags` array, an empty HTTP 200 body or a structured HTTP 400 `NoSuchFlag` response returns `undefined`. Set `throwOnMissing` to throw `FlagNotFoundError` instead. Its `flags` property lists the missing names from the structured body, or all requested names for an empty HTTP 200 body.
+For several requested flags, any missing flag makes the whole request count as missing, regardless of profile type.
 An HTTP 404 still returns `undefined`, or throws `ParameterNotFoundError` with `throwOnMissing`, for a missing application, environment, or profile. Check `FlagNotFoundError` first because it extends `ParameterNotFoundError`, so existing catch blocks keep working.
 
 ```typescript hl_lines="18-25" title="Distinguishing missing flags from missing configurations"

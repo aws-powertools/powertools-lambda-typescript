@@ -22,10 +22,21 @@ import type {
   GetEnabledFeaturesOptions,
   Store,
   StoreResult,
+  Variant,
 } from './types/index.js';
+import type {
+  EvaluateManyVariantOptions,
+  EvaluateManyVariantResult,
+  EvaluateVariantOptions,
+} from './types/VariantEvaluation.js';
+import { isVariant, isVariantStore } from './variant.js';
 
 /**
  * Evaluates feature flags against a caller-supplied {@link Store | `Store`}.
+ *
+ * Infers the Store's value type. Variant stores require full Variant fallbacks
+ * and return Variants without schemas; JSON stores retain primitive inference
+ * and optional Standard Schema validation.
  *
  * @example
  * ```typescript
@@ -33,8 +44,9 @@ import type {
  * const enabled = await flags.evaluate({ name: 'checkout_v2', default: false });
  * ```
  */
-class FeatureFlags {
-  readonly #store: Store;
+class FeatureFlags<Value = JSONValue> {
+  readonly #store: Store<Value>;
+  readonly #variantStore: boolean;
   readonly #logger?: GenericLogger;
 
   /**
@@ -43,8 +55,9 @@ class FeatureFlags {
    * @param {Store} options.store - Supply the Store for flag lookups
    * @param {GenericLogger} options.logger - Log outcomes without values
    */
-  public constructor(options: FeatureFlagsOptions) {
+  public constructor(options: FeatureFlagsOptions<Value>) {
     this.#store = options.store;
+    this.#variantStore = isVariantStore(options.store);
     this.#logger = options.logger;
   }
 
@@ -56,6 +69,8 @@ class FeatureFlags {
    * and replaces the primitive type check with schema validation. Returns the
    * validated output on both the found path and the fallback path, and rejects
    * schema outputs that are undefined.
+   * Variant stores require a full Variant fallback, return it unchanged on a
+   * fallback path, and do not accept schemas.
    *
    * @param {Object} options - Configure the flag evaluation
    * @param {string} options.name - Identify the flag
@@ -76,19 +91,22 @@ class FeatureFlags {
    * ```
    */
   public evaluate<Schema extends StandardSchemaV1>(
-    options: EvaluateWithSchemaOptions<Schema>
+    options: Value extends Variant ? never : EvaluateWithSchemaOptions<Schema>
   ): Promise<StandardSchemaV1.InferOutput<Schema>>;
 
   public evaluate<Fallback extends JSONValue>(
-    options: EvaluateOptions<Fallback>
-  ): Promise<EvaluateResult<Fallback>>;
+    options: Value extends Variant
+      ? EvaluateVariantOptions
+      : EvaluateOptions<Fallback>
+  ): Promise<Value extends Variant ? Variant : EvaluateResult<Fallback>>;
   public async evaluate<Schema extends StandardSchemaV1>(
     options: EvaluateOptions<JSONValue> | EvaluateWithSchemaOptions<Schema>
-  ): Promise<JSONValue> {
+  ): Promise<unknown> {
     const { name, context = {} } = options;
     validateContext(context);
+    if (this.#variantStore) validateVariantFallback(name, options.default);
     const fallback =
-      'schema' in options
+      !this.#variantStore && 'schema' in options
         ? await validateWithSchema(
             name,
             'fallback',
@@ -97,7 +115,7 @@ class FeatureFlags {
           )
         : options.default;
 
-    let result: Record<string, StoreResult>;
+    let result: Record<string, StoreResult<Value>>;
     try {
       result = await this.#store.getMany([name], context);
     } catch (error) {
@@ -126,10 +144,10 @@ class FeatureFlags {
       return fallback;
     }
 
-    let value = flag.value;
-    if ('schema' in options) {
+    let value: unknown = flag.value;
+    if (!this.#variantStore && 'schema' in options) {
       value = await validateWithSchema(name, 'result', value, options.schema);
-    } else {
+    } else if (!this.#variantStore) {
       validateFlagValue(name, fallback, value);
     }
     this.#logger?.debug({ name, store: this.#store.name, outcome: 'found' });
@@ -144,6 +162,8 @@ class FeatureFlags {
    * Each schema replaces the primitive type check and supplies the output on both
    * the found path and the fallback path. Rejects undefined schema outputs and
    * throws for the whole batch if any flag fails validation.
+   * Variant stores require a full Variant fallback per flag and do not accept
+   * schemas. Each requested key resolves to a Variant.
    *
    * @param {Object} options - Configure the batch evaluation
    * @param {Object} options.flags - Supply flag names and their fallbacks
@@ -166,19 +186,29 @@ class FeatureFlags {
       Record<string, never>
     >,
   >(
-    options: EvaluateManyOptions<Flags, Schemas>
-  ): Promise<EvaluateManyResult<Flags, Schemas>>;
+    options: Value extends Variant
+      ? EvaluateManyVariantOptions<Flags>
+      : EvaluateManyOptions<Flags, Schemas>
+  ): Promise<
+    Value extends Variant
+      ? EvaluateManyVariantResult<Flags>
+      : EvaluateManyResult<Flags, Schemas>
+  >;
   public async evaluateMany(
     options: EvaluateManyOptions<Record<string, JSONValue>> & {
       schemas?: Record<string, StandardSchemaV1>;
     }
-  ): Promise<Record<string, JSONValue>> {
+  ): Promise<Record<string, unknown>> {
     const { flags, context = {}, schemas = {} } = options;
     validateContext(context);
     const names = Object.keys(flags);
     const fallbacks: [string, JSONValue][] = [];
     for (const name of names) {
-      const schema = Object.hasOwn(schemas, name) ? schemas[name] : undefined;
+      if (this.#variantStore) validateVariantFallback(name, flags[name]);
+      const schema =
+        !this.#variantStore && Object.hasOwn(schemas, name)
+          ? schemas[name]
+          : undefined;
       fallbacks.push([
         name,
         schema
@@ -186,7 +216,7 @@ class FeatureFlags {
           : flags[name],
       ]);
     }
-    let result: Record<string, StoreResult>;
+    let result: Record<string, StoreResult<Value>>;
     try {
       result = await this.#store.getMany(names, context);
     } catch (error) {
@@ -204,7 +234,7 @@ class FeatureFlags {
       return Object.fromEntries(fallbacks);
     }
 
-    const values: [string, JSONValue][] = [];
+    const values: [string, unknown][] = [];
     const missing: string[] = [];
     for (const [name, fallback] of fallbacks) {
       const flag = result[name];
@@ -212,14 +242,18 @@ class FeatureFlags {
         missing.push(name);
         values.push([name, fallback]);
       } else {
-        const schema = Object.hasOwn(schemas, name) ? schemas[name] : undefined;
+        const schema =
+          !this.#variantStore && Object.hasOwn(schemas, name)
+            ? schemas[name]
+            : undefined;
         if (schema) {
           values.push([
             name,
             await validateWithSchema(name, 'result', flag.value, schema),
           ]);
         } else {
-          validateFlagValue(name, fallback, flag.value);
+          if (!this.#variantStore)
+            validateFlagValue(name, fallback, flag.value);
           values.push([name, flag.value]);
         }
       }
@@ -259,7 +293,7 @@ class FeatureFlags {
   ): Promise<string[]> {
     const { context = {} } = options;
     validateContext(context);
-    let result: Record<string, StoreResult>;
+    let result: Record<string, StoreResult<Value>>;
     try {
       result = await this.#store.getAll(context);
     } catch (error) {
@@ -343,8 +377,8 @@ const validateContext = (context: EvaluationContext): void => {
  */
 const validateFlagValue = (
   name: string,
-  fallback: JSONValue,
-  value: JSONValue
+  fallback: unknown,
+  value: unknown
 ): void => {
   if (isScalar(fallback) && typeof value !== typeof fallback) {
     throw new FlagValueTypeError(
@@ -375,6 +409,13 @@ const getInvalidContextKind = (value: unknown): string => {
     return `an array containing ${getInvalidContextKind(offendingElement)}`;
   }
   return typeof value;
+};
+
+/** Rejects invalid Variant fallbacks before contacting the Store. @internal */
+const validateVariantFallback = (name: string, fallback: unknown): void => {
+  if (!isVariant(fallback)) {
+    throw new FlagValueTypeError(`Flag '${name}' requires a Variant fallback`);
+  }
 };
 
 export { FeatureFlags };

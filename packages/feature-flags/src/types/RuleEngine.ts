@@ -47,6 +47,9 @@ type TimeAction = keyof typeof TimeActionKeys;
 /** Carries validated bounds for a schedule Action. @internal */
 type TimeRange = { START: string; END: string; TIMEZONE?: string };
 
+/** Carries validated naive ISO bounds for a datetime schedule Action. @internal */
+type DatetimeRange = { START: string; END: string; TIMEZONE?: string };
+
 /** Carries validated day names for a schedule Action. @internal */
 type DaysOfWeek = { DAYS: string[]; TIMEZONE?: string };
 
@@ -71,6 +74,7 @@ type MatchConditionOptions = {
 export type {
   Comparator,
   Condition,
+  DatetimeRange,
   DaysOfWeek,
   DocumentValidator,
   EvaluateFlagOptions,

@@ -9,10 +9,10 @@ import {
 import { RuleActions } from '../constants.js';
 import type {
   Comparator,
-  ModuloRange,
   RuleAction,
   TimeAction,
 } from '../types/RuleEngine.js';
+import { isModuloRange } from './guards.js';
 
 /**
  * Compares numbers directly and strings by Unicode code point without coercion.
@@ -186,9 +186,9 @@ const actions: Record<Exclude<RuleAction, TimeAction>, Comparator> = {
   [RuleActions.NONE_IN_VALUE]: (context, value) =>
     compareArrays(context, value, (matches, entries) => !entries.some(matches)),
   [RuleActions.MODULO_RANGE]: (context, value) => {
-    if (!isNumber(context)) throw new TypeError('Incompatible operands');
-    // Validation guarantees integer BASE, START, and END with a positive BASE.
-    const { BASE: base, START: start, END: end } = value as ModuloRange;
+    if (!isNumber(context) || !isModuloRange(value))
+      throw new TypeError('Incompatible operands');
+    const { BASE: base, START: start, END: end } = value;
     const remainder = context % base;
     // Python gives negative remainders the divisor's sign. Avoid adding the base
     // to positive remainders, which can lose precision for fractional contexts.

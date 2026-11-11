@@ -1,7 +1,12 @@
 import type { JSONValue } from '@aws-lambda-powertools/commons/types';
 import { RuleActions, TimeActionKeys } from '../constants.js';
-import type { DaysOfWeek, TimeAction, TimeRange } from '../types/RuleEngine.js';
+import type {
+  DatetimeRange,
+  TimeAction,
+  TimeRange,
+} from '../types/RuleEngine.js';
 import { parseNaiveDatetime } from './datetime.js';
+import { isDatetimeRange, isDaysOfWeek, isTimeRange } from './guards.js';
 
 /**
  * Identifies Actions that ignore caller context and read the clock.
@@ -77,7 +82,7 @@ const compareTimeRange = (value: TimeRange, now: Date): boolean => {
  * @param now - Supply the clock instant
  * @internal
  */
-const compareDatetimeRange = (value: TimeRange, now: Date): boolean => {
+const compareDatetimeRange = (value: DatetimeRange, now: Date): boolean => {
   const fields = wallClock(now, value.TIMEZONE);
   const current = `${fields.year.padStart(4, '0')}-${fields.month}-${fields.day}T${fields.hour}:${fields.minute}:${fields.second}.${fields.fractionalSecond.padEnd(6, '0')}`;
   // Validation guarantees both bounds parse to canonical wall-clock strings.
@@ -91,15 +96,18 @@ const timeActions: Record<
   TimeAction,
   (value: JSONValue, now: Date) => boolean
 > = {
-  // The validator checks these object shapes before dispatch.
-  [RuleActions.SCHEDULE_BETWEEN_TIME_RANGE]: (value, now) =>
-    compareTimeRange(value as TimeRange, now),
-  [RuleActions.SCHEDULE_BETWEEN_DATETIME_RANGE]: (value, now) =>
-    compareDatetimeRange(value as TimeRange, now),
+  [RuleActions.SCHEDULE_BETWEEN_TIME_RANGE]: (value, now) => {
+    if (!isTimeRange(value)) throw new TypeError('Incompatible operands');
+    return compareTimeRange(value, now);
+  },
+  [RuleActions.SCHEDULE_BETWEEN_DATETIME_RANGE]: (value, now) => {
+    if (!isDatetimeRange(value)) throw new TypeError('Incompatible operands');
+    return compareDatetimeRange(value, now);
+  },
   [RuleActions.SCHEDULE_BETWEEN_DAYS_OF_WEEK]: (value, now) => {
-    const days = value as DaysOfWeek;
-    return days.DAYS.includes(
-      wallClock(now, days.TIMEZONE).weekday.toUpperCase()
+    if (!isDaysOfWeek(value)) throw new TypeError('Incompatible operands');
+    return value.DAYS.includes(
+      wallClock(now, value.TIMEZONE).weekday.toUpperCase()
     );
   },
 };

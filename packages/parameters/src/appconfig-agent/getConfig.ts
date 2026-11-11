@@ -7,6 +7,7 @@ import {
 import { transformValue } from '../base/transformValue.js';
 import {
   AppConfigAgentError,
+  FlagNotFoundError,
   GetParameterError,
   ParameterNotFoundError,
 } from '../errors.js';
@@ -65,25 +66,31 @@ const serializeContext = (
 };
 
 /**
- * Detect the Agent's structured missing-flag error without interpreting its message.
+ * Read missing flag names from the Agent's structured error without interpreting its message.
  *
  * @param value - Response body from an HTTP 400 response
  * @internal
  */
-const hasMissingFlag = (value: string): boolean => {
+const getMissingFlags = (value: string): string[] => {
   try {
     const body: unknown = JSON.parse(value);
-    return (
-      isRecord(body) &&
-      body.Reason === 'InvalidParameters' &&
-      isRecord(body.Details) &&
-      isRecord(body.Details.Value) &&
-      Object.values(body.Details.Value).some(
-        (problem) => isRecord(problem) && problem.Problem === 'NoSuchFlag'
-      )
-    );
+    if (
+      !isRecord(body) ||
+      body.Reason !== 'InvalidParameters' ||
+      !isRecord(body.Details) ||
+      !isRecord(body.Details.Value)
+    ) {
+      return [];
+    }
+    const flags: string[] = [];
+    for (const [flag, problem] of Object.entries(body.Details.Value)) {
+      if (isRecord(problem) && problem.Problem === 'NoSuchFlag') {
+        flags.push(flag);
+      }
+    }
+    return flags;
   } catch {
-    return false;
+    return [];
   }
 };
 
@@ -128,14 +135,27 @@ const fetchConfigFromAgent = async (
       }
     );
     const value = await res.text();
-    if (
-      res.status === 404 ||
-      (queryString !== '' &&
-        ((res.status === 200 && value === '') ||
-          (res.status === 400 && hasMissingFlag(value))))
-    ) {
+    if (res.status === 404) {
       if (options.throwOnMissing) {
         throw new ParameterNotFoundError(`Configuration ${name} not found`);
+      }
+      return undefined;
+    }
+    const requestedFlags = options.agentOptions?.flags ?? [];
+    let missingFlags: readonly string[] = [];
+    if (requestedFlags.length > 0) {
+      if (res.status === 400) {
+        missingFlags = getMissingFlags(value);
+      } else if (res.status === 200 && value === '') {
+        missingFlags = requestedFlags;
+      }
+    }
+    if (missingFlags.length > 0) {
+      if (options.throwOnMissing) {
+        throw new FlagNotFoundError(
+          `One or more flags not found in configuration ${name}`,
+          missingFlags
+        );
       }
       return undefined;
     }
@@ -242,7 +262,10 @@ const fetchConfigFromAgent = async (
  * Strings are quoted and ASCII-escaped before sending them in a single `Context` header.
  *
  * With non-empty `flags`, an empty HTTP 200 body or a structured HTTP 400 `NoSuchFlag` response returns `undefined`,
- * or throws a {@link ParameterNotFoundError | `ParameterNotFoundError`} when `throwOnMissing` is set.
+ * or throws a {@link FlagNotFoundError | `FlagNotFoundError`} when `throwOnMissing` is set. Its `flags` property lists
+ * the missing names from the structured response, or all requested names for an empty HTTP 200 body.
+ * With `throwOnMissing`, a missing application, environment, or profile (HTTP 404) still throws {@link ParameterNotFoundError | `ParameterNotFoundError`}.
+ * Check `FlagNotFoundError` first because it extends `ParameterNotFoundError`.
  * Without flags, an empty successful response remains an empty string before transformation.
  *
  * @example
@@ -260,6 +283,30 @@ const fetchConfigFromAgent = async (
  * });
  * ```
  *
+ * @example
+ * ```typescript
+ * import { getConfig } from '@aws-lambda-powertools/parameters/appconfig-agent';
+ * import { FlagNotFoundError, ParameterNotFoundError } from '@aws-lambda-powertools/parameters/errors';
+ *
+ * try {
+ *   await getConfig('features', {
+ *     application: 'my-app',
+ *     environment: 'prod',
+ *     agentOptions: { flags: ['ui_refresh'] },
+ *     throwOnMissing: true,
+ *   });
+ * } catch (error) {
+ *   if (error instanceof FlagNotFoundError) {
+ *     console.warn('Use fallback for missing flags', error.flags);
+ *   } else {
+ *     if (error instanceof ParameterNotFoundError) {
+ *       console.error('Application, environment, or configuration profile not found');
+ *     }
+ *     throw error;
+ *   }
+ * }
+ * ```
+ *
  * By default, the function calls the agent on port `2772`. If you configured the agent to run on a different port using the
  * `AWS_APPCONFIG_EXTENSION_HTTP_PORT` environment variable, the function will use that port instead.
  *
@@ -271,7 +318,7 @@ const fetchConfigFromAgent = async (
  * @param options.application - The application ID or the application name, if not provided it will be inferred from the service name in the environment (`POWERTOOLS_SERVICE_NAME`)
  * @param options.transform - Optional transform to be applied, can be `json` or `binary`
  * @param options.timeout - Optional timeout in milliseconds for the request to the AWS AppConfig Agent (default: `3000`)
- * @param options.throwOnMissing - Optional flag to throw a `ParameterNotFoundError` when the configuration or requested flags do not exist (default: `false`)
+ * @param options.throwOnMissing - Optional flag to throw a `ParameterNotFoundError` for a missing configuration, or a `FlagNotFoundError` for missing requested flags (default: `false`)
  * @param options.agentOptions - Additional options to pass to the AWS AppConfig Agent request, including flag query parameters and caller context
  */
 const getConfig = async <

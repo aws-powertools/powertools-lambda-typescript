@@ -2,6 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { getConfig } from '../../src/appconfig-agent/index.js';
 import {
   AppConfigAgentError,
+  FlagNotFoundError,
   GetParameterError,
   ParameterNotFoundError,
   TransformParameterError,
@@ -429,6 +430,10 @@ describe('Function: getConfig', () => {
       // Observed with the official Agent 2.0.230173 image pinned in RFC #5614.
       body: '{"Details":{"Value":{"missing":{"Problem":"NoSuchFlag"}}},"Message":"Configuration data missing one or more flag values","Reason":"InvalidParameters"}',
     },
+    {
+      status: 400,
+      body: '{"Details":{"Value":{"missing":{"Problem":"NoSuchFlag"},"also_missing":{"Problem":"NoSuchFlag"}}},"Reason":"InvalidParameters"}',
+    },
   ])(
     'returns undefined for a missing flag with HTTP $status',
     async ({ status, body }) => {
@@ -440,7 +445,7 @@ describe('Function: getConfig', () => {
         application: 'my-app',
         environment: 'my-env',
         transform: 'json',
-        agentOptions: { flags: ['missing'] },
+        agentOptions: { flags: ['missing', 'known_flag', 'also_missing'] },
       });
 
       // Assess
@@ -449,14 +454,28 @@ describe('Function: getConfig', () => {
   );
 
   it.each([
-    { status: 200, body: '' },
+    {
+      status: 200,
+      body: '',
+      missingFlags: [
+        'distinctive_missing_alpha',
+        'known_flag',
+        'distinctive_missing_omega',
+      ],
+    },
     {
       status: 400,
-      body: '{"Details":{"Value":{"missing":{"Problem":"NoSuchFlag"}}},"Message":"Configuration data missing one or more flag values","Reason":"InvalidParameters"}',
+      body: '{"Details":{"Value":{"distinctive_missing_omega":{"Problem":"NoSuchFlag"},"distinctive_missing_alpha":{"Problem":"NoSuchFlag"}}},"Message":"Configuration data missing one or more flag values","Reason":"InvalidParameters"}',
+      missingFlags: ['distinctive_missing_omega', 'distinctive_missing_alpha'],
+    },
+    {
+      status: 400,
+      body: '{"Details":{"Value":{"distinctive_missing_omega":{"Problem":"NoSuchFlag"},"known_flag":{"Problem":"DifferentCode"},"distinctive_missing_alpha":{"Problem":"NoSuchFlag"}}},"Reason":"InvalidParameters"}',
+      missingFlags: ['distinctive_missing_omega', 'distinctive_missing_alpha'],
     },
   ])(
-    'throws for a missing flag with HTTP $status and throwOnMissing',
-    async ({ status, body }) => {
+    'throws FlagNotFoundError with missing flag names for HTTP $status and throwOnMissing',
+    async ({ status, body, missingFlags }) => {
       // Prepare
       fetchMock.mockResolvedValue(new Response(body, { status }));
 
@@ -464,13 +483,27 @@ describe('Function: getConfig', () => {
       const result = getConfig('my-config', {
         application: 'my-app',
         environment: 'my-env',
-        agentOptions: { flags: ['missing'] },
+        agentOptions: {
+          flags: [
+            'distinctive_missing_alpha',
+            'known_flag',
+            'distinctive_missing_omega',
+          ],
+        },
         throwOnMissing: true,
       });
 
       // Assess
-      await expect(result).rejects.toThrow(
-        new ParameterNotFoundError('Configuration my-config not found')
+      await expect(result).rejects.toBeInstanceOf(FlagNotFoundError);
+      await expect(result).rejects.toMatchObject({
+        name: 'FlagNotFoundError',
+        message: 'One or more flags not found in configuration my-config',
+        flags: missingFlags,
+      });
+      await expect(result).rejects.toSatisfy(
+        (error: Error) =>
+          !error.message.includes('distinctive_missing') &&
+          !Object.hasOwn(error, 'cause')
       );
     }
   );
@@ -724,51 +757,65 @@ describe('Function: getConfig', () => {
     expect(result).toBe('my-value');
   });
 
-  it('returns undefined when the configuration does not exist', async () => {
-    // Prepare
-    fetchMock.mockResolvedValue({
-      ok: false,
-      status: 404,
-      text: vi
-        .fn()
-        .mockResolvedValue(
-          '{"Message":"Unrecognized or malformed path","ResourceType":"Configuration"}'
-        ),
-    });
+  it.each([undefined, { flags: ['distinctive_missing_flag'] }])(
+    'returns undefined for a missing configuration with agentOptions %j',
+    async (agentOptions) => {
+      // Prepare
+      fetchMock.mockResolvedValue({
+        ok: false,
+        status: 404,
+        text: vi
+          .fn()
+          .mockResolvedValue(
+            '{"Message":"Unrecognized or malformed path","ResourceType":"Configuration"}'
+          ),
+      });
 
-    // Act
-    const result = await getConfig('my-config', {
-      application: 'my-app',
-      environment: 'my-env',
-    });
-
-    // Assess
-    expect(result).toBeUndefined();
-  });
-
-  it('throws a ParameterNotFoundError when the configuration does not exist and throwOnMissing is set', async () => {
-    // Prepare
-    fetchMock.mockResolvedValue({
-      ok: false,
-      status: 404,
-      text: vi
-        .fn()
-        .mockResolvedValue(
-          '{"Message":"Unrecognized or malformed path","ResourceType":"Configuration"}'
-        ),
-    });
-
-    // Act & Assess
-    await expect(
-      getConfig('my-config', {
+      // Act
+      const result = await getConfig('my-config', {
         application: 'my-app',
         environment: 'my-env',
+        agentOptions,
+      });
+
+      // Assess
+      expect(result).toBeUndefined();
+    }
+  );
+
+  it.each([undefined, { flags: ['distinctive_missing_flag'] }])(
+    'throws plain ParameterNotFoundError for a missing configuration with agentOptions %j and throwOnMissing',
+    async (agentOptions) => {
+      // Prepare
+      fetchMock.mockResolvedValue({
+        ok: false,
+        status: 404,
+        text: vi
+          .fn()
+          .mockResolvedValue(
+            '{"Message":"Unrecognized or malformed path","ResourceType":"Configuration"}'
+          ),
+      });
+
+      // Act
+      const result = getConfig('my-config', {
+        application: 'my-app',
+        environment: 'my-env',
+        agentOptions,
         throwOnMissing: true,
-      })
-    ).rejects.toThrow(
-      new ParameterNotFoundError('Configuration my-config not found')
-    );
-  });
+      });
+
+      // Assess
+      await expect(result).rejects.toThrow(
+        new ParameterNotFoundError('Configuration my-config not found')
+      );
+      await expect(result).rejects.toBeInstanceOf(ParameterNotFoundError);
+      await expect(result).rejects.not.toBeInstanceOf(FlagNotFoundError);
+      await expect(result).rejects.toMatchObject({
+        name: 'ParameterNotFoundError',
+      });
+    }
+  );
 
   it('throws when the AppConfig Agent responds with an error', async () => {
     // Prepare

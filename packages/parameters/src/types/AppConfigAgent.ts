@@ -45,9 +45,9 @@ type GetConfigOptions = {
    */
   timeout?: number;
   /**
-   * Optional flag to throw a `ParameterNotFoundError` when the configuration or requested flags do not exist (default: `false`).
+   * Optional flag to throw a `ParameterNotFoundError` for a missing configuration, or a `FlagNotFoundError` for missing requested flags (default: `false`).
    *
-   * By default, a missing configuration returns `undefined`.
+   * By default, a missing configuration or requested flag returns `undefined`.
    */
   throwOnMissing?: boolean;
 };

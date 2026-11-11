@@ -38,7 +38,7 @@ const validateAndEvaluate = async (
   return Object.fromEntries(
     Object.entries(compiled).map(([name, flag]) => [
       name,
-      evaluate(name, flag, context),
+      evaluate(name, flag, { context }),
     ])
   );
 };

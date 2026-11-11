@@ -3,6 +3,7 @@ import type {
   JSONValue,
 } from '@aws-lambda-powertools/commons/types';
 import type { RuleActions, TimeActionKeys } from '../constants.js';
+import type { EvaluationContext } from './index.js';
 
 /** Configures retrieval and optional logging for a local rule engine Store. */
 type RuleEngineStoreOptions = {
@@ -52,13 +53,30 @@ type DaysOfWeek = { DAYS: string[]; TIMEZONE?: string };
 /** Carries validated integer bounds for a modulo Action. @internal */
 type ModuloRange = { BASE: number; START: number; END: number };
 
+/** Configures one flag evaluation without changing its identifying arguments. @internal */
+type EvaluateFlagOptions = {
+  context: EvaluationContext;
+  logger?: GenericLogger;
+  now?: () => Date;
+};
+
+/** Supplies identifiers, caller facts, and the clock for a Condition. @internal */
+type MatchConditionOptions = {
+  name: string;
+  rule: string;
+  context: EvaluationContext;
+  now: () => Date;
+};
+
 export type {
   Comparator,
   Condition,
   DaysOfWeek,
   DocumentValidator,
+  EvaluateFlagOptions,
   Flag,
   FlagDocument,
+  MatchConditionOptions,
   ModuloRange,
   Rule,
   RuleAction,

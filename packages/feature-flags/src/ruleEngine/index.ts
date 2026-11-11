@@ -50,7 +50,7 @@ const ruleEngineStore = ({
         results.push([
           name,
           Object.hasOwn(document, name)
-            ? evaluate(name, document[name], context, logger, now)
+            ? evaluate(name, document[name], { context, logger, now })
             : { found: false },
         ]);
       }
@@ -61,7 +61,7 @@ const ruleEngineStore = ({
       const document = validateDocument(await source());
       const results: [string, StoreResult][] = [];
       for (const [name, flag] of Object.entries(document)) {
-        results.push([name, evaluate(name, flag, context, logger, now)]);
+        results.push([name, evaluate(name, flag, { context, logger, now })]);
       }
       return Object.fromEntries(results);
     },

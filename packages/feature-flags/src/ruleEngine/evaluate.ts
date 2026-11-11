@@ -1,9 +1,13 @@
 import { isTruthy } from '@aws-lambda-powertools/commons';
-import type { GenericLogger } from '@aws-lambda-powertools/commons/types';
 import { StoreNames } from '../constants.js';
 import { ConditionEvaluationError } from '../errors.js';
-import type { EvaluationContext, StoreResult } from '../types/index.js';
-import type { Condition, Flag } from '../types/RuleEngine.js';
+import type { StoreResult } from '../types/index.js';
+import type {
+  Condition,
+  EvaluateFlagOptions,
+  Flag,
+  MatchConditionOptions,
+} from '../types/RuleEngine.js';
 import { actions } from './actions.js';
 import { cloneJSONValue } from './json.js';
 import { currentDate, isTimeAction, timeActions } from './time.js';
@@ -12,22 +16,21 @@ import { currentDate, isTimeAction, timeActions } from './time.js';
  * Evaluates one flag using its first fully matching Rule or its Flag Default.
  * @param name - Identify the flag
  * @param flag - Supply the validated flag definition
- * @param context - Supply caller facts for evaluation
- * @param logger - Log the selected Rule or Flag Default without values
- * @param now - Supply the clock for schedule Actions
+ * @param {Object} options - Configure evaluation facts, logging, and the clock
+ * @param {EvaluationContext} options.context - Supply caller facts for evaluation
+ * @param {GenericLogger} options.logger - Log the selected Rule or Flag Default without values
+ * @param {Function} options.now - Supply the clock for schedule Actions
  * @internal
  */
 const evaluate = (
   name: string,
   flag: Flag,
-  context: EvaluationContext,
-  logger?: GenericLogger,
-  now: () => Date = currentDate
+  { context, logger, now = currentDate }: EvaluateFlagOptions
 ): StoreResult => {
   for (const [rule, definition] of Object.entries(flag.rules)) {
     if (
       definition.conditions.every((condition) =>
-        matches(name, rule, condition, context, now)
+        matches(condition, { name, rule, context, now })
       )
     ) {
       const value = cloneJSONValue(definition.when_match);
@@ -47,19 +50,17 @@ const evaluate = (
 
 /**
  * Reads the clock for schedule Conditions and own context keys for ordinary Conditions.
- * @param name - Identify the flag
- * @param rule - Identify the Rule
  * @param condition - Supply the validated Condition
- * @param context - Supply caller facts for evaluation
- * @param now - Supply the clock for schedule Actions
+ * @param {Object} options - Supply identifiers, caller facts, and the clock
+ * @param {string} options.name - Identify the flag
+ * @param {string} options.rule - Identify the Rule
+ * @param {EvaluationContext} options.context - Supply caller facts for evaluation
+ * @param {Function} options.now - Supply the clock for schedule Actions
  * @internal
  */
 const matches = (
-  name: string,
-  rule: string,
   condition: Condition,
-  context: EvaluationContext,
-  now: () => Date
+  { name, rule, context, now }: MatchConditionOptions
 ): boolean => {
   const { key, action, value } = condition;
   try {

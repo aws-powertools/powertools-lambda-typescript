@@ -3,7 +3,7 @@ title: HTTP API
 description: Event handler for building HTTP APIs in AWS Lambda
 ---
 
-Event handler for Amazon API Gateway REST and HTTP APIs, Application Loader Balancer (ALB), and Lambda Function URLs<!--, and VPC Lattice -->.
+Event handler for Amazon API Gateway REST and HTTP APIs, Application Loader Balancer (ALB), Lambda Function URLs, and [Lambda Web Functions](#lambda-web-functions)<!--, and VPC Lattice -->.
 
 ## Key Features
 
@@ -860,6 +860,45 @@ Cookies from handlers and middleware remain separate, including values containin
     - Reducing time-to-first-byte for long-running operations is a requirement
 
     For most use cases, the standard `resolve` method is sufficient.
+
+### Lambda Web Functions
+
+[Lambda Web Functions](https://docs.aws.amazon.com/lambda/latest/dg/web-functions.html){target="_blank"} run your code as an HTTP server instead of invoking a handler with an event.
+Use `serve` to run your router as a Web Function: it listens on the address in `AWS_LAMBDA_HTTP_ENDPOINT`, routes each request as a Web `Request` without converting it to an event, and streams responses as your handlers produce them.
+
+=== "index.ts"
+
+    ```ts hl_lines="2 21"
+    --8<-- "examples/snippets/event-handler/http/advanced_web_function.ts"
+    ```
+
+The runtime loads `index.js` at the root of your deployment package, or the file in `AWS_LAMBDA_NODEJS_ENTRYPOINT`. When you run the same file locally, for example with `node index.js`, the server listens on `127.0.0.1:3000`.
+
+Handlers and middleware work the same way as with other integrations, with these differences:
+
+* **Request data.** Read the request from `reqCtx.req`; `reqCtx.responseType` is `'WebFunction'`. There is no Lambda event: `reqCtx.event` is a deprecated view with only the request headers and query string parameters, and its `body` is always `undefined`.
+* **Lambda context.** `serve` creates `reqCtx.context` for each request. Its `awsRequestId` is the `lambda-web-request-id` that Lambda assigned. Web Functions don't expose the function name, version, or log group, so those fields are empty. Set `timeoutSeconds` to your revision's timeout so that `getRemainingTimeInMillis()` is accurate.
+* **Concurrency.** One execution environment serves many requests at the same time. Logger, Metrics, and the other Powertools utilities keep their state per request automatically, but your own code shouldn't keep per-request state in module scope.
+* **Client disconnects.** `reqCtx.req.signal` aborts when the client disconnects. On Web Functions, a disconnect only reaches your code while the handler is writing a streaming response; otherwise the signal aborts when the request times out.
+* **Middleware.** The client IP used by the Metrics and Tracer middleware is the last `X-Forwarded-For` address, which Lambda adds. The Metrics middleware adds `webRequestId` metadata. Web Functions don't create AWS X-Ray segments for requests.
+* **Compression.** The [`compress`](#compress) middleware reads the whole response body to decide whether to compress it, so don't apply it to routes that stream their response.
+
+#### Shutdown
+
+Lambda sends `SIGTERM` to your server before it removes an idle execution environment, and stops the process about one second later.
+When this happens, `serve` stops accepting connections, waits up to `shutdown.timeoutMs` (500 ms by default) for in-flight requests, and then runs `shutdown.onShutdown`. Use it to close connections or flush data your code buffers across requests.
+
+=== "index.ts"
+
+    ```ts hl_lines="10-17"
+    --8<-- "examples/snippets/event-handler/http/advanced_web_function_shutdown.ts:6"
+    ```
+
+Pass `shutdown: false` to handle `SIGTERM` yourself.
+
+#### Using your own server
+
+If you run your own HTTP server, for example to share it with other handlers, call `app.resolveRequest(request, context)` with a Web `Request` and a Lambda `Context`. It returns a Web `Response`.
 
 ### Debug mode
 

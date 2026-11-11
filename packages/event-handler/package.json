@@ -119,6 +119,16 @@
         "types": "./lib/esm/http/middleware/metrics.d.ts",
         "default": "./lib/esm/http/middleware/metrics.js"
       }
+    },
+    "./http/web-function": {
+      "require": {
+        "types": "./lib/cjs/http/web-function/index.d.ts",
+        "default": "./lib/cjs/http/web-function/index.js"
+      },
+      "import": {
+        "types": "./lib/esm/http/web-function/index.d.ts",
+        "default": "./lib/esm/http/web-function/index.js"
+      }
     }
   },
   "typesVersions": {
@@ -154,6 +164,10 @@
       "http/middleware/metrics": [
         "./lib/cjs/http/middleware/metrics.d.ts",
         "./lib/esm/http/middleware/metrics.d.ts"
+      ],
+      "http/web-function": [
+        "./lib/cjs/http/web-function/index.d.ts",
+        "./lib/esm/http/web-function/index.d.ts"
       ]
     }
   },
@@ -168,7 +182,8 @@
     "url": "https://github.com/aws-powertools/powertools-lambda-typescript/issues"
   },
   "dependencies": {
-    "@aws-lambda-powertools/commons": "2.36.0"
+    "@aws-lambda-powertools/commons": "2.36.0",
+    "@aws/lambda-invoke-store": "0.3.0"
   },
   "peerDependencies": {
     "@aws-lambda-powertools/tracer": ">=2.36.0",

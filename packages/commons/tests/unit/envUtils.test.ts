@@ -1,6 +1,7 @@
 import { InvokeStore, InvokeStoreBase } from '@aws/lambda-invoke-store';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import {
+  enableInvokeStore,
   getBooleanFromEnv,
   getNumberFromEnv,
   getServiceName,
@@ -464,5 +465,18 @@ describe('Functions: envUtils', () => {
         expect(result).toBe(expected);
       }
     );
+
+    it('returns true once the process opted in with enableInvokeStore', () => {
+      // Prepare
+      const optIn = Symbol.for('aws-lambda-powertools.commons.useInvokeStore');
+      enableInvokeStore();
+
+      // Act
+      const result = shouldUseInvokeStore();
+
+      // Assess
+      expect(result).toBe(true);
+      delete (globalThis as Record<symbol, unknown>)[optIn];
+    });
   });
 });

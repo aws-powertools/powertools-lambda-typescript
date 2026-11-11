@@ -25,7 +25,8 @@ type Box<T> = [T];
  * so a value created during initialization keeps working once an invocation
  * context exists. Reads and writes are scoped to the invocation only when
  * concurrent invocations are detected ({@link shouldUseInvokeStore | `shouldUseInvokeStore()`}:
- * `AWS_LAMBDA_MAX_CONCURRENCY` is set, or the code runs on a Lambda Web Function),
+ * `AWS_LAMBDA_MAX_CONCURRENCY` is set, the code runs on a Lambda Web Function,
+ * or the process opted in),
  * the runtime exposes an `InvokeStore`, and an invocation context is active; in
  * every other case they fall through to the shared value, which is also what
  * {@link InvocationScoped.getShared | `getShared()`} and

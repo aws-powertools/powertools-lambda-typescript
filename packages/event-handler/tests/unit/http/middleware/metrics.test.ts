@@ -256,6 +256,73 @@ describe('Metrics Middleware', () => {
     );
   });
 
+  it('uses the last X-Forwarded-For address for Web Requests', async () => {
+    // Prepare
+    const metrics = new Metrics({ namespace: 'test' });
+    app.use(metricsMiddleware(metrics));
+    app.get('/test', async () => ({ ok: true }));
+
+    // Act
+    await app.resolveRequest(
+      new Request('https://example.com/test', {
+        headers: { 'X-Forwarded-For': '203.0.113.50, 70.41.3.18' },
+      }),
+      context
+    );
+
+    // Assess
+    expect(console.log).toHaveEmittedEMFWith(
+      expect.objectContaining({
+        ipAddress: '70.41.3.18',
+      })
+    );
+  });
+
+  it('adds webRequestId metadata for Web Requests', async () => {
+    // Prepare
+    const metrics = new Metrics({ namespace: 'test' });
+    app.use(metricsMiddleware(metrics));
+    app.get('/test', async () => ({ ok: true }));
+
+    // Act
+    await app.resolveRequest(
+      new Request('https://example.com/test', {
+        headers: { 'lambda-web-request-id': 'REQ123' },
+      }),
+      context
+    );
+
+    // Assess
+    expect(console.log).toHaveEmittedEMFWith(
+      expect.objectContaining({
+        webRequestId: 'REQ123',
+      })
+    );
+    expect(console.log).toHaveEmittedEMFWith(
+      expect.not.objectContaining({
+        apiGwRequestId: expect.anything(),
+      })
+    );
+  });
+
+  it('does not add request metadata for Web Requests without request headers', async () => {
+    // Prepare
+    const metrics = new Metrics({ namespace: 'test' });
+    app.use(metricsMiddleware(metrics));
+    app.get('/test', async () => ({ ok: true }));
+
+    // Act
+    await app.resolveRequest(new Request('https://example.com/test'), context);
+
+    // Assess
+    expect(console.log).toHaveEmittedEMFWith(
+      expect.not.objectContaining({
+        webRequestId: expect.anything(),
+        ipAddress: expect.anything(),
+      })
+    );
+  });
+
   it('adds userAgent metadata from request headers', async () => {
     // Prepare
     const metrics = new Metrics({ namespace: 'test' });

@@ -13,6 +13,7 @@ import type {
   RequestStoreOf,
   RouteHandler,
   SharedStoreOf,
+  WebRequestEvent,
 } from '../../src/types/http.js';
 
 describe('Store types', () => {
@@ -418,5 +419,32 @@ describe('Response validation typing', () => {
       body: { id: string; name: string };
       headers: undefined;
     }>();
+  });
+});
+
+describe('Web Request event view', () => {
+  it('keeps the fields common to all events accessible without narrowing', () => {
+    // Assess
+    expectTypeOf<RequestContext['event']>().toHaveProperty('headers');
+    expectTypeOf<RequestContext['event']>().toHaveProperty('body');
+    expectTypeOf<RequestContext['event']>().toHaveProperty(
+      'queryStringParameters'
+    );
+    expectTypeOf<RequestContext['event']>().toHaveProperty('isBase64Encoded');
+    expectTypeOf<RequestContext['event']>().toHaveProperty('requestContext');
+  });
+
+  it('narrows the event to the Web Request view on Web Requests', () => {
+    // Prepare
+    type WebRequestContext = Extract<
+      RequestContext,
+      { responseType: 'WebFunction' }
+    >;
+
+    // Assess
+    expectTypeOf<WebRequestContext['event']>().toEqualTypeOf<WebRequestEvent>();
+    expectTypeOf<
+      WebRequestContext['event']['body']
+    >().toEqualTypeOf<undefined>();
   });
 });

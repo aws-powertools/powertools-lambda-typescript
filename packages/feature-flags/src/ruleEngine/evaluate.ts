@@ -5,6 +5,7 @@ import { ConditionEvaluationError } from '../errors.js';
 import type { EvaluationContext, StoreResult } from '../types/index.js';
 import type { Condition, Flag } from '../types/RuleEngine.js';
 import { actions } from './actions.js';
+import { cloneJSONValue } from './json.js';
 
 /**
  * Evaluates one flag using its first fully matching Rule or its Flag Default.
@@ -26,7 +27,7 @@ const evaluate = (
         matches(name, rule, condition, context)
       )
     ) {
-      const value = definition.when_match;
+      const value = cloneJSONValue(definition.when_match);
       logger?.debug({
         store: StoreNames.RULE_ENGINE,
         name,
@@ -36,7 +37,7 @@ const evaluate = (
       return { found: true, value, enabled: isTruthy(value) };
     }
   }
-  const value = flag.default;
+  const value = cloneJSONValue(flag.default);
   logger?.debug({ store: StoreNames.RULE_ENGINE, name, outcome: 'default' });
   return { found: true, value, enabled: isTruthy(value) };
 };

@@ -1,9 +1,4 @@
-import {
-  isNull,
-  isNumber,
-  isRecord,
-  isString,
-} from '@aws-lambda-powertools/commons';
+import { isRecord, isString } from '@aws-lambda-powertools/commons';
 import type {
   GenericLogger,
   JSONValue,
@@ -15,6 +10,7 @@ import {
   UnsupportedRuleActions,
 } from '../constants.js';
 import { SchemaValidationError } from '../errors.js';
+import { isJSONValue } from './json.js';
 import type {
   Condition,
   Flag,
@@ -196,30 +192,6 @@ const validateResult = (
   if (!isJSONValue(value))
     throw new SchemaValidationError(`${location} must contain JSON`);
   return value;
-};
-
-/**
- * Checks JSON values at the source boundary, including callers that bypass types.
- * @param value - Supply the value to check
- * @param ancestors - Track containers to reject cycles without rejecting shared values
- * @internal
- */
-const isJSONValue = (
-  value: unknown,
-  ancestors = new Set<unknown>()
-): value is JSONValue => {
-  if (isNull(value) || isString(value) || typeof value === 'boolean')
-    return true;
-  if (isNumber(value)) return Number.isFinite(value);
-  if (!Array.isArray(value) && !isRecord(value)) return false;
-  if (ancestors.has(value)) return false;
-  ancestors.add(value);
-  const entries = Array.isArray(value)
-    ? Array.from(value)
-    : Object.values(value);
-  const valid = entries.every((entry) => isJSONValue(entry, ancestors));
-  ancestors.delete(value);
-  return valid;
 };
 
 export { validate };

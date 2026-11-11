@@ -1,9 +1,9 @@
-import { isNumber, isString } from '@aws-lambda-powertools/commons';
 import type {
   GenericLogger,
   JSONValue,
 } from '@aws-lambda-powertools/commons/types';
 import type { StandardSchemaV1 } from '@standard-schema/spec';
+import { getInvalidContextKind, isScalar } from './context.js';
 import {
   FlagResultValidationError,
   FlagValueTypeError,
@@ -11,7 +11,6 @@ import {
   StoreUnavailableError,
 } from './errors.js';
 import type {
-  ContextScalar,
   EvaluateManyOptions,
   EvaluateManyResult,
   EvaluateOptions,
@@ -385,30 +384,6 @@ const validateFlagValue = (
       `Flag '${name}' expected type '${typeof fallback}' but received '${typeof value}'`
     );
   }
-};
-
-/**
- * Checks for a string, number, or boolean in context values and fallbacks.
- * @param value - Supply the value to check
- * @internal
- */
-const isScalar = (value: unknown): value is ContextScalar =>
-  isString(value) || isNumber(value) || typeof value === 'boolean';
-
-/**
- * Describes an invalid context value's kind without exposing its value.
- * @param value - Supply the invalid context value to describe
- * @internal
- */
-const getInvalidContextKind = (value: unknown): string => {
-  if (value === null) return 'null';
-  if (Array.isArray(value)) {
-    const offendingElement = Array.from(value).find(
-      (element) => !isScalar(element)
-    );
-    return `an array containing ${getInvalidContextKind(offendingElement)}`;
-  }
-  return typeof value;
 };
 
 /** Rejects invalid Variant fallbacks before contacting the Store. @internal */

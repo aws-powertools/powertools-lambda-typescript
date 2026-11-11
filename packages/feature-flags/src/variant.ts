@@ -1,5 +1,6 @@
 import { isRecord } from '@aws-lambda-powertools/commons';
-import type { ContextScalar, ContextValue, Variant } from './types/index.js';
+import { isFiniteContextValue } from './context.js';
+import type { Variant } from './types/index.js';
 
 /** Tracks built-in Variant stores without importing their transport. @internal */
 const variantStores = new WeakSet<object>();
@@ -12,18 +13,6 @@ const registerVariantStore = (store: object): void => {
 /** Checks whether a store requires Variant fallbacks. @internal */
 const isVariantStore = (store: object): boolean => variantStores.has(store);
 
-/** Checks finite scalar attribute values. @internal */
-const isContextScalar = (value: unknown): value is ContextScalar =>
-  typeof value === 'string' ||
-  typeof value === 'boolean' ||
-  (typeof value === 'number' && Number.isFinite(value));
-
-/** Checks scalar attributes and flat arrays, including sparse arrays. @internal */
-const isContextValue = (value: unknown): value is ContextValue =>
-  Array.isArray(value)
-    ? Array.from(value).every(isContextScalar)
-    : isContextScalar(value);
-
 /** Checks the exact normalized Variant shape and every attribute. @internal */
 const isVariant = (value: unknown): value is Variant =>
   isRecord(value) &&
@@ -34,12 +23,6 @@ const isVariant = (value: unknown): value is Variant =>
   typeof value.variant === 'string' &&
   Object.hasOwn(value, 'attributes') &&
   isRecord(value.attributes) &&
-  Object.values(value.attributes).every(isContextValue);
+  Object.values(value.attributes).every(isFiniteContextValue);
 
-export {
-  isContextScalar,
-  isContextValue,
-  isVariant,
-  isVariantStore,
-  registerVariantStore,
-};
+export { isVariant, isVariantStore, registerVariantStore };

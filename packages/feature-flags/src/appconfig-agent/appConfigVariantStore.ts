@@ -3,6 +3,7 @@ import { isRunningInLambda } from '@aws-lambda-powertools/commons/utils/env';
 import { getConfig } from '@aws-lambda-powertools/parameters/appconfig-agent';
 import { FlagNotFoundError } from '@aws-lambda-powertools/parameters/errors';
 import { StoreNames } from '../constants.js';
+import { isFiniteContextValue, isScalar } from '../context.js';
 import {
   InvalidContextError,
   SchemaValidationError,
@@ -18,11 +19,7 @@ import type {
   StoreResult,
   Variant,
 } from '../types/index.js';
-import {
-  isContextScalar,
-  isContextValue,
-  registerVariantStore,
-} from '../variant.js';
+import { registerVariantStore } from '../variant.js';
 
 /**
  * Creates a Store that retrieves Agent-selected AppConfig Variants.
@@ -107,23 +104,24 @@ const appConfigVariantStore = (
         return Object.fromEntries([[name, normalize(name, flag, options)]]);
       }
       const profile = validateProfile(await retrieve(context));
-      return Object.fromEntries(
-        requested.map((name) => [
+      const results: [string, StoreResult<Variant>][] = [];
+      for (const name of requested) {
+        results.push([
           name,
           Object.hasOwn(profile, name)
             ? normalize(name, profile[name], options)
             : { found: false },
-        ])
-      );
+        ]);
+      }
+      return Object.fromEntries(results);
     },
     getAll: async (context) => {
       const profile = validateProfile(await retrieve(context));
-      return Object.fromEntries(
-        Object.entries(profile).map(([name, flag]) => [
-          name,
-          normalize(name, flag, options),
-        ])
-      );
+      const results: [string, StoreResult<Variant>][] = [];
+      for (const [name, flag] of Object.entries(profile)) {
+        results.push([name, normalize(name, flag, options)]);
+      }
+      return Object.fromEntries(results);
     },
   };
   registerVariantStore(store);
@@ -135,7 +133,11 @@ function validateVariantContext(
   context: EvaluationContext
 ): asserts context is Record<string, ContextScalar> {
   for (const [key, value] of Object.entries(context)) {
-    if (!/^[A-Za-z_][A-Za-z0-9_.-]*$/.test(key) || !isContextScalar(value)) {
+    if (
+      !/^[A-Za-z_][A-Za-z0-9_.-]*$/.test(key) ||
+      !isScalar(value) ||
+      (typeof value === 'number' && !Number.isFinite(value))
+    ) {
       throw new InvalidContextError(`Invalid evaluation context key '${key}'`);
     }
   }
@@ -173,7 +175,7 @@ const normalize = (
   const attributes: [string, ContextValue][] = [];
   for (const [key, value] of Object.entries(flag)) {
     if (key === 'enabled' || key === '_variant') continue;
-    if (!isContextValue(value)) {
+    if (!isFiniteContextValue(value)) {
       throw new SchemaValidationError(
         `Flag '${name}' must contain valid Variant attributes`
       );

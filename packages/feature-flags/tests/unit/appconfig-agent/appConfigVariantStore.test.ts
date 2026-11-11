@@ -12,7 +12,11 @@ import {
   SchemaValidationError,
   StoreUnavailableError,
 } from '../../../src/errors.js';
-import type { EvaluationContext } from '../../../src/types/index.js';
+import type {
+  EvaluationContext,
+  StoreResult,
+  Variant,
+} from '../../../src/types/index.js';
 
 const getConfigMock = vi.hoisted(() => vi.fn());
 vi.mock('@aws-lambda-powertools/parameters/appconfig-agent', () => ({
@@ -198,17 +202,19 @@ describe('appConfigVariantStore', () => {
       // Prepare
       getConfigMock.mockResolvedValue({});
       const store = appConfigVariantStore(options);
+      const expected: [string, StoreResult<Variant>][] = [];
+      for (const name of names) {
+        expected.push([name, { found: false }]);
+      }
       // Act
       const result = await store.getMany(names, {});
       // Assess
-      expect(result).toEqual(
-        Object.fromEntries(names.map((name) => [name, { found: false }]))
-      );
+      expect(result).toEqual(Object.fromEntries(expected));
       expect(getConfigMock).toHaveBeenCalledOnce();
     }
   );
 
-  it.each([
+  const malformedFlags: unknown[] = [
     null,
     [],
     'secret',
@@ -220,30 +226,36 @@ describe('appConfigVariantStore', () => {
     { enabled: true, _variant: null },
     { enabled: true, _variant: 123 },
     { enabled: true, _variant: [] },
-    ...[
-      null,
-      undefined,
-      { secret: 'hidden' },
-      [['secret']],
-      ['secret', null],
-      Number.NaN,
-      Number.POSITIVE_INFINITY,
-      [Number.POSITIVE_INFINITY],
-      Array(1),
-    ].map((attribute) => ({ enabled: true, attribute })),
-  ])('rejects malformed flag %j without exposing values', async (flag) => {
-    // Prepare
-    getConfigMock.mockResolvedValue(flag);
-    const store = appConfigVariantStore(options);
-    // Act
-    const result = store.getMany(['ui'], {});
-    // Assess
-    await expect(result).rejects.toBeInstanceOf(SchemaValidationError);
-    await expect(result).rejects.toThrow("Flag 'ui'");
-    await expect(result).rejects.not.toThrow('secret');
-    await expect(result).rejects.not.toThrow('hidden');
-    await expect(result).rejects.not.toThrow('123');
-  });
+  ];
+  for (const attribute of [
+    null,
+    undefined,
+    { secret: 'hidden' },
+    [['secret']],
+    ['secret', null],
+    Number.NaN,
+    Number.POSITIVE_INFINITY,
+    [Number.POSITIVE_INFINITY],
+    Array(1),
+  ]) {
+    malformedFlags.push({ enabled: true, attribute });
+  }
+  it.each(malformedFlags)(
+    'rejects malformed flag %j without exposing values',
+    async (flag) => {
+      // Prepare
+      getConfigMock.mockResolvedValue(flag);
+      const store = appConfigVariantStore(options);
+      // Act
+      const result = store.getMany(['ui'], {});
+      // Assess
+      await expect(result).rejects.toBeInstanceOf(SchemaValidationError);
+      await expect(result).rejects.toThrow("Flag 'ui'");
+      await expect(result).rejects.not.toThrow('secret');
+      await expect(result).rejects.not.toThrow('hidden');
+      await expect(result).rejects.not.toThrow('123');
+    }
+  );
 
   it.each(['batch', 'all'] as const)(
     'rejects requested malformed flags from $0 retrieval',
@@ -334,23 +346,26 @@ describe('appConfigVariantStore', () => {
     await expect(result).rejects.toBe(error);
   });
 
-  it.each([
+  const invalidContexts: { key: string; value: unknown }[] = [
     { key: 'array', value: [] },
     { key: 'nan', value: Number.NaN },
     { key: 'infinite', value: Number.POSITIVE_INFINITY },
     { key: 'object', value: { secret: 'hidden' } },
     { key: 'null', value: null },
     { key: 'undefined', value: undefined },
-    ...[
-      '',
-      '1key',
-      'bad key',
-      'é',
-      'injected, admin',
-      'bad=key',
-      'bad\r\nkey',
-    ].map((key) => ({ key, value: 'secret' })),
-  ])(
+  ];
+  for (const key of [
+    '',
+    '1key',
+    'bad key',
+    'é',
+    'injected, admin',
+    'bad=key',
+    'bad\r\nkey',
+  ]) {
+    invalidContexts.push({ key, value: 'secret' });
+  }
+  it.each(invalidContexts)(
     'rejects context key $key before calling Parameters',
     async ({ key, value }) => {
       // Prepare

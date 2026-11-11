@@ -13,60 +13,12 @@ import {
 } from '../errors.js';
 import type {
   AppConfigAgentGetConfigOutput,
-  AppConfigAgentRequestOptions,
   GetConfigOptions,
 } from '../types/AppConfigAgent.js';
+import { serializeContext, serializeFlags } from './serializeAgentOptions.js';
 
 /**
- * Validate flag keys and encode them as repeated query parameters.
- *
- * @param flags - Flag keys to retrieve in caller-provided order
- * @internal
- */
-const serializeFlags = (flags: readonly string[] = []): string => {
-  const parameters: string[] = [];
-  for (const [index, flag] of flags.entries()) {
-    if (typeof flag !== 'string' || flag.length === 0) {
-      throw new GetParameterError(`Invalid flag at index ${index}`);
-    }
-    parameters.push(`flag=${encodeURIComponent(flag)}`);
-  }
-  return parameters.length === 0 ? '' : `?${parameters.join('&')}`;
-};
-
-/**
- * Validate caller context and encode it as one ASCII-only header.
- *
- * @param context - Scalar values for multi-variant evaluation
- * @internal
- */
-const serializeContext = (
-  context: AppConfigAgentRequestOptions['context'] = {}
-): string | undefined => {
-  const entries: string[] = [];
-  for (const [key, value] of Object.entries(context)) {
-    if (!/^[A-Za-z_][A-Za-z0-9_.-]*$/.test(key)) {
-      throw new GetParameterError(`Invalid context key "${key}"`);
-    }
-    if (
-      typeof value !== 'string' &&
-      typeof value !== 'boolean' &&
-      !(typeof value === 'number' && Number.isFinite(value))
-    ) {
-      throw new GetParameterError(`Invalid context value for key "${key}"`);
-    }
-    const encodedValue = JSON.stringify(value).replace(
-      /[\u007f-\uffff]/g,
-      (character) =>
-        `\\u${character.charCodeAt(0).toString(16).padStart(4, '0')}`
-    );
-    entries.push(`${key}=${encodedValue}`);
-  }
-  return entries.length === 0 ? undefined : entries.join(', ');
-};
-
-/**
- * Read missing flag names from the Agent's structured error without interpreting its message.
+ * Reads missing flag names from the Agent's structured error without interpreting its message.
  *
  * @param value - Response body from an HTTP 400 response
  * @internal
@@ -95,7 +47,7 @@ const getMissingFlags = (value: string): string[] => {
 };
 
 /**
- * Find requested flags that the Agent omitted from a successful multi-flag response.
+ * Finds requested flags that the Agent omitted from a successful multi-flag response.
  *
  * @param value - Non-empty response body from an HTTP 200 response
  * @param requestedFlags - Flag names in caller-provided order

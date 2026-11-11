@@ -298,9 +298,10 @@ describe('Function: getConfig', () => {
       );
       const headers = new Headers(fetchMock.mock.calls[0][1].headers);
       expect([...headers]).toStrictEqual([['context', expected]]);
-      expect(expected).not.toMatch(/[\r\n]/);
+      const contextHeader: string = fetchMock.mock.calls[0][1].headers.Context;
+      expect(contextHeader).not.toMatch(/[\r\n]/);
       expect(
-        [...expected].every((character) => character.charCodeAt(0) <= 0x7e)
+        [...contextHeader].every((character) => character.charCodeAt(0) <= 0x7e)
       ).toBe(true);
     }
   );

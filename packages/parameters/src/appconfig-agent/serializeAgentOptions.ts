@@ -8,6 +8,12 @@ import type { AppConfigAgentRequestOptions } from '../types/AppConfigAgent.js';
 const contextKeyPattern = /^[A-Za-z_][A-Za-z0-9_.-]*$/;
 
 /**
+ * Matches UTF-16 code units outside printable ASCII so they can be escaped as `\uXXXX` and keep the header ASCII-only.
+ * @internal
+ */
+const nonAsciiCodeUnitPattern = /[\u007f-\uffff]/g;
+
+/**
  * Validates flag keys and encodes them as repeated query parameters.
  *
  * @param flags - Flag keys to retrieve in caller-provided order
@@ -46,7 +52,7 @@ const serializeContext = (
       throw new GetParameterError(`Invalid context value for key "${key}"`);
     }
     const encodedValue = JSON.stringify(value).replace(
-      /[\u007f-\uffff]/g,
+      nonAsciiCodeUnitPattern,
       (character) =>
         `\\u${character.charCodeAt(0).toString(16).padStart(4, '0')}`
     );

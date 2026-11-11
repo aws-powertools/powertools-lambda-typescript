@@ -419,7 +419,7 @@ The local rule engine's conformance baseline is Powertools for Python **3.36.0**
 | Boolean/number equality and membership | Strict types; `true` is not `1` | Booleans can equal numbers |
 | Incompatible Action operands | Throw `ConditionEvaluationError` | Warn and return a non-match |
 | Array-index Rule names, such as `"10"` | Reject to preserve Rule order | Preserve their written order |
-| Non-object `rules`, such as `null` or `false` | Reject | Falsy values can behave as absent rules |
+| Non-object `rules`, such as `[]`, `null`, or `false` | Reject | Falsy values can behave as absent rules |
 | Boolean modulo context or bounds | Reject | Booleans can act as integers |
 | `TIMEZONE` | Named IANA zones only | Can accept dateutil defaults or offset forms |
 | Date-only datetime bound ending in `Z` | Reject during validation | Can pass validation before failing to parse during evaluation |

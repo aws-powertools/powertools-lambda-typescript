@@ -17,6 +17,7 @@ import { createValidationCache } from './validationCache.js';
  * Empty-document and empty-rules warnings fire on validation, once per new document content rather than every call.
  * Each call evaluates its captured, owned snapshot and returns copies of structured values.
  * Schedule Actions ignore caller context and read the clock in their IANA timezone, defaulting to UTC.
+ * Reads the clock once after retrieving and validating each document, sharing the instant across all flags and Conditions in that call.
  * MODULO_RANGE uses Python's positive-divisor remainder, including negative and fractional contexts.
  *
  * @param {Object} options - Configure retrieval and logging
@@ -45,12 +46,13 @@ const ruleEngineStore = ({
     name,
     getMany: async (names, context) => {
       const document = validateDocument(await source());
+      const instant = now();
       const results: [string, StoreResult][] = [];
       for (const name of new Set(names)) {
         results.push([
           name,
           Object.hasOwn(document, name)
-            ? evaluate(name, document[name], { context, logger, now })
+            ? evaluate(name, document[name], { context, logger, now: instant })
             : { found: false },
         ]);
       }
@@ -59,9 +61,13 @@ const ruleEngineStore = ({
     },
     getAll: async (context) => {
       const document = validateDocument(await source());
+      const instant = now();
       const results: [string, StoreResult][] = [];
       for (const [name, flag] of Object.entries(document)) {
-        results.push([name, evaluate(name, flag, { context, logger, now })]);
+        results.push([
+          name,
+          evaluate(name, flag, { context, logger, now: instant }),
+        ]);
       }
       return Object.fromEntries(results);
     },

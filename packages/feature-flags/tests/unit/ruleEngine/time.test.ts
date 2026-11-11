@@ -11,6 +11,145 @@ import {
 } from './scheduleFixtures.js';
 
 describe('Schedule Actions', () => {
+  it('keeps batch time-range flags on the same side of a clock boundary', async () => {
+    // Prepare
+    const now = vi
+      .fn<() => Date>()
+      .mockReturnValueOnce(new Date('2026-06-01T18:59:59.999Z'))
+      .mockReturnValue(new Date('2026-06-01T19:00:00.000Z'));
+    const document = conditionDocument([
+      {
+        action: 'SCHEDULE_BETWEEN_TIME_RANGE',
+        key: 'CURRENT_TIME',
+        value: { START: '18:59', END: '18:59' },
+      },
+    ]);
+    const store = ruleEngineStore({
+      source: async () => ({
+        first: document.my_feature,
+        second: document.my_feature,
+      }),
+      now,
+    });
+    // Act
+    const result = await store.getMany(['first', 'second'], {});
+    // Assess
+    expect(result).toEqual({
+      first: { found: true, value: true, enabled: true },
+      second: { found: true, value: true, enabled: true },
+    });
+    expect(now).toHaveBeenCalledExactlyOnceWith();
+  });
+
+  it('reads the clock exactly once per getMany and getAll across flags and schedule Conditions', async () => {
+    // Prepare
+    const now = vi
+      .fn<() => Date>()
+      .mockReturnValue(new Date('2026-06-01T18:00:00Z'));
+    const document = conditionDocument([
+      {
+        action: 'SCHEDULE_BETWEEN_TIME_RANGE',
+        key: 'CURRENT_TIME',
+        value: { START: '17:00', END: '19:00' },
+      },
+      {
+        action: 'SCHEDULE_BETWEEN_DATETIME_RANGE',
+        key: 'CURRENT_DATETIME',
+        value: { START: '2026-06-01T17:00:00', END: '2026-06-01T19:00:00' },
+      },
+      {
+        action: 'SCHEDULE_BETWEEN_DAYS_OF_WEEK',
+        key: 'CURRENT_DAY_OF_WEEK',
+        value: { DAYS: ['MONDAY'] },
+      },
+    ]);
+    const store = ruleEngineStore({
+      source: async () => ({
+        first: document.my_feature,
+        second: document.my_feature,
+      }),
+      now,
+    });
+    // Act
+    const selected = await store.getMany(['first', 'second'], {});
+    // Assess
+    expect(now).toHaveBeenCalledExactlyOnceWith();
+    expect(selected).toEqual({
+      first: { found: true, value: true, enabled: true },
+      second: { found: true, value: true, enabled: true },
+    });
+    // Act
+    const all = await store.getAll({});
+    // Assess
+    expect(now).toHaveBeenCalledTimes(2);
+    expect(all).toEqual(selected);
+  });
+
+  it('reads one clock instant even without schedule Conditions or selected flags', async () => {
+    // Prepare
+    const now = vi
+      .fn<() => Date>()
+      .mockReturnValue(new Date('2026-06-01T18:00:00Z'));
+    const store = ruleEngineStore({
+      source: async () => ({ always: { default: true } }),
+      now,
+    });
+    // Act
+    const selected = await store.getMany([], {});
+    // Assess
+    expect(now).toHaveBeenCalledExactlyOnceWith();
+    expect(selected).toEqual({});
+    // Act
+    const all = await store.getAll({});
+    // Assess
+    expect(now).toHaveBeenCalledTimes(2);
+    expect(all).toEqual({
+      always: { found: true, value: true, enabled: true },
+    });
+  });
+
+  it('keeps disjoint datetime conditions from matching across a clock boundary', async () => {
+    // Prepare
+    const now = vi
+      .fn<() => Date>()
+      .mockReturnValueOnce(new Date('2026-06-01T18:59:59.999Z'))
+      .mockReturnValue(new Date('2026-06-01T19:00:00.000Z'));
+
+    const flags = new FeatureFlags({
+      store: ruleEngineStore({
+        source: async () =>
+          conditionDocument([
+            {
+              action: 'SCHEDULE_BETWEEN_DATETIME_RANGE',
+              key: 'CURRENT_DATETIME',
+              value: {
+                START: '2026-06-01T18:59:59',
+                END: '2026-06-01T18:59:59.999',
+              },
+            },
+            {
+              action: 'SCHEDULE_BETWEEN_DATETIME_RANGE',
+              key: 'CURRENT_DATETIME',
+              value: {
+                START: '2026-06-01T19:00:00',
+                END: '2026-06-01T19:00:01',
+              },
+            },
+          ]),
+        now,
+      }),
+    });
+
+    // Act
+    const result = await flags.evaluate({
+      name: 'my_feature',
+      default: false,
+    });
+
+    // Assess
+    expect(result).toBe(false);
+  });
+
   it.each([
     { day: 'SUNDAY', instant: '2026-06-07T12:00:00Z' },
     { day: 'MONDAY', instant: '2026-06-08T12:00:00Z' },
@@ -627,7 +766,7 @@ describe('Schedule Actions', () => {
     }
   );
 
-  it('reads the injected clock afresh and ignores document clock fields', async () => {
+  it('reads a fresh injected clock instant per Store call and ignores document clock fields', async () => {
     // Prepare
     const now = vi
       .fn()
@@ -649,6 +788,9 @@ describe('Schedule Actions', () => {
     });
     // Act
     const first = await store.getAll({});
+    // Assess
+    expect(now).toHaveBeenCalledExactlyOnceWith();
+    // Act
     const second = await store.getMany(['my_feature'], {});
     // Assess
     expect(first.my_feature).toEqual({

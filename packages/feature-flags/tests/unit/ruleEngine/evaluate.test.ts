@@ -8,6 +8,9 @@ import { actions } from '../../../src/ruleEngine/actions.js';
 import { evaluate } from '../../../src/ruleEngine/evaluate.js';
 import type { Flag, RuleAction } from '../../../src/types/RuleEngine.js';
 
+/** Supplies an explicit instant for ordinary comparator fixtures without reading a clock. */
+const now = new Date('2026-06-01T18:00:00Z');
+
 /** Creates an isolated boolean flag for a comparator test. */
 const prepareFlag = (action: RuleAction, value: JSONValue): Flag => ({
   default: false,
@@ -23,7 +26,7 @@ const evaluateCondition = (
   value: JSONValue
 ) => {
   const flag = prepareFlag(action, value);
-  return evaluate('checkout', flag, { context: { tier: context } });
+  return evaluate('checkout', flag, { context: { tier: context }, now });
 };
 
 /** Describes a membership comparison at the internal comparator boundary. */
@@ -192,7 +195,10 @@ describe('Rule Engine evaluation', () => {
       },
     };
     // Act
-    const result = evaluate('checkout', flag, { context: { tier: 'premium' } });
+    const result = evaluate('checkout', flag, {
+      context: { tier: 'premium' },
+      now,
+    });
     // Assess
     expect(result).toEqual({ found: true, value: 10, enabled: true });
   });
@@ -210,7 +216,7 @@ describe('Rule Engine evaluation', () => {
       value: true,
     });
     // Act
-    const result = evaluate('checkout', flag, { context });
+    const result = evaluate('checkout', flag, { context, now });
     // Assess
     expect(result).toEqual({ found: true, value: expected, enabled: expected });
   });
@@ -223,7 +229,10 @@ describe('Rule Engine evaluation', () => {
       conditions: [{ action: 'EQUALS', key: 'tier', value: 'premium' }],
     };
     // Act
-    const result = evaluate('checkout', flag, { context: { tier: 'premium' } });
+    const result = evaluate('checkout', flag, {
+      context: { tier: 'premium' },
+      now,
+    });
     // Assess
     expect(result).toEqual({ found: true, value: 'matched', enabled: true });
   });
@@ -237,7 +246,10 @@ describe('Rule Engine evaluation', () => {
       value: 123,
     });
     // Act
-    const result = evaluate('checkout', flag, { context: { tier: 'premium' } });
+    const result = evaluate('checkout', flag, {
+      context: { tier: 'premium' },
+      now,
+    });
     // Assess
     expect(result).toEqual({ found: true, value: false, enabled: false });
   });
@@ -250,7 +262,10 @@ describe('Rule Engine evaluation', () => {
       conditions: [{ action: 'STARTSWITH', key: 'tier', value: 123 }],
     };
     // Act
-    const result = evaluate('checkout', flag, { context: { tier: 'premium' } });
+    const result = evaluate('checkout', flag, {
+      context: { tier: 'premium' },
+      now,
+    });
     // Assess
     expect(result).toEqual({ found: true, value: true, enabled: true });
   });
@@ -267,7 +282,7 @@ describe('Rule Engine evaluation', () => {
     // Prepare
     const flag = prepareFlag(action, null);
     // Act
-    const result = evaluate('checkout', flag, { context: {} });
+    const result = evaluate('checkout', flag, { context: {}, now });
     // Assess
     expect(result).toEqual({ found: true, value: false, enabled: false });
   });
@@ -277,7 +292,7 @@ describe('Rule Engine evaluation', () => {
     const flag = prepareFlag('EQUALS', 'premium');
     const context = Object.create({ tier: 'premium' });
     // Act
-    const result = evaluate('checkout', flag, { context });
+    const result = evaluate('checkout', flag, { context, now });
     // Assess
     expect(result).toEqual({ found: true, value: false, enabled: false });
   });
@@ -299,7 +314,7 @@ describe('Rule Engine evaluation', () => {
     // Prepare
     const flag: Flag = { default: value, rules: {} };
     // Act
-    const result = evaluate('checkout', flag, { context: {} });
+    const result = evaluate('checkout', flag, { context: {}, now });
     // Assess
     expect(result).toEqual({ found: true, value, enabled });
   });
@@ -318,6 +333,7 @@ describe('Rule Engine evaluation', () => {
       // Act
       const result = evaluate('checkout', flag, {
         context: { tier: 'premium' },
+        now,
       });
       // Assess
       expect(result).toEqual({ found: true, value, enabled });
@@ -526,7 +542,10 @@ describe('Rule Engine evaluation', () => {
     // Prepare
     const flag = prepareFlag(action, { premium: 1, gold: 2 });
     // Act
-    const result = evaluate('checkout', flag, { context: { tier: 'premium' } });
+    const result = evaluate('checkout', flag, {
+      context: { tier: 'premium' },
+      now,
+    });
     // Assess
     expect(result).toEqual({ found: true, value: expected, enabled: expected });
   });
@@ -546,6 +565,7 @@ describe('Rule Engine evaluation', () => {
       // Act
       const result = evaluate('checkout', flag, {
         context: { tier: ['premium'] },
+        now,
       });
       // Assess
       expect(result).toEqual({
@@ -600,7 +620,7 @@ describe('Rule Engine evaluation', () => {
       const flag = prepareFlag(action, value);
       // Act
       const act = () => {
-        return evaluate('checkout', flag, { context: { tier: context } });
+        return evaluate('checkout', flag, { context: { tier: context }, now });
       };
       // Assess
       expect(act).toThrow(ConditionEvaluationError);
@@ -689,9 +709,11 @@ describe('Rule Engine evaluation', () => {
       // Act
       const inResult = evaluate('checkout', inFlag, {
         context: { tier: needle },
+        now,
       });
       const valueInKeyResult = evaluate('checkout', valueInKeyFlag, {
         context: { tier: container },
+        now,
       });
       // Assess
       expect(inResult).toEqual({
@@ -718,7 +740,7 @@ describe('Rule Engine evaluation', () => {
       const flag = prepareFlag(action, value);
       // Act
       const act = () =>
-        evaluate('checkout', flag, { context: { tier: context } });
+        evaluate('checkout', flag, { context: { tier: context }, now });
       // Assess
       expect(act).toThrow(ConditionEvaluationError);
       expect(act).toThrow(
@@ -853,7 +875,10 @@ describe('Rule Engine evaluation', () => {
       // Prepare
       const flag = prepareFlag(action, value);
       // Act
-      const result = evaluate('checkout', flag, { context: { tier: context } });
+      const result = evaluate('checkout', flag, {
+        context: { tier: context },
+        now,
+      });
       // Assess
       expect(result).toEqual({
         found: true,
@@ -873,7 +898,7 @@ describe('Rule Engine evaluation', () => {
     const flag = prepareFlag(action, '😀');
     const context = { tier: '\uFFFF' };
     // Act
-    const result = evaluate('checkout', flag, { context });
+    const result = evaluate('checkout', flag, { context, now });
     // Assess
     expect(result).toEqual({ found: true, value: expected, enabled: expected });
   });
@@ -888,7 +913,11 @@ describe('Rule Engine evaluation', () => {
       error: vi.fn(),
     };
     // Act
-    evaluate('checkout', flag, { context: { tier: 'secret-value' }, logger });
+    evaluate('checkout', flag, {
+      context: { tier: 'secret-value' },
+      logger,
+      now,
+    });
     // Assess
     expect(logger.debug).toHaveBeenCalledExactlyOnceWith({
       store: 'rule-engine',

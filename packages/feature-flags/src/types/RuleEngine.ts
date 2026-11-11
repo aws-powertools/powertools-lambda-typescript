@@ -60,15 +60,15 @@ type ModuloRange = { BASE: number; START: number; END: number };
 type EvaluateFlagOptions = {
   context: EvaluationContext;
   logger?: GenericLogger;
-  now?: () => Date;
+  now: Date;
 };
 
-/** Supplies identifiers, caller facts, and the clock for a Condition. @internal */
+/** Supplies identifiers, caller facts, and the shared clock instant for a Condition. @internal */
 type MatchConditionOptions = {
   name: string;
   rule: string;
   context: EvaluationContext;
-  now: () => Date;
+  now: Date;
 };
 
 export type {

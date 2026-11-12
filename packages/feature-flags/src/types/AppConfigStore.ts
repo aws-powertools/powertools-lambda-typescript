@@ -5,7 +5,10 @@ import type {
 } from '@aws-sdk/client-appconfigdata';
 import type { EnvelopeOptions } from './Envelope.js';
 
-/** Configures retrieval and local evaluation of an AppConfig freeform Flag Document. */
+/**
+ * Configures retrieval and local evaluation of an AppConfig freeform Flag Document.
+ * @expand
+ */
 type AppConfigStoreOptions = EnvelopeOptions & {
   /** Identifies the configuration profile by name or ID. */
   name: string;

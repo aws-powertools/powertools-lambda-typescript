@@ -16,6 +16,7 @@ Conventions inside each package:
 
 - **Errors** live in a per-package `errors.ts`; classes carry the `Error` suffix (`IdempotencyKeyError`) and extend the package's base error.
 - **Constants** live in a per-package `constants.ts` as `as const` objects, in place of TS enums.
+- **Types** live in a per-package `src/types/` directory, one file per area (`src/types/AppConfigProvider.ts`), or in a single `src/types.ts` for small packages. Implementation files import their named types and interfaces from there; an object type written inline in a single signature stays inline.
 - **Environment variables** are read through the commons helpers — `getStringFromEnv`, `getNumberFromEnv`, `getBooleanFromEnv` from `@aws-lambda-powertools/commons/utils/env` — rather than `process.env`.
 - **AWS SDK clients** get the Powertools user agent at construction: `addUserAgentMiddleware(client, '<feature>')` from commons.
 - **New public entry points** (packages build dual ESM/CJS) require entries in both the `exports` map and `typesVersions` in the package's `package.json`.
@@ -37,7 +38,7 @@ Match the existing style of the surrounding code. House conventions:
 
 ## JSDoc
 
-Document functions, classes, and types with a single JSDoc block per symbol — public APIs always, internal ones too.
+Document functions, classes, and types with a single JSDoc block per symbol — public APIs always, internal ones too. Snippets in `examples/snippets/` are the exception: the docs page that includes them is their documentation.
 
 - Open with one active-voice sentence ending in a period (`Gets the user by ID.`), then longer detail as needed.
 - `@param name - the name of the user`: active voice, no type annotation. For option objects: `@param {Object} options` then `@param {string} options.name - the name of the user`.

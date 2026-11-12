@@ -135,7 +135,7 @@
     "@aws-lambda-powertools/commons": "2.36.0",
     "@smithy/signature-v4": "^5.7.4",
     "@smithy/signature-v4a": "^3.6.2",
-    "@smithy/types": "^4.18.0"
+    "@smithy/types": "^4.20.0"
   },
   "devDependencies": {
     "@aws-lambda-powertools/testing-utils": "file:../testing"

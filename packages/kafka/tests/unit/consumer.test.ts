@@ -495,7 +495,7 @@ describe('Kafka consumer', () => {
     event.records['mytopic-0'][1].value = 'AAjpBxIGTGFwdG9wGVK4HoXrP49A';
     event.records['mytopic-0'][1].valueSchemaMetadata.schemaId =
       '1111111111111111';
-    event.records['mytopic-0'][2].value = 'AgEACOkHEgZMYXB0b3AZUrgehes/j0A=';
+    event.records['mytopic-0'][2].value = 'BAIACOkHEgZMYXB0b3AZUrgehes/j0A=';
     event.records['mytopic-0'][2].valueSchemaMetadata.schemaId = '1';
 
     const handler = kafkaConsumer(
@@ -552,6 +552,7 @@ describe('Kafka consumer', () => {
           type: SchemaType.PROTOBUF,
           schema: com.example.protobuf.UserProfile,
           parserSchema: z.object({
+            userId: z.string(),
             address: z.object({
               city: z.string(),
               street: z.string(),
@@ -576,10 +577,20 @@ describe('Kafka consumer', () => {
 
     // Assess
     expect(result).toHaveLength(4);
-    expect(result[0]).not.toBeInstanceOf(Error);
-    expect(result[1]).not.toBeInstanceOf(Error);
-    expect(result[2]).not.toBeInstanceOf(Error);
-    expect(result[3]).not.toBeInstanceOf(Error);
+    expect(result).toEqual([
+      expect.objectContaining({
+        userId: 'a8e40971-1552-420d-a7c9-b8982325702d',
+      }),
+      expect.objectContaining({
+        userId: '4dcfc61b-3993-49c3-a04f-8a6c7aaf7881',
+      }),
+      expect.objectContaining({
+        userId: '2a861628-0800-4b76-bd3f-6ecba7cd286c',
+      }),
+      expect.objectContaining({
+        userId: '71320c73-ec57-446e-bd5b-9252d6943182',
+      }),
+    ]);
   });
 
   it('handles complex protobuf messages from Glue Schema Registry', async () => {

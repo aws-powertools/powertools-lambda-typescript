@@ -3,6 +3,7 @@ const StoreNames = {
   RULE_ENGINE: 'rule-engine',
   APPCONFIG: 'appconfig',
   APPCONFIG_AGENT: 'appconfig-agent',
+  APPCONFIG_VARIANT: 'appconfig-variant',
 } as const;
 
 /** Names the fields in a Python-format Flag Document. @internal */

@@ -29,6 +29,18 @@ describe('AppConfig bundle boundaries', () => {
       includesJmespath: false,
     },
     {
+      entry: 'appconfig-agent/appConfigVariantStore.ts',
+      format: 'esm',
+      includesSdk: false,
+      includesJmespath: false,
+    },
+    {
+      entry: 'appconfig-agent/appConfigVariantStore.ts',
+      format: 'cjs',
+      includesSdk: false,
+      includesJmespath: false,
+    },
+    {
       entry: 'appconfig/index.ts',
       format: 'esm',
       includesSdk: true,

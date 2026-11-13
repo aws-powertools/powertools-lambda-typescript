@@ -65,6 +65,20 @@ describe('Protobuf deserialiser: ', () => {
     }
   );
 
+  it('throws if the Confluent message index count is negative', () => {
+    // Prepare
+    const data = 'AQjpBxIGTGFwdG9wGVK4HoXrP49A'; // 0x01 (zigzag -1) + the Product payload
+    const schemaMetadata = {
+      dataFormat: 'PROTOBUF',
+      schemaId: '1',
+    };
+
+    // Act & Assess
+    expect(() => deserialize(data, Product, schemaMetadata)).toThrow(
+      'Invalid Confluent message index array length: -1'
+    );
+  });
+
   it('throws if unable to parse a Confluent Schema Registry protobuf', () => {
     // Prepare
     const data = 'COkHEgZMYXB0b3AZUrgehes/j0A=';

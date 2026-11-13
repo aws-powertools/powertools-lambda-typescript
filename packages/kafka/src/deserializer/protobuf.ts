@@ -37,6 +37,11 @@ const createDeserializer = async (): Promise<ProtobufDeserializer> => {
   const skipConfluentMessageIndexes = (buffer: Buffer) => {
     const reader = new BufferReader(buffer);
     const indexCount = reader.sint32();
+    if (indexCount < 0) {
+      throw new Error(
+        `Invalid Confluent message index array length: ${indexCount}`
+      );
+    }
     for (let i = 0; i < indexCount; i++) {
       reader.sint32();
     }
@@ -74,17 +79,10 @@ const createDeserializer = async (): Promise<ProtobufDeserializer> => {
         reader.uint32();
         return messageType.decode(reader);
       }
-    } catch (error) {
-      throw new KafkaConsumerDeserializationError(
-        `Failed to deserialize Protobuf message: ${error}, message: ${data}, messageType: ${JSON.stringify(messageType)}`
-      );
-    }
-
-    /**
-     * If schemaId is numeric, inferred from its length, we know it's coming from Confluent Schema Registry,
-     * so we need to remove the message index bytes before decoding.
-     */
-    try {
+      /**
+       * If schemaId is numeric, inferred from its length, we know it's coming from Confluent Schema Registry,
+       * so we need to remove the message index bytes before decoding.
+       */
       return messageType.decode(skipConfluentMessageIndexes(buffer));
     } catch (error) {
       throw new KafkaConsumerDeserializationError(

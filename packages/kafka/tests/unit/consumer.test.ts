@@ -553,6 +553,8 @@ describe('Kafka consumer', () => {
           schema: com.example.protobuf.UserProfile,
           parserSchema: z.object({
             userId: z.string(),
+            name: z.string(),
+            email: z.string(),
             address: z.object({
               city: z.string(),
               street: z.string(),
@@ -576,21 +578,24 @@ describe('Kafka consumer', () => {
       | Error[];
 
     // Assess
-    expect(result).toHaveLength(4);
-    expect(result).toEqual([
-      expect.objectContaining({
-        userId: 'a8e40971-1552-420d-a7c9-b8982325702d',
-      }),
-      expect.objectContaining({
-        userId: '4dcfc61b-3993-49c3-a04f-8a6c7aaf7881',
-      }),
-      expect.objectContaining({
-        userId: '2a861628-0800-4b76-bd3f-6ecba7cd286c',
-      }),
-      expect.objectContaining({
-        userId: '71320c73-ec57-446e-bd5b-9252d6943182',
-      }),
-    ]);
+    const profile = {
+      name: 'Bob',
+      email: 'bob@example.com',
+      age: 28,
+      isActive: true,
+      signupDate: '2024-02-02',
+      tags: ['tag1', 'tag2'],
+      preferences: { theme: 'light' },
+      address: { street: '123 Ave', city: 'Seattle', zip: '98101' },
+    };
+    expect(result).toEqual(
+      [
+        'a8e40971-1552-420d-a7c9-b8982325702d',
+        '4dcfc61b-3993-49c3-a04f-8a6c7aaf7881',
+        '2a861628-0800-4b76-bd3f-6ecba7cd286c',
+        '71320c73-ec57-446e-bd5b-9252d6943182',
+      ].map((userId) => ({ userId, ...profile }))
+    );
   });
 
   it('handles complex protobuf messages from Glue Schema Registry', async () => {

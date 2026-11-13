@@ -17,10 +17,9 @@ import { RESOURCE_NAME_PREFIX } from './constants.js';
  * but not `appconfig:GetLatestConfiguration`, so every retrieval is denied by IAM.
  *
  * The function code evaluates a flag through each AppConfig Store, catches any error, and
- * returns the outcome as the invocation payload. Where the denial is identifiable the
- * tests assert that the Store throws instead of returning the fallback; where the Agent
- * makes it opaque the tests accept either outcome and record the raw shape as a test
- * annotation.
+ * returns the outcome as the invocation payload. Both the SDK and the Agent surface the
+ * IAM denial as a 403, so the tests assert that every Store throws instead of returning
+ * the fallback, and record the raw error shape as a test annotation.
  *
  * The tests are:
  *
@@ -28,10 +27,10 @@ import { RESOURCE_NAME_PREFIX } from './constants.js';
  * evaluate a flag through `appConfigStore` (should throw the SDK access denial)
  *
  * Test 2
- * evaluate a flag through `appConfigAgentStore` (should throw or return the fallback, the shape is recorded)
+ * evaluate a flag through `appConfigAgentStore` (should throw the Agent 403)
  *
  * Test 3
- * evaluate a flag through `appConfigVariantStore` (should throw or return the fallback, the shape is recorded)
+ * evaluate a flag through `appConfigVariantStore` (should throw the Agent 403)
  */
 describe('Feature Flags E2E tests, AppConfig access denied', () => {
   const testStack = new TestStack({
@@ -131,35 +130,36 @@ describe('Feature Flags E2E tests, AppConfig access denied', () => {
   });
 
   describe('appConfigAgentStore usage', () => {
-    // Test 2 - evaluate a flag through the Agent store (should throw or return the fallback)
-    it('throws or returns the fallback when the agent cannot retrieve the configuration', async ({
+    // Test 2 - evaluate a flag through the Agent store (should throw the Agent 403)
+    it('throws when the agent cannot retrieve the configuration', async ({
       annotate,
     }) => {
       await annotate(`Agent store: ${JSON.stringify(functionResult.agent)}`);
-      expect(functionResult.agent).toEqual(
-        functionResult.agent.outcome === 'threw'
-          ? { outcome: 'threw', error: expect.any(Object) }
-          : { outcome: 'returned', value: false }
-      );
+      expect(functionResult.agent).toEqual({
+        outcome: 'threw',
+        error: expect.objectContaining({
+          name: 'AppConfigAgentError',
+          statusCode: 403,
+        }),
+      });
     });
   });
 
   describe('appConfigVariantStore usage', () => {
-    // Test 3 - evaluate a flag through the Variant store (should throw or return the fallback)
-    it('throws or returns the fallback when the agent cannot retrieve the configuration', async ({
+    // Test 3 - evaluate a flag through the Variant store (should throw the Agent 403)
+    it('throws when the agent cannot retrieve the configuration', async ({
       annotate,
     }) => {
       await annotate(
         `Variant store: ${JSON.stringify(functionResult.variant)}`
       );
-      expect(functionResult.variant).toEqual(
-        functionResult.variant.outcome === 'threw'
-          ? { outcome: 'threw', error: expect.any(Object) }
-          : {
-              outcome: 'returned',
-              value: { enabled: false, variant: 'default', attributes: {} },
-            }
-      );
+      expect(functionResult.variant).toEqual({
+        outcome: 'threw',
+        error: expect.objectContaining({
+          name: 'AppConfigAgentError',
+          statusCode: 403,
+        }),
+      });
     });
   });
 

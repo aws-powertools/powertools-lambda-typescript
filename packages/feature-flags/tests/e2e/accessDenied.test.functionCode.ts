@@ -85,7 +85,7 @@ const captureOutcome = async (
  * The function role can start a configuration session but is denied
  * `appconfig:GetLatestConfiguration`. The handler returns the outcome of an
  * evaluation through each AppConfig Store as the invocation payload, so the
- * test file can assert on the identifiable ones and record the others.
+ * test file can assert on the error and record its raw shape.
  */
 export const handler = async (): Promise<Record<string, unknown>> => {
   const [sdk, agent, variant] = await Promise.all([

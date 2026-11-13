@@ -373,6 +373,74 @@ describe('Creating metrics', () => {
     ).toThrowError(new RangeError('one is not a valid number'));
   });
 
+  it.each([
+    { value: Number.NaN },
+    { value: Number.POSITIVE_INFINITY },
+    { value: Number.NEGATIVE_INFINITY },
+  ])(
+    'skips a metric with a non-finite value ($value) and logs a warning',
+    ({ value }) => {
+      // Prepare
+      const metrics = new Metrics({
+        singleMetric: false,
+        namespace: DEFAULT_NAMESPACE,
+      });
+
+      // Act
+      metrics
+        .addMetric('ok', MetricUnit.Count, 1)
+        .addMetric('ratio', MetricUnit.Percent, value)
+        .publishStoredMetrics();
+
+      // Assess
+      expect(console.warn).toHaveBeenCalledTimes(1);
+      expect(console.warn).toHaveBeenCalledWith(
+        `The metric ratio has a non-finite value (${value}) and won't be added. CloudWatch EMF only accepts finite numbers.`
+      );
+      expect(console.log).toHaveBeenCalledTimes(1);
+      expect(console.log).toHaveEmittedNthEMFWith(1, {
+        _aws: {
+          Timestamp: expect.any(Number),
+          CloudWatchMetrics: [
+            {
+              Namespace: DEFAULT_NAMESPACE,
+              Dimensions: [['service']],
+              Metrics: [{ Name: 'ok', Unit: 'Count' }],
+            },
+          ],
+        },
+        service: 'hello-world',
+        ok: 1,
+      });
+    }
+  );
+
+  it('skips a non-finite value added to a metric that already has values', () => {
+    // Prepare
+    const metrics = new Metrics({
+      singleMetric: false,
+      namespace: DEFAULT_NAMESPACE,
+    });
+
+    // Act
+    metrics
+      .addMetric('ok', MetricUnit.Count, 1)
+      .addMetric('ok', MetricUnit.Count, Number.NaN)
+      .addMetric('ok', MetricUnit.Count, 2)
+      .publishStoredMetrics();
+
+    // Assess
+    expect(console.warn).toHaveBeenCalledTimes(1);
+    expect(console.warn).toHaveBeenCalledWith(
+      "The metric ok has a non-finite value (NaN) and won't be added. CloudWatch EMF only accepts finite numbers."
+    );
+    expect(console.log).toHaveBeenCalledTimes(1);
+    expect(console.log).toHaveEmittedNthEMFWith(
+      1,
+      expect.objectContaining({ ok: [1, 2] })
+    );
+  });
+
   it('throws when an invalid unit is passed', () => {
     // Prepare
     const metrics = new Metrics();

@@ -76,7 +76,7 @@ The envelope tab adds JMESPath to your chosen AppConfig installation. Agent-only
 On the Agent path, the extension uses the function role to retrieve configuration. Attach the [AWS AppConfig Agent Lambda extension layer for your region and architecture](https://docs.aws.amazon.com/appconfig/latest/userguide/appconfig-integration-lambda-extensions-versions.html){target="_blank"}.
 
 !!! note "Multi-variant Agent version"
-    `appConfigVariantStore` requires AppConfig Agent version `2.0.230173` or later. Check the Agent version in the layer you deploy.
+    `appConfigVariantStore` requires AppConfig Agent Lambda extension version `2.0.678` or later, the first release that supports multi-variant flags. Check the extension version in the layer you deploy.
 
 ???+ tip "Prefetch configuration"
     Set `AWS_APPCONFIG_EXTENSION_PREFETCH_LIST` to your configuration path, such as `/applications/my-app/environments/prod/configurations/features`, to reduce cold-start latency. See the [Agent configuration options](https://docs.aws.amazon.com/appconfig/latest/userguide/appconfig-integration-lambda-extensions-config.html){target="_blank"}.

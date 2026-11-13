@@ -1,0 +1,4 @@
+{
+  "ui_refresh": { "enabled": true, "_variant": "premium", "theme": "dark" },
+  "checkout": { "enabled": false }
+}

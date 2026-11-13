@@ -205,11 +205,12 @@ describe('Feature Flags E2E tests, AppConfig Stores', () => {
     });
 
     // Test 6 - evaluate a multi-variant flag with a context matching no rule
+    // AppConfig omits the attributes of a disabled variant from the response
     it('returns the default variant when the context matches no rule', () => {
       expect(functionResult.variantStandard).toStrictEqual({
         enabled: false,
         variant: 'standard',
-        attributes: { theme: 'light' },
+        attributes: {},
       });
     });
 
@@ -245,7 +246,7 @@ describe('Feature Flags E2E tests, AppConfig Stores', () => {
     it('records the AppConfig Agent version', async ({ annotate }) => {
       expect(functionResult.agentVersion).toEqual(expect.any(String));
       await annotate(
-        `AppConfig Agent version: ${functionResult.agentVersion as string}`
+        `AppConfig Agent version: ${JSON.stringify(functionResult.agentVersion)}`
       );
     });
   });

@@ -219,9 +219,7 @@ const checkIfArgumentTypeIsValid = (
         actualType: getType(arg),
       });
     }
-    checkComplexArrayType(arg, type, hasMoreTypesToCheck);
-
-    return true;
+    return checkComplexArrayType(arg, type, argumentSpec, hasMoreTypesToCheck);
   }
   if (type === 'expression') {
     checkExpressionType(arg, argumentSpec, hasMoreTypesToCheck);
@@ -265,28 +263,71 @@ const typeCheckType = (
 };
 
 /**
- * Check if the argument is an array of complex types.
+ * Check if every element of the array is of the type of a typed array, like `array-number`.
+ *
+ * When an element doesn't match and there are more types to check, it returns `false`
+ * so the next type can be tried. Otherwise it throws, listing every accepted type when
+ * there is more than one, like `array-number` and `array-string`.
  *
  * @param arg - The argument to check
  * @param type - The type to check against
+ * @param argumentSpec - The list of types to check against
  * @param hasMoreTypesToCheck - Whether there are more types to check
  */
 const checkComplexArrayType = (
   arg: unknown[],
   type: string,
+  argumentSpec: string[],
   hasMoreTypesToCheck: boolean
-): void => {
-  if (!type.includes('-')) return;
+): boolean => {
+  if (!type.includes('-')) return true;
   const arrayItemsType = type.slice(6);
-  let actualType: string | undefined;
   for (const element of arg) {
     try {
       typeCheckArgument(element, [arrayItemsType]);
-      actualType = arrayItemsType;
     } catch (error) {
-      if (!hasMoreTypesToCheck || actualType !== undefined) {
+      if (hasMoreTypesToCheck) {
+        return false;
+      }
+      if (argumentSpec.length === 1) {
         throw error;
       }
+      throw new JMESPathTypeError({
+        currentValue: arg,
+        expectedTypes: argumentSpec,
+        actualType: getType(arg),
+      });
+    }
+  }
+
+  return true;
+};
+
+/**
+ * Check that the keys computed by the expression of `sort_by()`, `max_by()`, or `min_by()`
+ * are either all numbers or all strings.
+ *
+ * @param keys - The result of evaluating the expression against each element of the array
+ */
+const typeCheckSortKeys = (keys: unknown[]): void => {
+  let expectedType: string | undefined;
+  for (const key of keys) {
+    const actualType = getType(key);
+    if (expectedType === undefined) {
+      if (actualType !== 'string' && actualType !== 'number') {
+        throw new JMESPathTypeError({
+          currentValue: key,
+          expectedTypes: ['string'],
+          actualType,
+        });
+      }
+      expectedType = actualType;
+    } else if (actualType !== expectedType) {
+      throw new JMESPathTypeError({
+        currentValue: key,
+        expectedTypes: [expectedType],
+        actualType,
+      });
     }
   }
 };
@@ -333,4 +374,11 @@ const checkObjectType = (
   }
 };
 
-export { arityCheck, isTruthy, sliceArray, typeCheck, typeCheckArgument };
+export {
+  arityCheck,
+  isTruthy,
+  sliceArray,
+  typeCheck,
+  typeCheckArgument,
+  typeCheckSortKeys,
+};

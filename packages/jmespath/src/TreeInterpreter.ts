@@ -144,10 +144,7 @@ class TreeInterpreter {
       if (comparator === 'ne') {
         return !isStrictEqual(left, right);
       }
-      /* v8 ignore else -- @preserve */
       if (typeof left === 'number' && typeof right === 'number') {
-        // Ordering operators only work on numbers. Evaluating them on other
-        // types will return null.
         if (comparator === 'lt') {
           return left < right;
         }
@@ -159,9 +156,11 @@ class TreeInterpreter {
         }
         return left >= right;
       }
-    } else {
-      throw new JMESPathError(`Invalid comparator: ${comparator}`);
+      // Ordering operators only work on numbers. Evaluating them on other
+      // types will return null.
+      return null;
     }
+    throw new JMESPathError(`Invalid comparator: ${comparator}`);
   }
 
   /**

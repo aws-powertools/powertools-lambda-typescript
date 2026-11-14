@@ -753,7 +753,7 @@ describe('Functions tests', () => {
     {
       expression: 'max(array)',
       error:
-        'Invalid argument type for function max(), expected "number" but found "string" in expression: max(array)',
+        'Invalid argument type for function max(), expected one of "array-number", "array-string" but found "array" in expression: max(array)',
     },
   ])('max() function errors: $expression', ({ expression, error }) => {
     // Prepare
@@ -900,7 +900,7 @@ describe('Functions tests', () => {
     {
       expression: 'min(array)',
       error:
-        'Invalid argument type for function min(), expected "number" but found "string" in expression: min(array)',
+        'Invalid argument type for function min(), expected one of "array-number", "array-string" but found "array" in expression: min(array)',
     },
   ])('min() function errors: $expression', ({ expression, error }) => {
     // Prepare
@@ -1081,7 +1081,7 @@ describe('Functions tests', () => {
     {
       expression: 'sort(array)',
       error:
-        'Invalid argument type for function sort(), expected "number" but found "string" in expression: sort(array)',
+        'Invalid argument type for function sort(), expected one of "array-number", "array-string" but found "array" in expression: sort(array)',
     },
     {
       expression: 'sort(abc)',
@@ -1825,16 +1825,6 @@ describe('Functions tests', () => {
       expression: 'sort_by(`[]`, &age)',
       expected: [],
     },
-    {
-      expression: 'sort_by(people, &name)',
-      expected: [
-        { age: 10, age_str: '10', bool: true, name: 3 },
-        { age: 20, age_str: '20', bool: true, name: 'a', extra: 'foo' },
-        { age: 40, age_str: '40', bool: false, name: 'b', extra: 'bar' },
-        { age: 30, age_str: '30', bool: true, name: 'c' },
-        { age: 50, age_str: '50', bool: false, name: 'd' },
-      ],
-    },
   ])('should support sorty_by() special cases', ({ expression, expected }) => {
     // Prepare
     const data = {
@@ -1891,6 +1881,11 @@ describe('Functions tests', () => {
       expression: 'sort_by(people, &bool)',
       error:
         'Invalid argument type for function sort_by(), expected "string" but found "boolean" in expression: sort_by(people, &bool)',
+    },
+    {
+      expression: 'sort_by(people, &name)',
+      error:
+        'Invalid argument type for function sort_by(), expected "string" but found "number" in expression: sort_by(people, &name)',
     },
     {
       expression: 'sort_by(people, name)',

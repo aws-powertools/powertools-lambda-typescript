@@ -7,6 +7,7 @@ import {
   ArityError,
   EmptyExpressionError,
   JMESPathError,
+  JMESPathTypeError,
   LexerError,
   search,
   VariadicArityError,
@@ -89,6 +90,69 @@ describe('Coverage tests', () => {
       // Assess
       expect(result).toBe('b');
     });
+
+    it.each([
+      { expression: 'a < b' },
+      { expression: 'a <= b' },
+      { expression: 'a > b' },
+      { expression: 'a >= b' },
+      { expression: "'a' < 'b'" },
+      { expression: '`true` > `false`' },
+    ])(
+      'returns null when ordering non-numbers: $expression',
+      ({ expression }) => {
+        // Act
+        const result = search(expression, { b: 1 });
+
+        // Assess
+        expect(result).toBeNull();
+      }
+    );
+
+    it.each([
+      { expression: 'type(a < b)', expected: 'null' },
+      { expression: '{x: a < b, y: `1`}', expected: { x: null, y: 1 } },
+      { expression: '(a < b) == c', expected: true },
+      { expression: "not_null(a < b, 'fallback')", expected: 'fallback' },
+      { expression: '[a < b, `1`][*]', expected: [1] },
+    ])(
+      'treats the result of ordering non-numbers as null: $expression',
+      ({ expression, expected }) => {
+        // Act
+        const result = search(expression, { b: 1 });
+
+        // Assess
+        expect(result).toStrictEqual(expected);
+      }
+    );
+
+    it.each([
+      { expression: 'sort(@)', data: ['b', 1] },
+      { expression: 'sort(@)', data: [null, 2, 1] },
+      { expression: 'max(@)', data: ['b', 1] },
+      { expression: 'max(@)', data: [null] },
+      { expression: 'min(@)', data: [true, 5, 2] },
+    ])(
+      'throws when $expression receives an array of mixed or invalid types: $data',
+      ({ expression, data }) => {
+        // Act & Assess
+        expect(() => search(expression, data)).toThrow(
+          `expected one of "array-number", "array-string" but found "array" in expression: ${expression}`
+        );
+      }
+    );
+
+    it.each([
+      { expression: 'sort_by(@, &a)', data: [{ a: 2 }, { a: 'x' }] },
+      { expression: 'max_by(@, &a)', data: [{ a: 2 }, { a: 'x' }] },
+      { expression: 'min_by(@, &a)', data: [{ a: 'x' }, { a: 2 }] },
+    ])(
+      'throws when $expression evaluates to keys of mixed types',
+      ({ expression, data }) => {
+        // Act & Assess
+        expect(() => search(expression, data)).toThrow(JMESPathTypeError);
+      }
+    );
   });
 
   describe('type checking', () => {

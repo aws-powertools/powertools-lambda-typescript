@@ -12,13 +12,12 @@ import {
 } from '@aws-lambda-powertools/commons/typeutils';
 import { JSON_NUMBER_REGEX } from './constants.js';
 import type { Expression } from './Expression.js';
-import { JMESPathTypeError } from './errors.js';
 import type {
   FunctionSignatureDecorator,
   FunctionSignatureOptions,
   JSONObject as JSONObjectType,
 } from './types.js';
-import { arityCheck, typeCheck } from './utils.js';
+import { arityCheck, typeCheck, typeCheckSortKeys } from './utils.js';
 
 /**
  * A class that contains the built-in JMESPath functions.
@@ -238,17 +237,9 @@ class Functions {
       arg,
       visited: expression.visit(arg),
     }));
+    typeCheckSortKeys(visitedArgs.map(({ visited }) => visited));
 
     const max = visitedArgs.reduce((max, current) => {
-      const type = getType(current.visited);
-      if (type !== 'string' && type !== 'number') {
-        throw new JMESPathTypeError({
-          currentValue: current.visited,
-          expectedTypes: ['string'],
-          actualType: type,
-        });
-      }
-
       if (max.visited === current.visited) {
         return max;
       }
@@ -330,17 +321,9 @@ class Functions {
       arg,
       visited: expression.visit(arg),
     }));
+    typeCheckSortKeys(visitedArgs.map(({ visited }) => visited));
 
     const min = visitedArgs.reduce((min, current) => {
-      const type = getType(current.visited);
-      if (type !== 'string' && type !== 'number') {
-        throw new JMESPathTypeError({
-          currentValue: current.visited,
-          expectedTypes: ['string'],
-          actualType: type,
-        });
-      }
-
       if (min.visited === current.visited) {
         return min;
       }
@@ -425,24 +408,14 @@ class Functions {
     args: Array<JSONValue>,
     expression: Expression
   ): Array<unknown> {
-    return args
-      .map((value, index) => {
-        const visited = expression.visit(value);
-        const type = getType(visited);
-        if (type !== 'string' && type !== 'number') {
-          throw new JMESPathTypeError({
-            currentValue: visited,
-            expectedTypes: ['string'],
-            actualType: getType(visited),
-          });
-        }
+    const visitedArgs = args.map((value, index) => ({
+      value,
+      index,
+      visited: expression.visit(value),
+    }));
+    typeCheckSortKeys(visitedArgs.map(({ visited }) => visited));
 
-        return {
-          value,
-          index,
-          visited,
-        };
-      })
+    return visitedArgs
       .sort((a, b) => {
         if (a.visited === b.visited) {
           return a.index - b.index; // Make the sort stable

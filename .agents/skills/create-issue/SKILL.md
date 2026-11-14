@@ -5,7 +5,7 @@ description: Creates GitHub issues following the project's issue templates. Use 
 
 # Create GitHub Issue
 
-When creating GitHub issues for this project, follow the issue templates defined in `.github/ISSUE_TEMPLATE/`. The templates are the source of truth for fields, required/optional flags, labels, and title prefixes — always read the relevant template file rather than relying on remembered field names, since CLI-created issues bypass GitHub's template UI entirely.
+When creating GitHub issues for this project, follow the issue templates defined in `.github/ISSUE_TEMPLATE/`. The templates are the source of truth for fields, required/optional flags, labels, issue type, and title prefixes — always read the relevant template file rather than relying on remembered field names, since CLI-created issues bypass GitHub's template UI entirely.
 
 ## Workflow
 
@@ -13,10 +13,11 @@ When creating GitHub issues for this project, follow the issue templates defined
    - **Bug report** (`bug_report.yml`): something is broken or behaving incorrectly and can be reproduced
    - **Feature request** (`feature_request.yml`): a new capability or improvement for users of the library
    - **Maintenance** (`maintenance.yml`): tech debt, governance, tooling, automation, or anything internal-facing
-2. Read the chosen template file from `.github/ISSUE_TEMPLATE/` to get the exact fields, title prefix, and labels
+   - **Documentation** (`documentation_improvements.yml`): missing, incorrect, or unclear documentation
+2. Read the chosen template file from `.github/ISSUE_TEMPLATE/` to get the exact fields, title prefix, labels (`labels:`), and issue type (`type:`)
 3. Draft the issue body covering every field in the template — include required fields always, and optional fields when you have something useful to say
 4. Present the draft to the user for review
-5. Only create the issue after the user approves
+5. Only create the issue after the user approves, passing the template's type and labels explicitly: `gh issue create --type <type> --label <label> ...`. GitHub applies a template's `type:` and `labels:` only when the issue is created through the web form.
 
 ## Rules
 

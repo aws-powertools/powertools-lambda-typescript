@@ -41,6 +41,44 @@ describe('Protobuf deserialiser: ', () => {
     expect(result).toEqual(expected);
   });
 
+  it.each([
+    { indexes: '[0]', data: 'AAjpBxIGTGFwdG9wGVK4HoXrP49A' },
+    { indexes: '[1]', data: 'AgII6QcSBkxhcHRvcBlSuB6F6z+PQA==' },
+    { indexes: '[2]', data: 'AgQI6QcSBkxhcHRvcBlSuB6F6z+PQA==' },
+    { indexes: '[1, 0]', data: 'BAIACOkHEgZMYXB0b3AZUrgehes/j0A=' },
+    { indexes: '[70]', data: 'AowBCOkHEgZMYXB0b3AZUrgehes/j0A=' },
+  ])(
+    'skips the Confluent message indexes $indexes before decoding',
+    ({ data }) => {
+      // Prepare
+      const expected = { id: 1001, name: 'Laptop', price: 999.99 };
+      const schemaMetadata = {
+        dataFormat: 'PROTOBUF',
+        schemaId: '1',
+      };
+
+      // Act
+      const result = deserialize(data, Product, schemaMetadata);
+
+      // Assess
+      expect(result).toEqual(expected);
+    }
+  );
+
+  it('throws if the Confluent message index count is negative', () => {
+    // Prepare
+    const data = 'AQjpBxIGTGFwdG9wGVK4HoXrP49A'; // 0x01 (zigzag -1) + the Product payload
+    const schemaMetadata = {
+      dataFormat: 'PROTOBUF',
+      schemaId: '1',
+    };
+
+    // Act & Assess
+    expect(() => deserialize(data, Product, schemaMetadata)).toThrow(
+      'Invalid Confluent message index array length: -1'
+    );
+  });
+
   it('throws if unable to parse a Confluent Schema Registry protobuf', () => {
     // Prepare
     const data = 'COkHEgZMYXB0b3AZUrgehes/j0A=';

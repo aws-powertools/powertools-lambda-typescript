@@ -150,4 +150,35 @@ describe('Function: deepSort', () => {
     expect(deepSort({})).toEqual({});
     expect(deepSort([])).toEqual([]);
   });
+
+  it('keeps a `__proto__` key as a regular property', () => {
+    // Prepare
+    const input = JSON.parse(
+      '{"orderId":"A","__proto__":{"status":"pending"}}'
+    );
+
+    // Act
+    const result = deepSort(input);
+
+    // Assess
+    expect(JSON.stringify(result)).toEqual(
+      '{"__proto__":{"status":"pending"},"orderId":"A"}'
+    );
+    expect(Object.getPrototypeOf(result)).toBe(Object.prototype);
+  });
+
+  it.each([
+    { input: '{"a":1,"A":2,"b":3}' },
+    { input: '{"A":2,"a":1,"b":3}' },
+    { input: '{"b":3,"a":1,"A":2}' },
+  ])(
+    'sorts keys that differ only in case deterministically ($input)',
+    ({ input }) => {
+      // Act
+      const result = deepSort(JSON.parse(input));
+
+      // Assess
+      expect(JSON.stringify(result)).toEqual('{"A":2,"a":1,"b":3}');
+    }
+  );
 });

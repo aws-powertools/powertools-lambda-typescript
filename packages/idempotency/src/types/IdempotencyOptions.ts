@@ -178,8 +178,9 @@ type IdempotencyHandlerOptions = {
 
 /**
  * @internal
- * The part of a durable context that the idempotency utility uses to run its
- * persistence calls as durable steps.
+ * The part of a durable context that the idempotency utility uses to detect it, to run
+ * its persistence calls as durable steps, and to tell a replay apart from a first
+ * execution.
  *
  * It is declared here instead of imported from `@aws/durable-execution-sdk-js`
  * so that the utility does not depend on the SDK.
@@ -190,6 +191,9 @@ type DurableStepContext = {
     fn: () => Promise<void>,
     config: { retryStrategy: () => { shouldRetry: boolean } }
   ) => PromiseLike<unknown>;
+  lambdaContext?: Context;
+  durableExecutionMode?: string;
+  executionContext?: { durableExecutionArn?: string };
 };
 
 /**

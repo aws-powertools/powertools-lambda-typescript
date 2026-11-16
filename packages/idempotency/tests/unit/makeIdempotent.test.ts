@@ -1543,6 +1543,99 @@ describe('Function: makeIdempotent', () => {
     }
   );
 
+  it.each([
+    {
+      case: 'a replay mode',
+      data: { durableExecutionMode: 'ReplayMode' },
+      owner: undefined,
+    },
+    {
+      case: 'an execution ARN',
+      data: { executionContext: { durableExecutionArn: executionA } },
+      owner: executionA,
+    },
+  ])(
+    'rejects a duplicate request when the ordinary data of an operation carries $case',
+    async ({ data, owner }) => {
+      // Prepare
+      const persistenceStore = new PersistenceLayerTestClass();
+      const config = new IdempotencyConfig({ eventKeyJmesPath: 'productId' });
+      config.registerLambdaContext(context);
+      persistenceStore._putRecord.mockRejectedValueOnce(
+        new IdempotencyItemAlreadyExistsError(
+          'Record is already in progress',
+          new IdempotencyRecord({
+            idempotencyKey: 'idempotencyKey',
+            status: IdempotencyRecordStatus.INPROGRESS,
+            inProgressExpiryTimestamp: Date.now() + 10_000,
+            owner,
+          })
+        )
+      );
+      const fn = vi.fn();
+      const execute = makeIdempotent(
+        async (_transactionId: string, _data: Record<string, unknown>) => fn(),
+        { persistenceStore, config, dataIndexArgument: 1 }
+      );
+
+      // Act & Assess
+      await expect(
+        execute('dummy-tx', { productId: 'dummy-1', ...data })
+      ).rejects.toThrow(IdempotencyAlreadyInProgressError);
+      expect(fn).not.toHaveBeenCalled();
+    }
+  );
+
+  it('does not make the execution ARN in the ordinary data of an operation the owner of its record', async () => {
+    // Prepare
+    const persistenceStore = new PersistenceLayerTestClass();
+    const config = new IdempotencyConfig({ eventKeyJmesPath: 'productId' });
+    config.registerLambdaContext(context);
+    const execute = makeIdempotent(
+      async (_transactionId: string, _data: Record<string, unknown>) => true,
+      { persistenceStore, config, dataIndexArgument: 1 }
+    );
+
+    // Act
+    await execute('dummy-tx', {
+      productId: 'dummy-1',
+      executionContext: { durableExecutionArn: executionA },
+    });
+
+    // Assess
+    const [record] = persistenceStore._putRecord.mock.calls[0];
+    expect(record).toEqual(
+      expect.objectContaining({
+        owner: undefined,
+        inProgressExpiryTimestamp: expect.any(Number),
+      })
+    );
+  });
+
+  it('keeps the payload and the registered context of an operation whose ordinary data looks like a Lambda context', async () => {
+    // Prepare
+    const persistenceStore = new PersistenceLayerTestClass();
+    const config = new IdempotencyConfig({});
+    config.registerLambdaContext(context);
+    const saveInProgressSpy = vi.spyOn(persistenceStore, 'saveInProgress');
+    const execute = makeIdempotent(
+      async (_transactionId: string, _data: Record<string, unknown>) => true,
+      { persistenceStore, config, dataIndexArgument: 1 }
+    );
+    const data = { productId: 'dummy-1', getRemainingTimeInMillis: 1 };
+
+    // Act
+    await execute('dummy-tx', data);
+
+    // Assess
+    expect(saveInProgressSpy).toHaveBeenCalledWith(
+      data,
+      remainingTImeInMillis,
+      withIdentity
+    );
+    expect(config.lambdaContext).toBe(context);
+  });
+
   it('completes the record it acquired when the wrapped function mutates its input', async () => {
     // Prepare
     const persistenceStore = new PersistenceLayerTestClass();

@@ -14,7 +14,8 @@ const isContext = (arg: unknown): arg is Context => {
     arg !== undefined &&
     arg !== null &&
     typeof arg === 'object' &&
-    'getRemainingTimeInMillis' in arg
+    'getRemainingTimeInMillis' in arg &&
+    typeof arg.getRemainingTimeInMillis === 'function'
   );
 };
 
@@ -160,12 +161,15 @@ function makeIdempotent<Func extends AnyFunction>(
   return function (this: Handler, ...args: Parameters<Func>): ReturnType<Func> {
     let functionPayloadToBeHashed: JSONValue;
     const isHandler = isFnHandler(fn, args);
+    // The durable flags are read only from a context that the durable execution SDK
+    // provides, so that ordinary function arguments cannot alter the replay behavior
+    const durableContext = isDurableContext(args[1]) ? args[1] : undefined;
 
     if (isHandler) {
       // If it's a durable context, retrieve the lambdaContext property
       // Otherwise use the context
       idempotencyConfig.registerLambdaContext(
-        args[1]?.lambdaContext || args[1]
+        durableContext?.lambdaContext ?? args[1]
       );
       functionPayloadToBeHashed = args[0];
     } else if (isOptionsWithDataIndexArgument(options)) {
@@ -174,12 +178,9 @@ function makeIdempotent<Func extends AnyFunction>(
       functionPayloadToBeHashed = args[0];
     }
 
-    const isReplay = args[1]?.durableExecutionMode === 'ReplayMode';
-    const durableExecutionArn = args[1]?.executionContext?.durableExecutionArn;
-    const durableContext =
-      durableExecutionArn !== undefined && isDurableContext(args[1])
-        ? args[1]
-        : undefined;
+    const isReplay = durableContext?.durableExecutionMode === 'ReplayMode';
+    const durableExecutionArn =
+      durableContext?.executionContext?.durableExecutionArn;
 
     return new IdempotencyHandler({
       functionToMakeIdempotent: fn,
@@ -195,7 +196,9 @@ function makeIdempotent<Func extends AnyFunction>(
     }).handle({
       isReplay,
       durableExecutionArn,
-      durableContext,
+      // Only a durable execution runs its persistence calls as durable steps
+      durableContext:
+        durableExecutionArn === undefined ? undefined : durableContext,
     }) as ReturnType<Func>;
   };
 }

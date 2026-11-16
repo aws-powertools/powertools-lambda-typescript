@@ -128,10 +128,14 @@ describe('Idempotency E2E tests, wrapper function usage', () => {
     expect(idempotencyRecords?.Items?.length).toEqual(2);
     const idempotencyRecordsItems = [
       idempotencyRecords.Items?.find(
-        (record) => record.id === `${functionNameDefault}.processRecord#${payloadHashes[0]}`
+        (record) =>
+          record.id ===
+          `${functionNameDefault}.processRecord#${payloadHashes[0]}`
       ),
       idempotencyRecords.Items?.find(
-        (record) => record.id === `${functionNameDefault}.processRecord#${payloadHashes[1]}`
+        (record) =>
+          record.id ===
+          `${functionNameDefault}.processRecord#${payloadHashes[1]}`
       ),
     ];
 
@@ -194,15 +198,18 @@ describe('Idempotency E2E tests, wrapper function usage', () => {
     const idempotencyRecordsItems = [
       idempotencyRecords.Items?.find(
         (record) =>
-          record.customId === `${functionNameCustomConfig}.processRecordCustomized#${payloadHashes[0]}`
+          record.customId ===
+          `${functionNameCustomConfig}.processRecordCustomized#${payloadHashes[0]}`
       ),
       idempotencyRecords.Items?.find(
         (record) =>
-          record.customId === `${functionNameCustomConfig}.processRecordCustomized#${payloadHashes[1]}`
+          record.customId ===
+          `${functionNameCustomConfig}.processRecordCustomized#${payloadHashes[1]}`
       ),
       idempotencyRecords.Items?.find(
         (record) =>
-          record.customId === `${functionNameCustomConfig}.processRecordCustomized#${payloadHashes[2]}`
+          record.customId ===
+          `${functionNameCustomConfig}.processRecordCustomized#${payloadHashes[2]}`
       ),
     ];
 

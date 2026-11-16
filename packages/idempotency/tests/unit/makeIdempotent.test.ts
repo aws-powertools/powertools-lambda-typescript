@@ -565,6 +565,44 @@ describe('Function: makeIdempotent', () => {
   });
 
   it.each([{ type: 'wrapper' }, { type: 'middleware' }])(
+    'returns a separate copy of the cached response on each replay ($type)',
+    async ({ type }) => {
+      // Prepare
+      const options = {
+        // Use a dedicated persistence store because this test uses a different
+        // `IdempotencyConfig` and a persistence layer instance can only be
+        // configured once - see `BasePersistenceLayer.configure()`
+        persistenceStore: new PersistenceLayerTestClass(),
+        config: new IdempotencyConfig({
+          eventKeyJmesPath: 'orderId',
+          useLocalCache: true,
+        }),
+      };
+      const fn = async (request: { orderId: string }, _context: Context) => ({
+        orderId: request.orderId,
+        headers: {} as Record<string, string>,
+      });
+      const handler =
+        type === 'wrapper'
+          ? makeIdempotent(fn, options)
+          : middy(fn).use(makeHandlerIdempotent(options));
+      const request = { orderId: 'dummy-1' };
+
+      // Act
+      const first = await handler(request, context);
+      first.headers['x-dummy-caller'] = 'dummy-a';
+      const second = await handler(request, context);
+
+      // Assess
+      expect(second).toEqual({ orderId: 'dummy-1', headers: {} });
+      second.headers['x-dummy-extra'] = 'dummy-b';
+      const third = await handler(request, context);
+      expect(third).toEqual({ orderId: 'dummy-1', headers: {} });
+      expect(third).not.toBe(second);
+    }
+  );
+
+  it.each([{ type: 'wrapper' }, { type: 'middleware' }])(
     'thows an error if the persistence layer throws an error when deleting a record ($type)',
     async ({ type }) => {
       // Prepare

@@ -5,6 +5,7 @@ import { LRUCache } from '@aws-lambda-powertools/commons/utils/lru-cache';
 import { search } from '@aws-lambda-powertools/jmespath';
 import type { JMESPathParsingOptions } from '@aws-lambda-powertools/jmespath/types';
 import { IdempotencyRecordStatus } from '../constants.js';
+import { copyResponse } from '../copyResponse.js';
 import { deepSort } from '../deepSort.js';
 import {
   IdempotencyItemAlreadyExistsError,
@@ -442,11 +443,15 @@ abstract class BasePersistenceLayer implements BasePersistenceLayerInterface {
    * reflect updates that might happen to the record outside the execution
    * context of the function.
    *
+   * The cache keeps a copy of the response, so that the caller that ran the function
+   * cannot change what the replays of other callers return.
+   *
    * @param record - record to save
    */
   private saveToCache(record: IdempotencyRecord): void {
     if (!this.useLocalCache) return;
     if (record.getStatus() === IdempotencyRecordStatus.INPROGRESS) return;
+    record.responseData = copyResponse(record.responseData);
     this.cache?.add(record.idempotencyKey, record);
   }
 

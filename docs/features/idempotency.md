@@ -741,6 +741,8 @@ You can enable in-memory caching with the **`useLocalCache`** parameter:
 
 When enabled, the default is to cache a maximum of 1000 records in each Lambda execution environment - You can change it with the **`maxLocalCacheSize`** parameter.
 
+Each replay returns its own copy of the stored response, so changing a replayed response does not change what the next replay returns.
+
 ### Expiring idempotency records
 
 !!! note "By default, we expire idempotency records after **an hour** (3600 seconds)."

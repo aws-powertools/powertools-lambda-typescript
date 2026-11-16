@@ -9,6 +9,7 @@ import {
   IdempotencyRecordStatus,
   MAX_RETRIES,
 } from './constants.js';
+import { copyResponse } from './copyResponse.js';
 import {
   IdempotencyAlreadyInProgressError,
   IdempotencyInconsistentStateError,
@@ -129,6 +130,9 @@ export class IdempotencyHandler<Func extends AnyFunction> {
    *
    * If the idempotency record is not COMPLETE, then it will throw an error based on the status of the record.
    *
+   * The response is copied, so that a caller changing it does not change what the next
+   * replay of the same record returns.
+   *
    * @param idempotencyRecord The idempotency record stored in the persistence layer
    * @returns The result of the function if the idempotency record is in a terminal state
    */
@@ -158,7 +162,7 @@ export class IdempotencyHandler<Func extends AnyFunction> {
       );
     }
 
-    const response = idempotencyRecord.getResponse();
+    const response = copyResponse(idempotencyRecord.getResponse());
 
     // If a response hook is provided, call it to allow the user to modify the response
     if (this.#idempotencyConfig.responseHook) {

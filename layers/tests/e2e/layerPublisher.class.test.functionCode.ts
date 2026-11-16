@@ -3,6 +3,11 @@ import { join } from 'node:path';
 import { BatchProcessor, EventType } from '@aws-lambda-powertools/batch';
 import { DataMasking } from '@aws-lambda-powertools/data-masking';
 import { Router } from '@aws-lambda-powertools/event-handler/http';
+import {
+  FeatureFlags,
+  ruleEngineStore,
+} from '@aws-lambda-powertools/feature-flags';
+import { appConfigStore } from '@aws-lambda-powertools/feature-flags/appconfig';
 import { DynamoDBPersistenceLayer } from '@aws-lambda-powertools/idempotency/dynamodb';
 import { kafkaConsumer, SchemaType } from '@aws-lambda-powertools/kafka';
 import { Logger } from '@aws-lambda-powertools/logger';
@@ -50,6 +55,12 @@ new SecretsProvider({ awsSdkV3Client: secretsClient });
 new AppConfigProvider({ environment: 'foo', awsSdkV3Client: appconfigClient });
 
 new DynamoDBProvider({ tableName: 'foo', awsSdkV3Client: ddbClient });
+
+appConfigStore({
+  environment: 'foo',
+  name: 'bar',
+  awsSdkV3Client: appconfigClient,
+});
 
 new BatchProcessor(EventType.SQS);
 
@@ -144,6 +155,15 @@ export const handler = async (_event: unknown, context: Context) => {
   masker.erase({ ssn: '123-45-6789' }, { fields: ['ssn'] });
 
   validate({ payload: { foo: 'bar' }, schema: { type: 'object' } });
+
+  const flags = new FeatureFlags({
+    store: ruleEngineStore({
+      source: async () => ({ my_flag: { default: true } }),
+    }),
+  });
+  if ((await flags.evaluate({ name: 'my_flag', default: false })) !== true) {
+    throw new Error('FeatureFlags did not evaluate the flag from the store');
+  }
 
   const kafkaHandler = kafkaConsumer(async () => {}, {
     value: { type: SchemaType.JSON },

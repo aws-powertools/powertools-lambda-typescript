@@ -3,6 +3,42 @@ import type { StandardSchemaV1 } from '@standard-schema/spec';
 import type { HttpStatusCode } from '../types/http.js';
 import { HttpStatusCodes } from './constants.js';
 
+type NormalizedIssue = {
+  message: string;
+  path?: Array<string | number>;
+};
+
+/**
+ * Reduces the path segments of a Standard Schema issue to their scalar keys.
+ *
+ * Vendors such as Valibot describe each segment with an object that also carries the parent
+ * input value, which must stay out of error details.
+ *
+ * @param path - The path of a Standard Schema issue
+ * @internal
+ */
+const normalizeIssuePath = (
+  path: NonNullable<StandardSchemaV1.Issue['path']>
+): Array<string | number> =>
+  path.map((segment) => {
+    const key = typeof segment === 'object' ? segment.key : segment;
+    return typeof key === 'symbol' ? key.toString() : key;
+  });
+
+/**
+ * Keeps the message and the scalar path of each Standard Schema issue.
+ *
+ * @param issues - The issues reported by a Standard Schema validation
+ * @internal
+ */
+const normalizeIssues = (
+  issues?: StandardSchemaV1.FailureResult['issues']
+): NormalizedIssue[] | undefined =>
+  issues?.map((issue) => ({
+    message: issue.message,
+    path: issue.path && normalizeIssuePath(issue.path),
+  }));
+
 class RouteMatchingError extends Error {
   constructor(
     message: string,
@@ -190,10 +226,7 @@ class RequestValidationError extends HttpError {
     options?: ErrorOptions
   ) {
     super(message, options, {
-      issues: issues?.map((issue) => ({
-        message: issue.message,
-        path: issue.path,
-      })),
+      issues: normalizeIssues(issues),
     });
     this.name = 'RequestValidationError';
   }
@@ -209,10 +242,7 @@ class ResponseValidationError extends HttpError {
     options?: ErrorOptions
   ) {
     super(message, options, {
-      issues: issues?.map((issue) => ({
-        message: issue.message,
-        path: issue.path,
-      })),
+      issues: normalizeIssues(issues),
     });
     this.name = 'ResponseValidationError';
   }
@@ -241,6 +271,7 @@ export {
   InvalidHttpMethodError,
   MethodNotAllowedError,
   NotFoundError,
+  normalizeIssuePath,
   ParameterValidationError,
   RequestEntityTooLargeError,
   RequestTimeoutError,

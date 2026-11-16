@@ -328,6 +328,31 @@ describe('HTTP Error Classes', () => {
       ]);
     });
 
+    it('reduces path segments to their scalar keys', () => {
+      const issues = [
+        {
+          message: 'Invalid type',
+          path: [
+            { type: 'object', key: 'user', input: { user: { age: [1] } } },
+            'age',
+            0,
+            { key: Symbol('secret') },
+          ],
+        },
+      ];
+      const error = new RequestValidationError(
+        'Validation failed for request body',
+        issues
+      );
+
+      expect(error.details?.issues).toEqual([
+        {
+          message: 'Invalid type',
+          path: ['user', 'age', 0, 'Symbol(secret)'],
+        },
+      ]);
+    });
+
     it('passes options to Error superclass', () => {
       const cause = new Error('Root cause');
       const error = new RequestValidationError(

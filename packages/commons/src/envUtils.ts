@@ -4,6 +4,7 @@ import {
   AWS_LAMBDA_INITIALIZATION_TYPE_ENV_VAR,
   AWS_LAMBDA_MAX_CONCURRENCY,
   POWERTOOLS_DEV_ENV_VAR,
+  POWERTOOLS_MAX_DECOMPRESSED_SIZE_ENV_VAR,
   POWERTOOLS_SERVICE_NAME_ENV_VAR,
   WEB_FUNCTION_EXECUTION_ENV_SUFFIX,
   XRAY_TRACE_ID_ENV_VAR,
@@ -280,6 +281,38 @@ const getServiceName = (): string => {
   });
 };
 
+const DEFAULT_MAX_DECOMPRESSED_SIZE = 16 * 1024 * 1024;
+
+/**
+ * Get the maximum size in bytes that data decompressed from a compressed payload may reach.
+ *
+ * This is determined by the `POWERTOOLS_MAX_DECOMPRESSED_SIZE` environment variable
+ * and defaults to 16 MiB. Values that are not positive integers are ignored and
+ * the default is used instead.
+ *
+ * @example
+ * ```ts
+ * import { getMaxDecompressedSize } from '@aws-lambda-powertools/commons/utils/env';
+ *
+ * const maxOutputLength = getMaxDecompressedSize();
+ * ```
+ */
+const getMaxDecompressedSize = (): number => {
+  let value: number;
+  try {
+    value = getNumberFromEnv({
+      key: POWERTOOLS_MAX_DECOMPRESSED_SIZE_ENV_VAR,
+      defaultValue: DEFAULT_MAX_DECOMPRESSED_SIZE,
+    });
+  } catch {
+    return DEFAULT_MAX_DECOMPRESSED_SIZE;
+  }
+
+  return Number.isInteger(value) && value > 0
+    ? value
+    : DEFAULT_MAX_DECOMPRESSED_SIZE;
+};
+
 /**
  * Get the AWS X-Ray Trace data from the lambda RIC async context or the  `_X_AMZN_TRACE_ID` environment variable.
  *
@@ -371,6 +404,7 @@ const getXRayTraceIdFromEnv = (): string | undefined => {
 
 export {
   getBooleanFromEnv,
+  getMaxDecompressedSize,
   getNumberFromEnv,
   getServiceName,
   getStringFromEnv,

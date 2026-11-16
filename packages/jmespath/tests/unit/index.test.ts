@@ -1,6 +1,6 @@
-import { brotliDecompressSync } from 'node:zlib';
+import { brotliDecompressSync, gzipSync } from 'node:zlib';
 import { fromBase64 } from '@aws-lambda-powertools/commons/utils/base64';
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { extractDataFromEnvelope, SQS } from '../../src/envelopes.js';
 import { Functions } from '../../src/Functions.js';
 import {
@@ -282,6 +282,10 @@ describe('Coverage tests', () => {
   });
 
   describe('class: PowertoolsFunctions', () => {
+    afterEach(() => {
+      vi.unstubAllEnvs();
+    });
+
     it('decodes a json string', () => {
       // Prepare
       const event = '{"user":"xyz","product_id":"123456789"}';
@@ -316,6 +320,42 @@ describe('Coverage tests', () => {
 
       // Assess
       expect(data).toStrictEqual('/aws/lambda/powertools-example');
+    });
+
+    it('does not decode a base64 gzip string that expands past the size limit', () => {
+      // Prepare
+      vi.stubEnv('POWERTOOLS_MAX_DECOMPRESSED_SIZE', '1024');
+      const event = {
+        payload: gzipSync(Buffer.alloc(2048, 'a')).toString('base64'),
+      };
+
+      // Act
+      const data = extractDataFromEnvelope(
+        event,
+        'powertools_base64_gzip(payload)',
+        { customFunctions: new PowertoolsFunctions() }
+      );
+
+      // Assess, like any other invalid input the expression yields no data
+      expect(data).toBeUndefined();
+    });
+
+    it('decodes a base64 gzip string within the configured size limit', () => {
+      // Prepare
+      vi.stubEnv('POWERTOOLS_MAX_DECOMPRESSED_SIZE', '4096');
+      const event = {
+        payload: gzipSync(Buffer.alloc(2048, 'a')).toString('base64'),
+      };
+
+      // Act
+      const data = extractDataFromEnvelope(
+        event,
+        'powertools_base64_gzip(payload)',
+        { customFunctions: new PowertoolsFunctions() }
+      );
+
+      // Assess
+      expect(data).toStrictEqual('a'.repeat(2048));
     });
 
     it('decodes a base64 string', () => {

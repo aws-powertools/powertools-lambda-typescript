@@ -142,16 +142,23 @@ jobs:
         run: |
           set -euo pipefail
           if [ -n "${PARTITION_VERSION:-}" ]; then
-            echo "partition_version=${PARTITION_VERSION}" >> "$GITHUB_OUTPUT"
+            RESOLVED_VERSION="$PARTITION_VERSION"
           else
-            echo "partition_version=${VERSION}" >> "$GITHUB_OUTPUT"
+            RESOLVED_VERSION="$VERSION"
           fi
+          if [[ ! "$RESOLVED_VERSION" =~ ^[0-9]+$ ]]; then
+            echo "::error::The layer version to verify must be a layer version number, e.g. 51"
+            exit 1
+          fi
+          echo "partition_version=${RESOLVED_VERSION}" >> "$GITHUB_OUTPUT"
       - name: Verify Layer
+        env:
+          PARTITION_VERSION: ${{ steps.partition_version.outputs.partition_version }}
         run: |
           set -euo pipefail
           layer_output="AWSLambdaPowertoolsTypeScriptV2-${{ matrix.region }}.json"
           # Dynamic secret access is safe here - secrets are scoped per environment
-          aws --region "${{ matrix.region }}" lambda get-layer-version-by-arn --arn "arn:${{ needs.setup.outputs.partition }}:lambda:${{ matrix.region }}:${{ secrets[format('AWS_ACCOUNT_{0}', steps.transform.outputs.CONVERTED_REGION)] }}:layer:AWSLambdaPowertoolsTypeScriptV2:${{ steps.partition_version.outputs.partition_version }}" > "$layer_output"
+          aws --region "${{ matrix.region }}" lambda get-layer-version-by-arn --arn "arn:${{ needs.setup.outputs.partition }}:lambda:${{ matrix.region }}:${{ secrets[format('AWS_ACCOUNT_{0}', steps.transform.outputs.CONVERTED_REGION)] }}:layer:AWSLambdaPowertoolsTypeScriptV2:${PARTITION_VERSION}" > "$layer_output"
           REMOTE_SHA=$(jq -r '.Content.CodeSha256' $layer_output)
           LOCAL_SHA=$(jq -r '.Content.CodeSha256' AWSLambdaPowertoolsTypeScriptV2.json)
           test "$REMOTE_SHA" == "$LOCAL_SHA" && echo "SHA OK: ${LOCAL_SHA}" || exit 1

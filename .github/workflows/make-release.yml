@@ -97,9 +97,11 @@ jobs:
           git config --global user.email '151832416+aws-powertools-bot@users.noreply.github.com'
           git config remote.origin.url >&-
       - name: Create git tag
+        env:
+          RELEASE_VERSION: ${{ needs.publish-npm.outputs.RELEASE_VERSION }}
         run : |
-          git tag -a v${{ needs.publish-npm.outputs.RELEASE_VERSION }} -m "Release v${{ needs.publish-npm.outputs.RELEASE_VERSION }}"
-          git push origin v${{ needs.publish-npm.outputs.RELEASE_VERSION }}
+          git tag -a "v$RELEASE_VERSION" -m "Release v$RELEASE_VERSION"
+          git push origin "v$RELEASE_VERSION"
    
   # NOTE: GitHub Actions has a depth limit of 4 nested workflow_calls. We're at 2 today:
   # make-release -> publish_layer -> reusable_deploy_layer_stack / layers_partitions_deploy

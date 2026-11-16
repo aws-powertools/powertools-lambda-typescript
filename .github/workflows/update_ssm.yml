@@ -114,9 +114,19 @@ jobs:
         ]
 
     permissions:
-      contents: write
+      contents: read
       id-token: write
     steps:
+      - id: validate
+        name: Validate layer version
+        env:
+          LAYER_VERSION: ${{ inputs.layer-version }}
+        run: |
+          set -euo pipefail
+          if [[ ! "$LAYER_VERSION" =~ ^[0-9]+$ ]]; then
+            echo "::error::layer-version must be a layer version number, e.g. 51"
+            exit 1
+          fi
       - id: transform
         run: |
           echo 'CONVERTED_REGION=${{ matrix.region }}' | tr 'a-z\-' 'A-Z_' >> "$GITHUB_OUTPUT"
@@ -131,12 +141,16 @@ jobs:
         env:
           PREFIX: ${{ inputs.environment == 'beta' && '/aws/service/powertools/beta' || '/aws/service/powertools' }}
           PACKAGE_VERSION: ${{ inputs.package_version }}
+          LAYER_VERSION: ${{ inputs.layer-version }}
+          REGION: ${{ matrix.region }}
         run: |
-          aws ssm put-parameter --name "$PREFIX/typescript/generic/all/$PACKAGE_VERSION" --value "arn:aws:lambda:${{ matrix.region }}:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:${{ inputs.layer-version }}" --type String --overwrite
+          aws ssm put-parameter --name "$PREFIX/typescript/generic/all/$PACKAGE_VERSION" --value "arn:aws:lambda:$REGION:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:$LAYER_VERSION" --type String --overwrite
 
       - id: write-latest
         if: inputs.write_latest == true
         env:
-          prefix: ${{ inputs.environment == 'beta' && '/aws/service/powertools/beta' || '/aws/service/powertools' }}
+          PREFIX: ${{ inputs.environment == 'beta' && '/aws/service/powertools/beta' || '/aws/service/powertools' }}
+          LAYER_VERSION: ${{ inputs.layer-version }}
+          REGION: ${{ matrix.region }}
         run: |
-          aws ssm put-parameter --name "${{ env.prefix }}/typescript/generic/all/latest" --value "arn:aws:lambda:${{ matrix.region }}:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:${{ inputs.layer-version }}" --type String --overwrite
+          aws ssm put-parameter --name "$PREFIX/typescript/generic/all/latest" --value "arn:aws:lambda:$REGION:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:$LAYER_VERSION" --type String --overwrite

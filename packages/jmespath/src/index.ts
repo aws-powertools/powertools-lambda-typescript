@@ -1,6 +1,7 @@
 export {
   ArityError,
   EmptyExpressionError,
+  FunctionEvaluationError,
   IncompleteExpressionError,
   JMESPathError,
   JMESPathTypeError,

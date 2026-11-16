@@ -90,7 +90,7 @@ These are all built-in envelopes you can use along with their expression as a re
 
 ### Built-in JMESPath functions
 
-You can use our built-in JMESPath functions within your envelope expression. They handle deserialization for common data formats found in AWS Lambda event sources such as JSON strings, base64, and uncompress gzip data.
+You can use our built-in JMESPath functions within your envelope expression. They handle deserialization for common data formats found in AWS Lambda event sources such as JSON strings, base64, and uncompress gzip data. When a function can't process the value it receives, it throws a `FunctionEvaluationError` with the original error as its `cause`.
 
 #### `powertools_json` function
 

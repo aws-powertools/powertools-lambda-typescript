@@ -415,22 +415,25 @@ describe('Coverage tests', () => {
       expect(data).toStrictEqual('/aws/lambda/powertools-example');
     });
 
-    it('does not decode a base64 gzip string that expands past the size limit', () => {
+    it('throws when a base64 gzip string expands past the size limit', () => {
       // Prepare
       vi.stubEnv('POWERTOOLS_MAX_DECOMPRESSED_SIZE', '1024');
       const event = {
         payload: gzipSync(Buffer.alloc(2048, 'a')).toString('base64'),
       };
 
-      // Act
-      const data = extractDataFromEnvelope(
-        event,
-        'powertools_base64_gzip(payload)',
-        { customFunctions: new PowertoolsFunctions() }
+      // Act & Assess
+      expect(() =>
+        extractDataFromEnvelope(event, 'powertools_base64_gzip(payload)', {
+          customFunctions: new PowertoolsFunctions(),
+        })
+      ).toThrow(
+        expect.objectContaining({
+          name: 'FunctionEvaluationError',
+          functionName: 'powertools_base64_gzip',
+          cause: expect.objectContaining({ code: 'ERR_BUFFER_TOO_LARGE' }),
+        })
       );
-
-      // Assess, like any other invalid input the expression yields no data
-      expect(data).toBeUndefined();
     });
 
     it('decodes a base64 gzip string within the configured size limit', () => {

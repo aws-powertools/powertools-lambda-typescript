@@ -1,5 +1,6 @@
 import {
   ArityError,
+  FunctionEvaluationError,
   JMESPathTypeError,
   UnknownFunctionError,
   VariadicArityError,
@@ -32,7 +33,8 @@ class ParsedResult {
         error instanceof JMESPathTypeError ||
         error instanceof UnknownFunctionError ||
         error instanceof ArityError ||
-        error instanceof VariadicArityError
+        error instanceof VariadicArityError ||
+        error instanceof FunctionEvaluationError
       ) {
         error.setExpression(this.expression);
       }

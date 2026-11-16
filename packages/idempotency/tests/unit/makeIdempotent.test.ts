@@ -1,5 +1,6 @@
 import type { DurableContext } from '@aws/durable-execution-sdk-js';
 import type { JSONValue } from '@aws-lambda-powertools/commons/types';
+import { FunctionEvaluationError } from '@aws-lambda-powertools/jmespath';
 import context from '@aws-lambda-powertools/testing-utils/context';
 import middy from '@middy/core';
 import type { Context } from 'aws-lambda';
@@ -655,6 +656,37 @@ describe('Function: makeIdempotent', () => {
       expect(result).toBe(true);
       expect(saveInProgressSpy).toHaveBeenCalledTimes(0);
       expect(saveSuccessSpy).toHaveBeenCalledTimes(0);
+    }
+  );
+
+  it.each([
+    {
+      type: 'wrapper',
+    },
+    { type: 'middleware' },
+  ])(
+    'throws when the idempotency key expression fails to evaluate ($type)',
+    async ({ type }) => {
+      // Prepare
+      const options = {
+        // Use a dedicated persistence store because this test uses a different
+        // `IdempotencyConfig` and a persistence layer instance can only be
+        // configured once - see `BasePersistenceLayer.configure()`
+        persistenceStore: new PersistenceLayerTestClass(),
+        config: new IdempotencyConfig({
+          eventKeyJmesPath: 'powertools_json(body)',
+          throwOnNoIdempotencyKey: false,
+        }),
+      };
+      const handler =
+        type === 'wrapper'
+          ? makeIdempotent(fnSuccessfull, options)
+          : middy(fnSuccessfull).use(makeHandlerIdempotent(options));
+
+      // Act & Assess
+      await expect(
+        handler({ body: 'not json' }, context)
+      ).rejects.toBeInstanceOf(FunctionEvaluationError);
     }
   );
 

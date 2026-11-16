@@ -10,8 +10,8 @@ class JMESPathError extends Error {
    */
   public expression?: string;
 
-  public constructor(message: string) {
-    super(message);
+  public constructor(message: string, options?: ErrorOptions) {
+    super(message, options);
     this.name = 'JMESPathError';
     this.message = message;
   }
@@ -149,8 +149,8 @@ class FunctionError extends JMESPathError {
    */
   public functionName?: string;
 
-  public constructor(message: string) {
-    super(message);
+  public constructor(message: string, options?: ErrorOptions) {
+    super(message, options);
     this.name = 'FunctionError';
   }
 
@@ -282,6 +282,26 @@ class JMESPathTypeError extends FunctionError {
 }
 
 /**
+ * Error thrown when a function fails while it is executed.
+ *
+ * Functions are executed after their arguments are validated, so this error
+ * signals that the function could not process the value it received. For
+ * example, the `powertools_json()` function throws when the string passed to
+ * it is not valid JSON.
+ *
+ * The error thrown by the function is available as the `cause` of this error.
+ * It's not included in the message because it might contain fragments of the
+ * payload being processed.
+ */
+class FunctionEvaluationError extends FunctionError {
+  public constructor(functionName: string, options?: ErrorOptions) {
+    super(`Error while evaluating function ${functionName}()`, options);
+    this.name = 'FunctionEvaluationError';
+    this.functionName = functionName;
+  }
+}
+
+/**
  * Error thrown when an unknown function is used in an expression.
  *
  * When evaluating a JMESPath expression, the interpreter looks up the function
@@ -301,6 +321,7 @@ class UnknownFunctionError extends FunctionError {
 export {
   ArityError,
   EmptyExpressionError,
+  FunctionEvaluationError,
   IncompleteExpressionError,
   JMESPathError,
   JMESPathTypeError,

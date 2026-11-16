@@ -12,6 +12,7 @@ import {
   IdempotencyValidationError,
 } from '../errors.js';
 import type { IdempotencyConfig } from '../IdempotencyConfig.js';
+import { isMissingIdempotencyKey } from '../isMissingIdempotencyKey.js';
 import type {
   BasePersistenceLayerInterface,
   BasePersistenceLayerOptions,
@@ -395,7 +396,7 @@ abstract class BasePersistenceLayer implements BasePersistenceLayerInterface {
         ) as JSONValue)
       : data;
 
-    if (BasePersistenceLayer.isMissingIdempotencyKey(payload)) {
+    if (isMissingIdempotencyKey(payload)) {
       if (this.throwOnNoIdempotencyKey) {
         throw new IdempotencyKeyError(
           'No data found to create a hashed idempotency_key'
@@ -432,22 +433,6 @@ abstract class BasePersistenceLayer implements BasePersistenceLayerInterface {
     }
 
     return '';
-  }
-
-  private static isMissingIdempotencyKey(data: JSONValue): boolean {
-    if (Array.isArray(data) || typeof data === 'object') {
-      if (data === null) return true;
-      for (const value of Object.values(data)) {
-        /* v8 ignore else -- @preserve */
-        if (value) {
-          return false;
-        }
-      }
-
-      return true;
-    }
-
-    return !data;
   }
 
   /**

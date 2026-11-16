@@ -17,6 +17,7 @@ import {
   IdempotencyUnknownError,
 } from './errors.js';
 import type { IdempotencyConfig } from './IdempotencyConfig.js';
+import { isMissingIdempotencyKey } from './isMissingIdempotencyKey.js';
 import type { BasePersistenceLayer } from './persistence/BasePersistenceLayer.js';
 import type { IdempotencyRecord } from './persistence/IdempotencyRecord.js';
 import type { IdempotencyRecordIdentity } from './types/BasePersistenceLayer.js';
@@ -359,7 +360,11 @@ export class IdempotencyHandler<Func extends AnyFunction> {
   }
 
   /**
-   * Avoid idempotency if the eventKeyJmesPath is not present in the payload and throwOnNoIdempotencyKey is false
+   * Avoid idempotency if the payload selected by the eventKeyJmesPath expression cannot
+   * identify the request and throwOnNoIdempotencyKey is false.
+   *
+   * It uses the same predicate as the key generator, so that a selection that would be
+   * hashed into a record shared by unrelated requests is skipped instead.
    */
   public shouldSkipIdempotency(): boolean {
     if (!this.#idempotencyConfig.isEnabled()) return true;
@@ -374,7 +379,7 @@ export class IdempotencyHandler<Func extends AnyFunction> {
         this.#idempotencyConfig.jmesPathOptions
       );
 
-      return selection === undefined || selection === null;
+      return isMissingIdempotencyKey(selection as JSONValue);
     }
 
     return false;

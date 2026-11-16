@@ -81,6 +81,17 @@ const fnSuccessfull = async () => true;
 const fnError = () => {
   throw new Error('Something went wrong');
 };
+/**
+ * Two requests of different callers that select no idempotency key, whatever the
+ * expression used: `user` and `productId` are absent, and the other fields are falsy.
+ */
+const requestA = {
+  caller: 'dummy-a',
+  name: '',
+  items: [] as string[],
+  metadata: {} as Record<string, string>,
+};
+const requestB = { ...requestA, caller: 'dummy-b' };
 
 describe('Function: makeIdempotent', () => {
   const ENVIRONMENT_VARIABLES = process.env;
@@ -656,6 +667,81 @@ describe('Function: makeIdempotent', () => {
       expect(result).toBe(true);
       expect(saveInProgressSpy).toHaveBeenCalledTimes(0);
       expect(saveSuccessSpy).toHaveBeenCalledTimes(0);
+    }
+  );
+
+  it.each(
+    [
+      {
+        case: 'an all-null multi-select list',
+        eventKeyJmesPath: '[user, productId]',
+      },
+      {
+        case: 'an all-null multi-select hash',
+        eventKeyJmesPath: '{u: user, p: productId}',
+      },
+      { case: 'an empty string', eventKeyJmesPath: 'name' },
+      { case: 'an empty list', eventKeyJmesPath: 'items' },
+      { case: 'an empty object', eventKeyJmesPath: 'metadata' },
+    ].flatMap((selection) => [
+      { ...selection, type: 'wrapper' },
+      { ...selection, type: 'middleware' },
+    ])
+  )(
+    'runs the function without any persistence call when the idempotency key is $case ($type)',
+    async ({ eventKeyJmesPath, type }) => {
+      // Prepare
+      const options = {
+        // Use a dedicated persistence store because this test uses a different
+        // `IdempotencyConfig` and a persistence layer instance can only be
+        // configured once - see `BasePersistenceLayer.configure()`
+        persistenceStore: new PersistenceLayerTestClass(),
+        config: new IdempotencyConfig({ eventKeyJmesPath }),
+      };
+      const fn = vi.fn(
+        async (request: typeof requestA, _context: Context) =>
+          `done-${request.caller}`
+      );
+      const handler =
+        type === 'wrapper'
+          ? makeIdempotent(fn, options)
+          : middy(fn).use(makeHandlerIdempotent(options));
+
+      // Act
+      const first = await handler(requestA, context);
+      const second = await handler(requestB, context);
+
+      // Assess
+      expect(first).toBe('done-dummy-a');
+      expect(second).toBe('done-dummy-b');
+      expect(options.persistenceStore._putRecord).not.toHaveBeenCalled();
+      expect(options.persistenceStore._getRecord).not.toHaveBeenCalled();
+      expect(options.persistenceStore._updateRecord).not.toHaveBeenCalled();
+      expect(options.persistenceStore._deleteRecord).not.toHaveBeenCalled();
+    }
+  );
+
+  it.each([
+    { case: 'zero', eventKeyJmesPath: 'count' },
+    { case: 'false', eventKeyJmesPath: 'enabled' },
+    { case: 'a list of falsy values', eventKeyJmesPath: '[count, name]' },
+    { case: 'an object with a falsy value', eventKeyJmesPath: '{n: name}' },
+  ])(
+    'keeps idempotency when the idempotency key is $case',
+    async ({ eventKeyJmesPath }) => {
+      // Prepare
+      const options = {
+        persistenceStore: new PersistenceLayerTestClass(),
+        config: new IdempotencyConfig({ eventKeyJmesPath }),
+      };
+      const fn = vi.fn(async (_request: unknown, _context: Context) => 'done');
+      const handler = makeIdempotent(fn, options);
+
+      // Act
+      await handler({ count: 0, enabled: false, name: '' }, context);
+
+      // Assess
+      expect(options.persistenceStore._putRecord).toHaveBeenCalledOnce();
     }
   );
 

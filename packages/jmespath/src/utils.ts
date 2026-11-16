@@ -307,16 +307,18 @@ const checkComplexArrayType = (
  * Check that the keys computed by the expression of `sort_by()`, `max_by()`, or `min_by()`
  * are either all numbers or all strings.
  *
- * @param keys - The result of evaluating the expression against each element of the array
+ * @param items - The elements of the array, each with the result of evaluating the expression against it as `visited`
  */
-const typeCheckSortKeys = (keys: unknown[]): void => {
+function typeCheckSortKeys<T extends { visited: unknown }>(
+  items: T[]
+): asserts items is Array<T & { visited: number | string }> {
   let expectedType: string | undefined;
-  for (const key of keys) {
-    const actualType = getType(key);
+  for (const { visited } of items) {
+    const actualType = getType(visited);
     if (expectedType === undefined) {
       if (actualType !== 'string' && actualType !== 'number') {
         throw new JMESPathTypeError({
-          currentValue: key,
+          currentValue: visited,
           expectedTypes: ['string'],
           actualType,
         });
@@ -324,13 +326,13 @@ const typeCheckSortKeys = (keys: unknown[]): void => {
       expectedType = actualType;
     } else if (actualType !== expectedType) {
       throw new JMESPathTypeError({
-        currentValue: key,
+        currentValue: visited,
         expectedTypes: [expectedType],
         actualType,
       });
     }
   }
-};
+}
 
 /**
  * Check if the argument is an expression.

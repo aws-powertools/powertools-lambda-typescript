@@ -237,7 +237,7 @@ class Functions {
       arg,
       visited: expression.visit(arg),
     }));
-    typeCheckSortKeys(visitedArgs.map(({ visited }) => visited));
+    typeCheckSortKeys(visitedArgs);
 
     const max = visitedArgs.reduce((max, current) => {
       if (max.visited === current.visited) {
@@ -251,12 +251,7 @@ class Functions {
           ? max
           : current;
       }
-      // We can safely cast visited to number | string here because we've already
-      // checked the type at runtime above and we know that it's either a number or a string
-      return (max.visited as number | string) >
-        (current.visited as number | string)
-        ? max
-        : current;
+      return max.visited > current.visited ? max : current;
     }, visitedArgs[0]);
 
     return max.arg;
@@ -321,7 +316,7 @@ class Functions {
       arg,
       visited: expression.visit(arg),
     }));
-    typeCheckSortKeys(visitedArgs.map(({ visited }) => visited));
+    typeCheckSortKeys(visitedArgs);
 
     const min = visitedArgs.reduce((min, current) => {
       if (min.visited === current.visited) {
@@ -335,12 +330,7 @@ class Functions {
           ? min
           : current;
       }
-      // We can safely cast visited to number | string here because we've already
-      // checked the type at runtime above and we know that it's either a number or a string
-      return (min.visited as string | number) <
-        (current.visited as string | number)
-        ? min
-        : current;
+      return min.visited < current.visited ? min : current;
     }, visitedArgs[0]);
 
     return min.arg;
@@ -413,7 +403,7 @@ class Functions {
       index,
       visited: expression.visit(value),
     }));
-    typeCheckSortKeys(visitedArgs.map(({ visited }) => visited));
+    typeCheckSortKeys(visitedArgs);
 
     return visitedArgs
       .sort((a, b) => {
@@ -423,11 +413,7 @@ class Functions {
         if (typeof a.visited === 'string' && typeof b.visited === 'string') {
           return compareStringsByCodePoint(a.visited, b.visited);
         }
-        // We can safely cast visited to number | string here because we've already
-        // checked the type at runtime above and we know that it's either a number or a string
-        return (a.visited as string | number) > (b.visited as string | number)
-          ? 1
-          : -1;
+        return a.visited > b.visited ? 1 : -1;
       })
       .map(({ value }) => value); // Extract the original values
   }

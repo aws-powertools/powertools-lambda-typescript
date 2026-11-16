@@ -3,6 +3,9 @@ import type { DataMasking } from './DataMasking.js';
 /**
  * Interface for pluggable encryption providers.
  * Implement this to use a custom encryption backend.
+ *
+ * `decrypt` is expected to fail when the encryption context it is given does not match
+ * the one the data was encrypted with.
  */
 export interface EncryptionProvider {
   encrypt(data: string, context?: Record<string, string>): Promise<string>;
@@ -28,10 +31,20 @@ export interface DataMaskingConstructorOptions {
  * The masking strategies are mutually exclusive: provide `regexPattern` together
  * with `maskFormat`, or `dynamicMask`, or `customMask`, or an empty rule (`{}`)
  * for the default mask value.
+ *
+ * A rule applied to an array or a plain object is applied to each of its leaf
+ * values, keeping the structure intact; any other value is stringified first.
  */
 export type MaskingRule =
   | {
-      /** Regex pattern to match within the field value. */
+      /**
+       * Regex pattern to match within the field value.
+       *
+       * Every occurrence is replaced, whether or not the pattern carries the `g`
+       * flag, and a pattern that matches nothing falls back to the default mask
+       * value. Sticky (`y`) patterns are rejected, since they would mask the same
+       * value differently on each call.
+       */
       regexPattern: RegExp;
       /** Replacement format string (e.g., `'$1****$3'`). */
       maskFormat: string;
@@ -74,9 +87,17 @@ export type MaskingRule =
  * with the default mask value.
  */
 export type EraseOptions = MaskingRule & {
-  /** Dot-notation path expressions for fields to mask (supports `.*` and `[*]` wildcards). */
+  /**
+   * Dot-notation path expressions for fields to mask (supports `.*` and `[*]` wildcards).
+   *
+   * Must name at least one path: an empty list throws a `DataMaskingConfigurationError`.
+   */
   fields?: string[];
-  /** Per-field custom masking rules keyed by dot-notation path; override the top-level rule. */
+  /**
+   * Per-field custom masking rules keyed by dot-notation path; override the top-level rule.
+   *
+   * Must hold at least one rule: an empty object throws a `DataMaskingConfigurationError`.
+   */
   maskingRules?: Record<string, MaskingRule>;
 };
 
@@ -93,9 +114,13 @@ export type MaskedPayload<T> = T extends null | undefined
 
 /** Options for {@link DataMasking.encrypt | `DataMasking.encrypt`}. */
 export interface EncryptOptions {
-  /** Dot-notation path expressions for fields to encrypt (supports `.*` and `[*]` wildcards). If omitted, entire payload is encrypted. */
+  /**
+   * Dot-notation path expressions for fields to encrypt (supports `.*` and `[*]` wildcards). If omitted, entire payload is encrypted.
+   *
+   * Must name at least one path: an empty list throws a `DataMaskingConfigurationError`.
+   */
   fields?: string[];
-  /** Encryption context (additional authenticated data). */
+  /** Encryption context (additional authenticated data). The same context must be provided to {@link DataMasking.decrypt | `DataMasking.decrypt`}. */
   context?: Record<string, string>;
   /** Provider-specific options (escape hatch). */
   providerOptions?: Record<string, unknown>;
@@ -103,9 +128,13 @@ export interface EncryptOptions {
 
 /** Options for {@link DataMasking.decrypt | `DataMasking.decrypt`}. */
 export interface DecryptOptions {
-  /** Dot-notation path expressions for fields to decrypt (supports `.*` and `[*]` wildcards). */
+  /**
+   * Dot-notation path expressions for fields to decrypt (supports `.*` and `[*]` wildcards).
+   *
+   * Must name at least one path: an empty list throws a `DataMaskingConfigurationError`.
+   */
   fields?: string[];
-  /** Encryption context for verification. */
+  /** Encryption context for verification. It must match the one used to encrypt the data exactly, otherwise the operation fails. */
   context?: Record<string, string>;
   /** Provider-specific options (escape hatch). */
   providerOptions?: Record<string, unknown>;

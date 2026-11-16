@@ -50,7 +50,44 @@ describe('Avro Deserializer: ', () => {
 
     // Act & Assess
     expect(() => deserialize(message, schema)).toThrow(
-      KafkaConsumerDeserializationError
+      new KafkaConsumerDeserializationError(
+        'Failed to deserialize Avro message (base64-decoded payload length: 17 bytes): invalid Avro schema'
+      )
+    );
+  });
+
+  it('does not include the payload or schema in deserialization errors', () => {
+    // Prepare
+    const plainText = 'sensitive-user-data';
+    const message = Buffer.from(plainText).toString('base64');
+    const schema = '"string"';
+
+    // Act
+    let result: unknown;
+    try {
+      deserialize(message, schema);
+    } catch (error) {
+      result = error;
+    }
+
+    // Assess
+    expect(result).toEqual(
+      new KafkaConsumerDeserializationError(
+        'Failed to deserialize Avro message (base64-decoded payload length: 19 bytes): RangeError: Index out of range'
+      )
+    );
+    expect(result).not.toHaveProperty('cause');
+    expect(result).not.toHaveProperty(
+      'message',
+      expect.stringContaining(message)
+    );
+    expect(result).not.toHaveProperty(
+      'message',
+      expect.stringContaining(plainText)
+    );
+    expect(result).not.toHaveProperty(
+      'message',
+      expect.stringContaining(schema)
     );
   });
 

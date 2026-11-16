@@ -2,6 +2,7 @@ import fc from 'fast-check';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import {
+  DataMaskingConfigurationError,
   DataMaskingEncryptionError,
   DataMaskingFieldNotFoundError,
 } from '../../src/errors.js';
@@ -202,6 +203,34 @@ describe('DataMasking.encrypt()', () => {
     expect(console.warn).toHaveBeenCalledWith("Field not found: 'snn'");
   });
 
+  it('throws when fields is an empty array', async () => {
+    // Prepare
+    const provider = createMockProvider();
+    const masker = new DataMasking({ provider });
+
+    // Act & Assess
+    await expect(
+      masker.encrypt({ ssn: '123' }, { fields: [] })
+    ).rejects.toThrow(DataMaskingConfigurationError);
+    expect(provider.encrypt).not.toHaveBeenCalled();
+  });
+
+  it('encrypts an own __proto__ key without touching the prototype', async () => {
+    // Prepare
+    const provider = createMockProvider();
+    const masker = new DataMasking({ provider });
+    const data = JSON.parse('{"__proto__": "injected"}');
+
+    // Act
+    const result = await masker.encrypt(data, { fields: ['__proto__'] });
+
+    // Assess
+    expect(Object.getOwnPropertyDescriptor(result, '__proto__')?.value).toBe(
+      'ENC:"injected"'
+    );
+    expect(Object.getPrototypeOf(result)).toBe(Object.prototype);
+  });
+
   it('does not mutate original input', async () => {
     // Prepare
     const provider = createMockProvider();
@@ -373,6 +402,50 @@ describe('DataMasking.decrypt() - field level', () => {
       masker.decrypt({ a: 'encrypted' }, { fields: ['a'] })
     ).rejects.toThrow(DataMaskingEncryptionError);
   });
+
+  it('throws when fields is an empty array', async () => {
+    // Prepare
+    const provider = createMockProvider();
+    const masker = new DataMasking({ provider });
+
+    // Act & Assess
+    await expect(
+      masker.decrypt({ ssn: 'ENC:"123"' }, { fields: [] })
+    ).rejects.toThrow(DataMaskingConfigurationError);
+    expect(provider.decrypt).not.toHaveBeenCalled();
+  });
+});
+
+describe('DataMasking.decrypt() - invalid plaintext', () => {
+  const provider: EncryptionProvider = {
+    encrypt: vi.fn(async (data: string) => data),
+    decrypt: vi.fn(async () => 'not json SECRET-123'),
+  };
+
+  it.each([
+    { label: 'a full payload', data: 'ciphertext', options: undefined },
+    {
+      label: 'a field',
+      data: { ssn: 'ciphertext' },
+      options: { fields: ['ssn'] },
+    },
+  ])(
+    'throws without leaking the plaintext when $label does not hold JSON',
+    async ({ data, options }) => {
+      // Prepare
+      const masker = new DataMasking({ provider });
+
+      // Act
+      const error = (await masker
+        .decrypt(data, options)
+        .catch((reason: unknown) => reason)) as Error;
+
+      // Assess
+      expect(error).toBeInstanceOf(DataMaskingEncryptionError);
+      expect(error.message).not.toContain('SECRET-123');
+      expect(error.cause).toBeUndefined();
+    }
+  );
 });
 
 const pathKey = fc.stringMatching(/^[a-z][a-z0-9_]{0,10}$/);

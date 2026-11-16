@@ -68,14 +68,25 @@ describe('Given a class with a function to decorate', () => {
     configureSpy.mockRestore();
   });
 
-  it('appends the class and method name to the key prefix of a decorated method', async () => {
+  it.each([
+    {
+      case: 'keeps the default key prefix',
+      options: {},
+      prefix: /^my-lambda-function#/,
+    },
+    {
+      case: 'appends the operationName option to the key prefix',
+      options: { operationName: 'process-order' },
+      prefix: /^my-lambda-function\.process-order#/,
+    },
+  ])('$case of a decorated method', async ({ options, prefix }) => {
     // Prepare
     const persistenceStore = new PersistenceLayerTestClass();
     const config = new IdempotencyConfig({});
     config.registerLambdaContext(context);
 
     class TestClass {
-      @idempotent({ persistenceStore, config })
+      @idempotent({ persistenceStore, config, ...options })
       public async process(_record: unknown) {
         return true;
       }
@@ -86,33 +97,7 @@ describe('Given a class with a function to decorate', () => {
 
     // Assess
     const [record] = persistenceStore._putRecord.mock.calls[0];
-    expect(record.idempotencyKey).toMatch(
-      /^my-lambda-function\.TestClass\.process#/
-    );
-  });
-
-  it('appends the class and method name to the key prefix of a decorated static method', async () => {
-    // Prepare
-    const persistenceStore = new PersistenceLayerTestClass();
-    const config = new IdempotencyConfig({});
-    config.registerLambdaContext(context);
-
-    // biome-ignore lint/complexity/noStaticOnlyClass: the test covers a decorated static method
-    class TestClass {
-      @idempotent({ persistenceStore, config })
-      public static async process(_record: unknown) {
-        return true;
-      }
-    }
-
-    // Act
-    await TestClass.process({ id: 'order-1' });
-
-    // Assess
-    const [record] = persistenceStore._putRecord.mock.calls[0];
-    expect(record.idempotencyKey).toMatch(
-      /^my-lambda-function\.TestClass\.process#/
-    );
+    expect(record.idempotencyKey).toMatch(prefix);
   });
 
   it('keeps the default key prefix for a decorated handler', async () => {

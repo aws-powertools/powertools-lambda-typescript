@@ -418,7 +418,7 @@ describe('Idempotency e2e test decorator, default settings', () => {
     );
     expect(idempotencyRecord.Items).toHaveLength(1);
     expect(idempotencyRecord.Items?.[0].id).toEqual(
-      `${functionNameDataIndex}.LambdaWithKeywordArgument.process#${payloadHash}`
+      `${functionNameDataIndex}#${payloadHash}`
     );
     expect(idempotencyRecord.Items?.[0].data).toEqual('idempotent result: bar');
     expect(idempotencyRecord.Items?.[0].status).toEqual('COMPLETED');

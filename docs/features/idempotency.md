@@ -265,12 +265,7 @@ For this reason, operations that need different `IdempotencyConfig` settings - i
 
 When using multiple persistence layer instances, you can still share the same AWS SDK client to reuse the underlying connection.
 
-Records of operations other than your handler are prefixed with the name of the wrapped function, or of the decorated class and method, so that operations selecting equal values don't share a record. Set `operationName` when the function has no name, like an inline arrow function, or `keyPrefix` to replace the whole prefix.
-
-If you minify your bundle, set esbuild's [`keepNames`](https://esbuild.github.io/api/#keep-names){target="_blank"} option or an explicit `operationName`, otherwise the prefix can change between deployments.
-
-!!! note "Upgrading"
-    Earlier versions prefixed these records with the Lambda function name alone, so after upgrading each operation runs once more before its new records are found.
+By default, every idempotent operation of a Lambda function shares the same key prefix, so operations that select equal values share a record. Give each operation its own `operationName`, which is appended to the default prefix, or its own `keyPrefix`.
 
 === "index.ts"
 

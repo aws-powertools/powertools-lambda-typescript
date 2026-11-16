@@ -134,29 +134,8 @@ function makeIdempotent<Func extends AnyFunction>(
   if (!idempotencyConfig.isEnabled()) return fn;
 
   // `operationName` is only part of the options of a function that is not a handler
-  const { operationName } = options as { operationName?: string };
-  let warnedAboutOperationName = false;
-
-  /**
-   * The name that tells the records of this operation apart from the records of the
-   * other idempotent operations of the same Lambda function.
-   *
-   * An inline function has no name, in which case the operation keeps the default
-   * prefix and the customer is warned once, unless they chose a key prefix themselves.
-   */
-  const resolveOperationName = (): string | undefined => {
-    const name = operationName?.trim() || fn.name.trim();
-    if (name) return name;
-
-    if (!keyPrefix?.trim() && !warnedAboutOperationName) {
-      warnedAboutOperationName = true;
-      console.warn(
-        'Could not determine the name of the function being made idempotent, so its records use the key prefix shared by the other operations of this Lambda function. Set the operationName or keyPrefix option to tell them apart.'
-      );
-    }
-
-    return undefined;
-  };
+  const operationName =
+    (options as { operationName?: string }).operationName?.trim() || undefined;
 
   return function (this: Handler, ...args: Parameters<Func>): ReturnType<Func> {
     let functionPayloadToBeHashed: JSONValue;
@@ -189,7 +168,7 @@ function makeIdempotent<Func extends AnyFunction>(
       keyPrefix: keyPrefix,
       // Handler records keep the prefix of the Lambda function alone, so that the
       // records written by earlier versions remain valid
-      operationName: isHandler ? undefined : resolveOperationName(),
+      operationName: isHandler ? undefined : operationName,
       functionArguments: args,
       functionPayloadToBeHashed,
       thisArg: this,

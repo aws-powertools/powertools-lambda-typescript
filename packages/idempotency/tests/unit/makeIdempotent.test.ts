@@ -1045,7 +1045,6 @@ describe('Function: makeIdempotent', () => {
 
   it('completes a nested operation without a key prefix under the default prefix', async () => {
     // Prepare
-    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => null);
     const persistenceStore = new PersistenceLayerTestClass();
     const config = new IdempotencyConfig({});
     config.registerLambdaContext(context);
@@ -1074,11 +1073,6 @@ describe('Function: makeIdempotent', () => {
       expect.stringMatching(/^my-lambda-function#/),
     ]);
     expect(updateKeys).toEqual([putKeys[1], putKeys[0]]);
-    expect(warnSpy).toHaveBeenCalledWith(
-      expect.stringContaining(
-        'Could not determine the name of the function being made idempotent'
-      )
-    );
   });
 
   it('runs each operation under its own key prefix when they share a persistence store', async () => {
@@ -1097,10 +1091,12 @@ describe('Function: makeIdempotent', () => {
     const userIdempotently = makeIdempotent(processUser, {
       persistenceStore,
       config,
+      operationName: 'processUser',
     });
     const productIdempotently = makeIdempotent(processProduct, {
       persistenceStore,
       config,
+      operationName: 'processProduct',
     });
 
     // Act
@@ -1114,15 +1110,15 @@ describe('Function: makeIdempotent', () => {
 
   it.each([
     {
-      case: 'the name of the wrapped function',
+      case: 'the Lambda function name alone when the operationName option is not set',
       fn: async function processOrder(_order: unknown) {
         return true;
       },
       options: {},
-      prefix: 'my-lambda-function.processOrder',
+      prefix: 'my-lambda-function',
     },
     {
-      case: 'the operationName option of a function without a name',
+      case: 'the operationName option',
       fn: async (_order: unknown) => true,
       options: { operationName: 'process-order' },
       prefix: 'my-lambda-function.process-order',
@@ -1177,28 +1173,21 @@ describe('Function: makeIdempotent', () => {
     expect(record.idempotencyKey).toMatch(/^my-lambda-function#/);
   });
 
-  it('warns once when an operation has neither a name nor a key prefix', async () => {
+  it('ignores the operationName option for a handler', async () => {
     // Prepare
-    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => null);
     const persistenceStore = new PersistenceLayerTestClass();
-    const config = new IdempotencyConfig({});
-    config.registerLambdaContext(context);
-    const operation = makeIdempotent(async (_order: unknown) => true, {
-      persistenceStore,
-      config,
-    });
+    const operation = makeIdempotent(
+      async (_event: unknown, _context: Context) => true,
+      // @ts-expect-error - operationName is not part of the options of a handler
+      { persistenceStore, operationName: 'process-order' }
+    );
 
     // Act
-    await operation({ id: 'order-1' });
-    await operation({ id: 'order-2' });
+    await operation(event, context);
 
     // Assess
-    expect(warnSpy).toHaveBeenCalledTimes(1);
-    expect(warnSpy).toHaveBeenCalledWith(
-      expect.stringContaining(
-        'Set the operationName or keyPrefix option to tell them apart'
-      )
-    );
+    const [record] = persistenceStore._putRecord.mock.calls[0];
+    expect(record.idempotencyKey).toMatch(/^my-lambda-function#/);
   });
 
   it('uses the specified argument as payload when wrapping an arbitrary function', async () => {

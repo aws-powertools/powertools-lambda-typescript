@@ -1,5 +1,5 @@
 import { gzipSync } from 'node:zlib';
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { z } from 'zod';
 import { DynamoDBMarshalled } from '../../src/helpers/dynamodb.js';
 import { Base64Encoded, JSONStringified } from '../../src/helpers/index.js';
@@ -286,6 +286,10 @@ describe('Helper: DynamoDBMarshalled', () => {
 });
 
 describe('Helper: Base64Encoded', () => {
+  afterEach(() => {
+    vi.unstubAllEnvs();
+  });
+
   it('returns a valid base64 decoded object when passed an encoded object', () => {
     // Prepare
     const data = {
@@ -419,5 +423,60 @@ describe('Helper: Base64Encoded', () => {
         },
       ],
     });
+  });
+
+  it('returns a failed result if the payload decompresses past the size limit', () => {
+    // Prepare
+    vi.stubEnv('POWERTOOLS_MAX_DECOMPRESSED_SIZE', '1024');
+    const data = Buffer.from(
+      gzipSync(JSON.stringify('a'.repeat(2048)))
+    ).toString('base64');
+
+    // Act
+    const result = Base64Encoded(z.string()).safeParse(data);
+
+    // Assess
+    expect(result.success).toBe(false);
+    expect(result.error?.issues[0].message).toBe(
+      'Decompressed data exceeds the maximum size of 1024 bytes, set POWERTOOLS_MAX_DECOMPRESSED_SIZE to change the limit'
+    );
+  });
+
+  it('decompresses payloads within the configured size limit', () => {
+    // Prepare
+    vi.stubEnv('POWERTOOLS_MAX_DECOMPRESSED_SIZE', '4096');
+    const data = Buffer.from(
+      gzipSync(JSON.stringify('a'.repeat(2048)))
+    ).toString('base64');
+
+    // Act
+    const result = Base64Encoded(z.string()).safeParse(data);
+
+    // Assess
+    expect(result).toStrictEqual({
+      success: true,
+      data: 'a'.repeat(2048),
+    });
+  });
+
+  it('returns a failed result if a Kinesis record decompresses past the size limit', () => {
+    // Prepare
+    vi.stubEnv('POWERTOOLS_MAX_DECOMPRESSED_SIZE', '1024');
+    const testEvent = getTestEvent<KinesisDataStreamEvent>({
+      eventsPath: 'kinesis',
+      filename: 'stream',
+    });
+    testEvent.Records[0].kinesis.data = Buffer.from(
+      gzipSync(JSON.stringify('a'.repeat(2048)))
+    ).toString('base64');
+
+    // Act
+    const result = KinesisDataStreamSchema.safeParse(testEvent);
+
+    // Assess
+    expect(result.success).toBe(false);
+    expect(result.error?.issues[0].message).toBe(
+      'Decompressed data exceeds the maximum size of 1024 bytes, set POWERTOOLS_MAX_DECOMPRESSED_SIZE to change the limit'
+    );
   });
 });

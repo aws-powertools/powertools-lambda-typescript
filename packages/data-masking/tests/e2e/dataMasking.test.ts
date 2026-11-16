@@ -90,6 +90,20 @@ describe('DataMasking E2E tests', () => {
   );
   kmsKey.grantEncryptDecrypt(fullEncryptFn);
 
+  let functionNameContextVerification: string;
+  const contextVerificationFn = new TestNodejsFunction(
+    testStack,
+    {
+      entry: lambdaFunctionCodeFilePath,
+      handler: 'handlerContextVerification',
+      environment: {
+        KMS_KEY_ARN: kmsKey.keyArn,
+      },
+    },
+    { nameSuffix: 'contextVerification' }
+  );
+  kmsKey.grantEncryptDecrypt(contextVerificationFn);
+
   beforeAll(async () => {
     await testStack.deploy();
     functionNameErase = testStack.findAndGetStackOutputValue('erase');
@@ -97,6 +111,9 @@ describe('DataMasking E2E tests', () => {
       testStack.findAndGetStackOutputValue('fieldEncrypt');
     functionNameFullEncrypt =
       testStack.findAndGetStackOutputValue('fullEncrypt');
+    functionNameContextVerification = testStack.findAndGetStackOutputValue(
+      'contextVerification'
+    );
   }, 300_000);
 
   afterAll(async () => {
@@ -129,5 +146,18 @@ describe('DataMasking E2E tests', () => {
     const result = await invoke(functionNameFullEncrypt, testPayload);
 
     expect(result).toStrictEqual(testPayload);
+  });
+
+  it('decrypt only succeeds with the same encryption context', async () => {
+    const result = await invoke(functionNameContextVerification, testPayload);
+
+    expect(result).toStrictEqual({
+      withoutContext: 'DataMaskingEncryptionError',
+      withEmptyContext: 'DataMaskingEncryptionError',
+      withPartialContext: 'DataMaskingEncryptionError',
+      withDifferentValue: 'DataMaskingEncryptionError',
+      withUnknownKey: 'DataMaskingEncryptionError',
+      withSameContext: 'decrypted',
+    });
   });
 });

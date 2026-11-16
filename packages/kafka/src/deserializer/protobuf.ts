@@ -86,7 +86,7 @@ const createDeserializer = async (): Promise<ProtobufDeserializer> => {
       return messageType.decode(skipConfluentMessageIndexes(buffer));
     } catch (error) {
       throw new KafkaConsumerDeserializationError(
-        `Failed to deserialize Protobuf message: ${error}, message: ${data}, messageType: ${JSON.stringify(messageType)}`
+        `Failed to deserialize Protobuf message (base64-decoded payload length: ${buffer.length} bytes): ${error}`
       );
     }
   };

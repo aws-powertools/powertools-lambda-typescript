@@ -12,10 +12,8 @@ const deserialize = (data: string) => {
     // Attempt to parse the decoded data as JSON
     // we assume it's a JSON but it can also be a string, we don't know
     return JSON.parse(plainText);
-  } catch (error) {
-    // If JSON parsing fails, log the error and return the decoded string
-    // in case we could not parse it we return the base64 decoded value
-    console.error(`Failed to parse JSON from base64 value: ${data}`, error);
+  } catch {
+    // If JSON parsing fails, return the base64 decoded value
     return plainText;
   }
 };

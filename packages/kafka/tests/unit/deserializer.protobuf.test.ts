@@ -26,6 +26,40 @@ describe('Protobuf deserialiser: ', () => {
     );
   });
 
+  it('does not include the payload or message type in deserialization errors', () => {
+    // Prepare
+    const plainText = 'sensitive-user-data';
+    const data = Buffer.from(plainText).toString('base64');
+    const schemaMetadata = {
+      dataFormat: 'PROTOBUF',
+    };
+
+    // Act
+    let result: unknown;
+    try {
+      deserialize(data, Product, schemaMetadata);
+    } catch (error) {
+      result = error;
+    }
+
+    // Assess
+    expect(result).toEqual(
+      new KafkaConsumerDeserializationError(
+        'Failed to deserialize Protobuf message (base64-decoded payload length: 19 bytes): RangeError: index out of range: 17 + 8 > 19'
+      )
+    );
+    expect(result).not.toHaveProperty('cause');
+    expect(result).not.toHaveProperty('message', expect.stringContaining(data));
+    expect(result).not.toHaveProperty(
+      'message',
+      expect.stringContaining(plainText)
+    );
+    expect(result).not.toHaveProperty(
+      'message',
+      expect.stringContaining('messageType:')
+    );
+  });
+
   it('returns protobuf deserialised value', () => {
     // Prepare
     const data = 'COkHEgZMYXB0b3AZUrgehes/j0A=';

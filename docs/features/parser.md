@@ -106,6 +106,8 @@ When using the decorator or middleware, you can specify a schema to parse the ev
 | **VpcLatticeSchema**                            | Lambda Event Source payload for Amazon VPC Lattice                                                                    |
 | **VpcLatticeV2Schema**                          | Lambda Event Source payload for Amazon VPC Lattice v2 payload                                                         |
 
+Schemas that decompress gzip data, like `CloudWatchLogsSchema` and `KinesisDataStreamSchema`, fail to parse payloads that expand past 16 MiB. Set `POWERTOOLS_MAX_DECOMPRESSED_SIZE` to change the limit in bytes.
+
 ### Extend built-in schemas
 
 You can extend every built-in schema to include your own schema, and yet have all other known fields parsed along the way.

@@ -202,9 +202,10 @@ For a stronger security posture, you can add metadata to each encryption operati
 and even help to prevent a [confused deputy](https://docs.aws.amazon.com/IAM/latest/UserGuide/confused-deputy.html){target="_blank"} situation.
 
 ???+ danger "Important considerations you should know"
-    1. **Exact match verification on decrypt**. Be careful using random data like `timestamps` as encryption context if you can't provide them on decrypt.
+    1. **Exact match verification on decrypt**. You must provide the same encryption context you used to encrypt the data. `decrypt` fails when a key is missing, holds a different value, or was not part of the context at encryption time. Be careful using random data like `timestamps` as encryption context if you can't provide them on decrypt.
     2. **Only `string` values are supported**.
     3. **Use non-sensitive data only**. When using KMS, encryption context is available as plaintext in AWS CloudTrail, unless you [intentionally disabled KMS events](https://docs.aws.amazon.com/kms/latest/developerguide/logging-using-cloudtrail.html#filtering-kms-events){target="_blank"}.
+    4. **Keys starting with `aws-crypto-` are reserved**. The AWS Encryption SDK stores its own metadata under this prefix, like the `aws-crypto-public-key` it adds when signing a message. `encrypt` rejects them, and the verification on `decrypt` ignores them.
 
 === "Encrypting with context"
 
@@ -220,7 +221,7 @@ and even help to prevent a [confused deputy](https://docs.aws.amazon.com/IAM/lat
     --8<-- "examples/snippets/data-masking/decryptWithContext.ts:3"
     ```
 
-    1. They must match otherwise the operation will fail.
+    1. They must match otherwise the operation will fail. The error message names the keys that did not match, never their values.
 
 ### Choosing parts of your data
 

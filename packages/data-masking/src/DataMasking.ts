@@ -187,10 +187,14 @@ export class DataMasking {
    * deep copied and the values at `fields` are decrypted in place. An empty
    * `fields` list throws a `DataMaskingConfigurationError`.
    *
+   * When the data was encrypted with an encryption context, you must provide the
+   * same `context` here, otherwise the operation fails.
+   *
    * @example
    * ```typescript
    * const decrypted = await masker.decrypt(encrypted, {
    *   fields: ['customer.ssn'],
+   *   context: { tenantId: 'acme' },
    * });
    * ```
    *

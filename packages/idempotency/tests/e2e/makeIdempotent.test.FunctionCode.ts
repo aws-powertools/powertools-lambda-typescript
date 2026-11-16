@@ -30,17 +30,17 @@ const logger = new Logger();
  * Test idempotent arbitrary function with default persistence layer configs.
  */
 const idempotencyConfig = new IdempotencyConfig({});
-const processIdempotently = makeIdempotent(
-  async (record: Record<string, unknown>): Promise<string> => {
-    logger.info('Got test event', { record });
+const processRecord = async (
+  record: Record<string, unknown>
+): Promise<string> => {
+  logger.info('Got test event', { record });
 
-    return `Processing done: ${record.foo}`;
-  },
-  {
-    persistenceStore: dynamoDBPersistenceLayer,
-    config: idempotencyConfig,
-  }
-);
+  return `Processing done: ${record.foo}`;
+};
+const processIdempotently = makeIdempotent(processRecord, {
+  persistenceStore: dynamoDBPersistenceLayer,
+  config: idempotencyConfig,
+});
 
 export const handlerDefault = async (
   event: {
@@ -61,21 +61,19 @@ export const handlerDefault = async (
 const idempotencyConfigWithSelection = new IdempotencyConfig({
   payloadValidationJmesPath: 'foo',
 });
-const processIdempotentlyCustomized = makeIdempotent(
-  async (
-    baz: number,
-    record: Record<string, unknown>
-  ): Promise<Record<string, unknown>> => {
-    logger.info('Got test event', { baz, record });
+const processRecordCustomized = async (
+  baz: number,
+  record: Record<string, unknown>
+): Promise<Record<string, unknown>> => {
+  logger.info('Got test event', { baz, record });
 
-    return record;
-  },
-  {
-    persistenceStore: ddbPersistenceLayerCustomized,
-    config: idempotencyConfigWithSelection,
-    dataIndexArgument: 1,
-  }
-);
+  return record;
+};
+const processIdempotentlyCustomized = makeIdempotent(processRecordCustomized, {
+  persistenceStore: ddbPersistenceLayerCustomized,
+  config: idempotencyConfigWithSelection,
+  dataIndexArgument: 1,
+});
 
 export const handlerCustomized = async (
   event: {

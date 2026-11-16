@@ -67,4 +67,70 @@ describe('Given a class with a function to decorate', () => {
     // Restore the spy
     configureSpy.mockRestore();
   });
+
+  it('appends the class and method name to the key prefix of a decorated method', async () => {
+    // Prepare
+    const persistenceStore = new PersistenceLayerTestClass();
+    const config = new IdempotencyConfig({});
+    config.registerLambdaContext(context);
+
+    class TestClass {
+      @idempotent({ persistenceStore, config })
+      public async process(_record: unknown) {
+        return true;
+      }
+    }
+
+    // Act
+    await new TestClass().process({ id: 'order-1' });
+
+    // Assess
+    const [record] = persistenceStore._putRecord.mock.calls[0];
+    expect(record.idempotencyKey).toMatch(
+      /^my-lambda-function\.TestClass\.process#/
+    );
+  });
+
+  it('appends the class and method name to the key prefix of a decorated static method', async () => {
+    // Prepare
+    const persistenceStore = new PersistenceLayerTestClass();
+    const config = new IdempotencyConfig({});
+    config.registerLambdaContext(context);
+
+    // biome-ignore lint/complexity/noStaticOnlyClass: the test covers a decorated static method
+    class TestClass {
+      @idempotent({ persistenceStore, config })
+      public static async process(_record: unknown) {
+        return true;
+      }
+    }
+
+    // Act
+    await TestClass.process({ id: 'order-1' });
+
+    // Assess
+    const [record] = persistenceStore._putRecord.mock.calls[0];
+    expect(record.idempotencyKey).toMatch(
+      /^my-lambda-function\.TestClass\.process#/
+    );
+  });
+
+  it('keeps the default key prefix for a decorated handler', async () => {
+    // Prepare
+    const persistenceStore = new PersistenceLayerTestClass();
+
+    class TestClass implements LambdaInterface {
+      @idempotent({ persistenceStore })
+      public async handler(_event: unknown, _context: Context) {
+        return true;
+      }
+    }
+
+    // Act
+    await new TestClass().handler({ id: 'order-1' }, context);
+
+    // Assess
+    const [record] = persistenceStore._putRecord.mock.calls[0];
+    expect(record.idempotencyKey).toMatch(/^my-lambda-function#/);
+  });
 });

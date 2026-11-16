@@ -103,6 +103,7 @@ export class IdempotencyHandler<Func extends AnyFunction> {
       functionArguments,
       persistenceStore,
       keyPrefix,
+      operationName,
       thisArg,
     } = options;
     this.#functionToMakeIdempotent = functionToMakeIdempotent;
@@ -116,6 +117,7 @@ export class IdempotencyHandler<Func extends AnyFunction> {
     this.#persistenceStore.configure({
       config: this.#idempotencyConfig,
       keyPrefix,
+      functionName: operationName,
     });
     this.#resolvedKeyPrefix = this.#persistenceStore.idempotencyKeyPrefix;
   }

@@ -106,6 +106,21 @@ type ItempotentFunctionOptions<T extends Array<any>> = T[1] extends Context
   ? IdempotencyLambdaHandlerOptions
   : IdempotencyLambdaHandlerOptions & {
       dataIndexArgument?: number;
+      /**
+       * The name that tells the records of this operation apart from the records of the
+       * other idempotent operations of the same Lambda function.
+       *
+       * It defaults to the name of the wrapped function, or of the decorated class and
+       * method, and is appended to the default key prefix. Set it when the function has
+       * no name, for example an inline arrow function, or use `keyPrefix` to replace the
+       * whole prefix. If you minify your bundle, set it explicitly or keep function names,
+       * for example with esbuild's `keepNames` option, so the prefix stays the same
+       * between deployments.
+       *
+       * It does not apply to Lambda handlers, whose records are prefixed with the name
+       * of the Lambda function alone.
+       */
+      operationName?: string;
     };
 
 /**
@@ -140,6 +155,15 @@ type IdempotencyHandlerOptions = {
    * The custom idempotency key prefix.
    */
   keyPrefix?: string;
+  /**
+   * The name of the operation being made idempotent, appended to the default key prefix
+   * so that the records of this operation are told apart from the records of the other
+   * idempotent operations of the same Lambda function.
+   *
+   * It is left out for Lambda handlers, whose records are prefixed with the name of the
+   * Lambda function alone.
+   */
+  operationName?: string;
   /**
    * Persistence layer used to store the idempotency records.
    */

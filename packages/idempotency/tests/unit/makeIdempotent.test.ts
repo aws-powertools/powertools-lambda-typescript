@@ -92,6 +92,25 @@ const requestA = {
   metadata: {} as Record<string, string>,
 };
 const requestB = { ...requestA, caller: 'dummy-b' };
+/**
+ * An in-memory cache client, to exercise the records that a store actually holds.
+ */
+const createCacheClient = () => {
+  const items = new Map<string, string>();
+
+  return {
+    get: async (key: string) => items.get(key) ?? null,
+    set: async (key: string, value: unknown, options?: { NX?: boolean }) => {
+      if (options?.NX && items.has(key)) return null;
+      items.set(key, String(value));
+      return 'OK';
+    },
+    del: async (keys: string[]) => {
+      for (const key of keys) items.delete(key);
+      return keys.length;
+    },
+  };
+};
 
 describe('Function: makeIdempotent', () => {
   const ENVIRONMENT_VARIABLES = process.env;
@@ -886,6 +905,7 @@ describe('Function: makeIdempotent', () => {
 
   it('completes a nested operation without a key prefix under the default prefix', async () => {
     // Prepare
+    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => null);
     const persistenceStore = new PersistenceLayerTestClass();
     const config = new IdempotencyConfig({});
     config.registerLambdaContext(context);
@@ -914,6 +934,131 @@ describe('Function: makeIdempotent', () => {
       expect.stringMatching(/^my-lambda-function#/),
     ]);
     expect(updateKeys).toEqual([putKeys[1], putKeys[0]]);
+    expect(warnSpy).toHaveBeenCalledWith(
+      expect.stringContaining(
+        'Could not determine the name of the function being made idempotent'
+      )
+    );
+  });
+
+  it('runs each operation under its own key prefix when they share a persistence store', async () => {
+    // Prepare
+    const persistenceStore = new CachePersistenceLayer({
+      client: createCacheClient(),
+    });
+    const config = new IdempotencyConfig({ eventKeyJmesPath: 'id' });
+    config.registerLambdaContext(context);
+    const processUser = async (user: { id: string }) => ({
+      profile: user.id,
+    });
+    const processProduct = async (product: { id: string }) => ({
+      product: product.id,
+    });
+    const userIdempotently = makeIdempotent(processUser, {
+      persistenceStore,
+      config,
+    });
+    const productIdempotently = makeIdempotent(processProduct, {
+      persistenceStore,
+      config,
+    });
+
+    // Act
+    const user = await userIdempotently({ id: 'dummy-1' });
+    const product = await productIdempotently({ id: 'dummy-1' });
+
+    // Assess
+    expect(user).toEqual({ profile: 'dummy-1' });
+    expect(product).toEqual({ product: 'dummy-1' });
+  });
+
+  it.each([
+    {
+      case: 'the name of the wrapped function',
+      fn: async function processOrder(_order: unknown) {
+        return true;
+      },
+      options: {},
+      prefix: 'my-lambda-function.processOrder',
+    },
+    {
+      case: 'the operationName option of a function without a name',
+      fn: async (_order: unknown) => true,
+      options: { operationName: 'process-order' },
+      prefix: 'my-lambda-function.process-order',
+    },
+    {
+      case: 'the keyPrefix option over the operationName option',
+      fn: async function processOrder(_order: unknown) {
+        return true;
+      },
+      options: { operationName: 'process-order', keyPrefix: 'orders' },
+      prefix: 'orders',
+    },
+  ])(
+    'prefixes the records of an operation with $case',
+    async ({ fn, options, prefix }) => {
+      // Prepare
+      const persistenceStore = new PersistenceLayerTestClass();
+      const config = new IdempotencyConfig({});
+      config.registerLambdaContext(context);
+      const operation = makeIdempotent(fn, {
+        ...options,
+        persistenceStore,
+        config,
+      });
+
+      // Act
+      await operation({ id: 'order-1' });
+
+      // Assess
+      const [record] = persistenceStore._putRecord.mock.calls[0];
+      expect(record.idempotencyKey).toMatch(
+        new RegExp(`^${prefix.replace('.', '\\.')}#`)
+      );
+    }
+  );
+
+  it('keeps the default key prefix for a handler with a name', async () => {
+    // Prepare
+    const persistenceStore = new PersistenceLayerTestClass();
+    const operation = makeIdempotent(
+      async function processOrder(_event: unknown, _context: Context) {
+        return true;
+      },
+      { persistenceStore }
+    );
+
+    // Act
+    await operation(event, context);
+
+    // Assess
+    const [record] = persistenceStore._putRecord.mock.calls[0];
+    expect(record.idempotencyKey).toMatch(/^my-lambda-function#/);
+  });
+
+  it('warns once when an operation has neither a name nor a key prefix', async () => {
+    // Prepare
+    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => null);
+    const persistenceStore = new PersistenceLayerTestClass();
+    const config = new IdempotencyConfig({});
+    config.registerLambdaContext(context);
+    const operation = makeIdempotent(async (_order: unknown) => true, {
+      persistenceStore,
+      config,
+    });
+
+    // Act
+    await operation({ id: 'order-1' });
+    await operation({ id: 'order-2' });
+
+    // Assess
+    expect(warnSpy).toHaveBeenCalledTimes(1);
+    expect(warnSpy).toHaveBeenCalledWith(
+      expect.stringContaining(
+        'Set the operationName or keyPrefix option to tell them apart'
+      )
+    );
   });
 
   it('uses the specified argument as payload when wrapping an arbitrary function', async () => {
@@ -1272,19 +1417,7 @@ describe('Function: makeIdempotent', () => {
     onTestFinished(() => {
       vi.useRealTimers();
     });
-    const items = new Map<string, string>();
-    const client = {
-      get: async (key: string) => items.get(key) ?? null,
-      set: async (key: string, value: unknown, options?: { NX?: boolean }) => {
-        if (options?.NX && items.has(key)) return null;
-        items.set(key, String(value));
-        return 'OK';
-      },
-      del: async (keys: string[]) => {
-        for (const key of keys) items.delete(key);
-        return keys.length;
-      },
-    };
+    const client = createCacheClient();
     const shipOrder = vi.fn();
     const firstInvocation = createDurableContext(executionA, 'ExecutionMode');
     const handler = makeIdempotent(

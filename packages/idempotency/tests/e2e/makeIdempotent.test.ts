@@ -128,15 +128,15 @@ describe('Idempotency E2E tests, wrapper function usage', () => {
     expect(idempotencyRecords?.Items?.length).toEqual(2);
     const idempotencyRecordsItems = [
       idempotencyRecords.Items?.find(
-        (record) => record.id === `${functionNameDefault}#${payloadHashes[0]}`
+        (record) => record.id === `${functionNameDefault}.processRecord#${payloadHashes[0]}`
       ),
       idempotencyRecords.Items?.find(
-        (record) => record.id === `${functionNameDefault}#${payloadHashes[1]}`
+        (record) => record.id === `${functionNameDefault}.processRecord#${payloadHashes[1]}`
       ),
     ];
 
     expect(idempotencyRecordsItems?.[0]).toStrictEqual({
-      id: `${functionNameDefault}#${payloadHashes[0]}`,
+      id: `${functionNameDefault}.processRecord#${payloadHashes[0]}`,
       data: 'Processing done: bar',
       status: 'COMPLETED',
       expiration: expect.any(Number),
@@ -144,7 +144,7 @@ describe('Idempotency E2E tests, wrapper function usage', () => {
     });
 
     expect(idempotencyRecordsItems?.[1]).toStrictEqual({
-      id: `${functionNameDefault}#${payloadHashes[1]}`,
+      id: `${functionNameDefault}.processRecord#${payloadHashes[1]}`,
       data: 'Processing done: baz',
       status: 'COMPLETED',
       expiration: expect.any(Number),
@@ -194,20 +194,20 @@ describe('Idempotency E2E tests, wrapper function usage', () => {
     const idempotencyRecordsItems = [
       idempotencyRecords.Items?.find(
         (record) =>
-          record.customId === `${functionNameCustomConfig}#${payloadHashes[0]}`
+          record.customId === `${functionNameCustomConfig}.processRecordCustomized#${payloadHashes[0]}`
       ),
       idempotencyRecords.Items?.find(
         (record) =>
-          record.customId === `${functionNameCustomConfig}#${payloadHashes[1]}`
+          record.customId === `${functionNameCustomConfig}.processRecordCustomized#${payloadHashes[1]}`
       ),
       idempotencyRecords.Items?.find(
         (record) =>
-          record.customId === `${functionNameCustomConfig}#${payloadHashes[2]}`
+          record.customId === `${functionNameCustomConfig}.processRecordCustomized#${payloadHashes[2]}`
       ),
     ];
 
     expect(idempotencyRecordsItems?.[0]).toStrictEqual({
-      customId: `${functionNameCustomConfig}#${payloadHashes[0]}`,
+      customId: `${functionNameCustomConfig}.processRecordCustomized#${payloadHashes[0]}`,
       dataAttr: payload.records[0],
       statusAttr: 'COMPLETED',
       expiryAttr: expect.any(Number),
@@ -216,7 +216,7 @@ describe('Idempotency E2E tests, wrapper function usage', () => {
     });
 
     expect(idempotencyRecordsItems?.[1]).toStrictEqual({
-      customId: `${functionNameCustomConfig}#${payloadHashes[1]}`,
+      customId: `${functionNameCustomConfig}.processRecordCustomized#${payloadHashes[1]}`,
       dataAttr: payload.records[1],
       statusAttr: 'COMPLETED',
       expiryAttr: expect.any(Number),
@@ -225,7 +225,7 @@ describe('Idempotency E2E tests, wrapper function usage', () => {
     });
 
     expect(idempotencyRecordsItems?.[2]).toStrictEqual({
-      customId: `${functionNameCustomConfig}#${payloadHashes[2]}`,
+      customId: `${functionNameCustomConfig}.processRecordCustomized#${payloadHashes[2]}`,
       dataAttr: payload.records[2],
       statusAttr: 'COMPLETED',
       expiryAttr: expect.any(Number),

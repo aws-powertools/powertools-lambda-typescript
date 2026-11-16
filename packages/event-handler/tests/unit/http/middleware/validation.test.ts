@@ -289,6 +289,75 @@ describe('Router Validation Integration', () => {
     expect(result.statusCode).toBe(422);
   });
 
+  it('returns 422 when a repeated query parameter has a scalar schema', async () => {
+    // Prepare
+    const querySchema = z.object({ id: z.string() });
+
+    app.get('/items', () => ({ body: { items: [] } }), {
+      validation: { req: { query: querySchema } },
+    });
+
+    const event = createTestEvent('/items', 'GET', {});
+    event.multiValueQueryStringParameters = { id: ['a', 'b'] };
+
+    // Act
+    const result = await app.resolve(event, context);
+
+    // Assess
+    expect(result.statusCode).toBe(422);
+    const body = JSON.parse(result.body);
+    expect(body.details.issues[0].path).toEqual(['query', 'id']);
+  });
+
+  it('validates every value of a repeated query parameter with an array schema', async () => {
+    // Prepare
+    const querySchema = z.object({ id: z.array(z.string()) });
+
+    app.get('/items', (reqCtx) => ({ used: reqCtx.valid.req.query.id }), {
+      validation: { req: { query: querySchema } },
+    });
+
+    const event = createTestEvent('/items', 'GET', {});
+    event.multiValueQueryStringParameters = { id: ['a', 'b'] };
+
+    // Act
+    const result = await app.resolve(event, context);
+
+    // Assess
+    expect(result.statusCode).toBe(200);
+    expect(JSON.parse(result.body).used).toEqual(['a', 'b']);
+  });
+
+  it('keeps __proto__ an own property of the query data', async () => {
+    // Prepare
+    let captured: Record<string, unknown> | undefined;
+    const querySchema = {
+      '~standard': {
+        version: 1,
+        vendor: 'custom',
+        validate: (value: unknown) => {
+          captured = value as Record<string, unknown>;
+          return { value: captured };
+        },
+      },
+    } as const;
+
+    app.get('/items', () => ({ statusCode: 200, body: 'ok' }), {
+      validation: { req: { query: querySchema } },
+    });
+
+    const event = createTestEvent('/items', 'GET', {});
+    event.queryStringParameters = JSON.parse('{"__proto__":"polluted"}');
+
+    // Act
+    const result = await app.resolve(event, context);
+
+    // Assess
+    expect(result.statusCode).toBe(200);
+    expect(Object.hasOwn(captured as object, '__proto__')).toBe(true);
+    expect(({} as Record<string, unknown>).polluted).toBeUndefined();
+  });
+
   it('validates and serializes a JSON object body in ExtendedAPIGatewayProxyResult', async () => {
     // Prepare
     const responseSchema = z.object({ id: z.string(), name: z.string() });

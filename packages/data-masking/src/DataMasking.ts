@@ -171,10 +171,14 @@ export class DataMasking {
    * A string input is treated as a full encrypted payload; an object input is
    * deep copied and the values at `fields` are decrypted in place.
    *
+   * When the data was encrypted with an encryption context, you must provide the
+   * same `context` here, otherwise the operation fails.
+   *
    * @example
    * ```typescript
    * const decrypted = await masker.decrypt(encrypted, {
    *   fields: ['customer.ssn'],
+   *   context: { tenantId: 'acme' },
    * });
    * ```
    *

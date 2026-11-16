@@ -3,6 +3,9 @@ import type { DataMasking } from './DataMasking.js';
 /**
  * Interface for pluggable encryption providers.
  * Implement this to use a custom encryption backend.
+ *
+ * `decrypt` is expected to fail when the encryption context it is given does not match
+ * the one the data was encrypted with.
  */
 export interface EncryptionProvider {
   encrypt(data: string, context?: Record<string, string>): Promise<string>;
@@ -95,7 +98,7 @@ export type MaskedPayload<T> = T extends null | undefined
 export interface EncryptOptions {
   /** Dot-notation path expressions for fields to encrypt (supports `.*` and `[*]` wildcards). If omitted, entire payload is encrypted. */
   fields?: string[];
-  /** Encryption context (additional authenticated data). */
+  /** Encryption context (additional authenticated data). The same context must be provided to {@link DataMasking.decrypt | `DataMasking.decrypt`}. */
   context?: Record<string, string>;
   /** Provider-specific options (escape hatch). */
   providerOptions?: Record<string, unknown>;
@@ -105,7 +108,7 @@ export interface EncryptOptions {
 export interface DecryptOptions {
   /** Dot-notation path expressions for fields to decrypt (supports `.*` and `[*]` wildcards). */
   fields?: string[];
-  /** Encryption context for verification. */
+  /** Encryption context for verification. It must match the one used to encrypt the data exactly, otherwise the operation fails. */
   context?: Record<string, string>;
   /** Provider-specific options (escape hatch). */
   providerOptions?: Record<string, unknown>;

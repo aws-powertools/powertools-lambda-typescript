@@ -93,6 +93,17 @@ const requestA = {
 };
 const requestB = { ...requestA, caller: 'dummy-b' };
 /**
+ * A promise that another part of a test opens, to interleave invocations.
+ */
+const createGate = () => {
+  let open = () => {};
+  const gate = new Promise<void>((resolve) => {
+    open = resolve;
+  });
+
+  return { gate, open: () => open() };
+};
+/**
  * An in-memory cache client, to exercise the records that a store actually holds.
  */
 const createCacheClient = () => {
@@ -375,6 +386,97 @@ describe('Function: makeIdempotent', () => {
       IdempotencyAlreadyInProgressError
     );
     expect(deleteRecordSpy).toHaveBeenCalledTimes(1);
+  });
+
+  it('stores and replays the response of each overlapping invocation sharing the same internal storage (middleware)', async () => {
+    // Prepare
+    const started = createGate();
+    const release = createGate();
+    const handler = middy(
+      async (request: { orderId: string; caller: string }) => {
+        if (request.caller === 'dummy-a') {
+          started.open();
+          await release.gate;
+        }
+
+        return { body: `result-for-${request.caller}` };
+      },
+      { internal: {}, timeoutEarlyInMillis: 0 }
+    ).use(
+      makeHandlerIdempotent({
+        persistenceStore: new CachePersistenceLayer({
+          client: createCacheClient(),
+        }),
+        config: new IdempotencyConfig({ eventKeyJmesPath: 'orderId' }),
+      })
+    );
+
+    // Act
+    const first = handler(
+      { orderId: 'dummy-key-a', caller: 'dummy-a' },
+      context
+    );
+    await started.gate;
+    const second = await handler(
+      { orderId: 'dummy-key-b', caller: 'dummy-b' },
+      context
+    );
+    release.open();
+
+    // Assess
+    expect(second).toEqual({ body: 'result-for-dummy-b' });
+    await expect(first).resolves.toEqual({ body: 'result-for-dummy-a' });
+    // A retry of either request replays its own stored response
+    await expect(
+      handler({ orderId: 'dummy-key-a', caller: 'dummy-c' }, context)
+    ).resolves.toEqual({ body: 'result-for-dummy-a' });
+    await expect(
+      handler({ orderId: 'dummy-key-b', caller: 'dummy-c' }, context)
+    ).resolves.toEqual({ body: 'result-for-dummy-b' });
+  });
+
+  it('deletes only the record of the overlapping invocation that failed (middleware)', async () => {
+    // Prepare
+    const started = createGate();
+    const release = createGate();
+    const handler = middy(
+      async (request: { orderId: string; caller: string }) => {
+        if (request.caller === 'dummy-a') {
+          started.open();
+          await release.gate;
+          throw new Error('Something went wrong');
+        }
+
+        return { body: `result-for-${request.caller}` };
+      },
+      { internal: {}, timeoutEarlyInMillis: 0 }
+    ).use(
+      makeHandlerIdempotent({
+        persistenceStore: new CachePersistenceLayer({
+          client: createCacheClient(),
+        }),
+        config: new IdempotencyConfig({ eventKeyJmesPath: 'orderId' }),
+      })
+    );
+
+    // Act
+    const first = handler(
+      { orderId: 'dummy-key-a', caller: 'dummy-a' },
+      context
+    );
+    await started.gate;
+    await handler({ orderId: 'dummy-key-b', caller: 'dummy-b' }, context);
+    release.open();
+
+    // Assess
+    await expect(first).rejects.toThrow('Something went wrong');
+    // The failed request left no record behind, while the other one kept its own
+    await expect(
+      handler({ orderId: 'dummy-key-a', caller: 'dummy-c' }, context)
+    ).resolves.toEqual({ body: 'result-for-dummy-c' });
+    await expect(
+      handler({ orderId: 'dummy-key-b', caller: 'dummy-c' }, context)
+    ).resolves.toEqual({ body: 'result-for-dummy-b' });
   });
 
   it('keeps the record of a concurrent execution when rejecting a duplicate request (middleware)', async () => {

@@ -5,6 +5,7 @@ import {
   DataMaskingConfigurationError,
   DataMaskingEncryptionError,
   DataMaskingFieldNotFoundError,
+  DataMaskingUnsupportedTypeError,
 } from '../../src/errors.js';
 import { DataMasking } from '../../src/index.js';
 import type { EncryptionProvider } from '../../src/types.js';
@@ -287,6 +288,31 @@ describe('DataMasking.decrypt() - full payload', () => {
     // Assess
     expect(result).toEqual(original);
   });
+
+  it.each([
+    { value: { secret: 'OBJECT-VALUE' }, type: 'object' },
+    { value: 42, type: 'number' },
+    { value: true, type: 'boolean' },
+    { value: null, type: 'null' },
+    { value: undefined, type: 'undefined' },
+  ])('rejects a non-string value of type $type', async ({ value, type }) => {
+    // Prepare
+    const provider = createMockProvider();
+    const masker = new DataMasking({ provider });
+
+    // Act
+    const error = (await masker
+      .decrypt(value)
+      .catch((reason: unknown) => reason)) as Error;
+
+    // Assess
+    expect(error).toBeInstanceOf(DataMaskingUnsupportedTypeError);
+    expect(error.message).toBe(
+      `Cannot decrypt value of type ${type}; expected an encrypted string`
+    );
+    expect(error.message).not.toContain('OBJECT-VALUE');
+    expect(provider.decrypt).not.toHaveBeenCalled();
+  });
 });
 
 describe('DataMasking.decrypt() - field level', () => {
@@ -322,36 +348,87 @@ describe('DataMasking.decrypt() - field level', () => {
     ).rejects.toThrow(DataMaskingFieldNotFoundError);
   });
 
-  it('returns a copy when decrypting object without fields', async () => {
+  it('rejects an object when decrypting without fields', async () => {
     // Prepare
     const provider = createMockProvider();
     const masker = new DataMasking({ provider });
     const data = { name: 'Jane', age: 30 };
 
-    // Act
-    const result = await masker.decrypt(data);
-
-    // Assess
-    expect(result).toEqual(data);
+    // Act & Assess
+    await expect(masker.decrypt(data)).rejects.toThrow(
+      DataMaskingUnsupportedTypeError
+    );
     expect(provider.decrypt).not.toHaveBeenCalled();
   });
 
-  it('passes through non-string values during field-level decrypt and warns', async () => {
+  it('rejects non-string values before field-level decryption', async () => {
     // Prepare
     const provider = createMockProvider();
     const masker = new DataMasking({ provider });
     const data = { num: 42, text: 'ENC:"hello"' };
 
-    // Act
-    const result = await masker.decrypt(data, { fields: ['num', 'text'] });
-
-    // Assess
-    expect(result).toEqual({ num: 42, text: 'hello' });
-    expect(console.warn).toHaveBeenCalledOnce();
-    expect(console.warn).toHaveBeenCalledWith(
-      expect.stringContaining('non-string value of type number')
+    // Act & Assess
+    await expect(
+      masker.decrypt(data, { fields: ['num', 'text'] })
+    ).rejects.toThrow(
+      "Cannot decrypt value of type number at 'num'; expected an encrypted string"
     );
+    expect(provider.decrypt).not.toHaveBeenCalled();
   });
+
+  it.each([
+    { value: { secret: 'OBJECT-VALUE' }, type: 'object' },
+    { value: 42, type: 'number' },
+    { value: true, type: 'boolean' },
+    { value: null, type: 'null' },
+  ])(
+    'rejects a non-string value of type $type at an explicit field',
+    async ({ value, type }) => {
+      // Prepare
+      const provider = createMockProvider();
+      const masker = new DataMasking({ provider });
+
+      // Act
+      const error = (await masker
+        .decrypt({ profile: value }, { fields: ['profile'] })
+        .catch((reason: unknown) => reason)) as Error;
+
+      // Assess
+      expect(error).toBeInstanceOf(DataMaskingUnsupportedTypeError);
+      expect(error.message).toBe(
+        `Cannot decrypt value of type ${type} at 'profile'; expected an encrypted string`
+      );
+      expect(error.message).not.toContain('OBJECT-VALUE');
+      expect(provider.decrypt).not.toHaveBeenCalled();
+    }
+  );
+
+  it.each([
+    { value: { secret: 'OBJECT-VALUE' }, type: 'object' },
+    { value: 42, type: 'number' },
+    { value: true, type: 'boolean' },
+    { value: null, type: 'null' },
+  ])(
+    'rejects a non-string value of type $type at a wildcard target',
+    async ({ value, type }) => {
+      // Prepare
+      const provider = createMockProvider();
+      const masker = new DataMasking({ provider });
+
+      // Act
+      const error = (await masker
+        .decrypt({ profiles: [value] }, { fields: ['profiles[*]'] })
+        .catch((reason: unknown) => reason)) as Error;
+
+      // Assess
+      expect(error).toBeInstanceOf(DataMaskingUnsupportedTypeError);
+      expect(error.message).toBe(
+        `Cannot decrypt value of type ${type} at 'profiles.0'; expected an encrypted string`
+      );
+      expect(error.message).not.toContain('OBJECT-VALUE');
+      expect(provider.decrypt).not.toHaveBeenCalled();
+    }
+  );
 
   it('rejects the whole operation and leaves the original untouched when one field fails to decrypt', async () => {
     // Prepare

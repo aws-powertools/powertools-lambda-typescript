@@ -116,11 +116,11 @@ import type { ValidateParams } from './types.js';
  * @param params.envelope - Optional JMESPath expression to use as envelope for the payload.
  * @param params.formats - Optional formats for validation.
  * @param params.externalRefs - Optional external references for validation.
- * @param params.ajv - Optional Ajv instance to use for validation, if not provided a new instance will be created.
+ * @param params.ajv - Optional Ajv instance to use for validation; if omitted, a new instance with Ajv's default options is created.
  */
 const validate = <T = unknown>(params: ValidateParams): T => {
   const { payload, schema, envelope, formats, externalRefs, ajv } = params;
-  const ajvInstance = ajv || new Ajv({ allErrors: true });
+  const ajvInstance = ajv || new Ajv();
 
   if (formats) {
     for (const key of Object.keys(formats)) {

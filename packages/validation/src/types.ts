@@ -8,7 +8,7 @@ import type { Ajv, AnySchema, Format } from 'ajv';
  * @param envelope - Optional JMESPATH expression to use as envelope for the payload.
  * @param formats - Optional formats for validation.
  * @param externalRefs - Optional external references for validation.
- * @param ajv - Optional Ajv instance to use for validation, if not provided a new instance will be created.
+ * @param ajv - Optional Ajv instance to use for validation; if omitted, a new instance with Ajv's default options is created.
  */
 type ValidateParams = {
   /**
@@ -32,7 +32,7 @@ type ValidateParams = {
    */
   externalRefs?: AnySchema | AnySchema[];
   /**
-   * Optional Ajv instance to use for validation, if not provided a new instance will be created.
+   * Optional Ajv instance to use for validation; if omitted, a new instance with Ajv's default options is created.
    */
   ajv?: Ajv;
 };
@@ -45,7 +45,7 @@ type ValidateParams = {
  * @param envelope - Optional JMESPATH expression to use as envelope for the payload.
  * @param formats - Optional formats for validation.
  * @param externalRefs - Optional external references for validation.
- * @param ajv - Optional Ajv instance to use for validation, if not provided a new instance will be created.
+ * @param ajv - Optional Ajv instance to use for validation; if omitted, a new instance with Ajv's default options is created.
  */
 interface ValidatorOptions extends Omit<ValidateParams, 'payload' | 'schema'> {
   /**

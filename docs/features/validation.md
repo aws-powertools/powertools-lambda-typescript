@@ -222,6 +222,8 @@ By default, we use JSON Schema draft-07. If you want to use a different draft, y
 
 This is also useful if you want to configure `ajv` with custom options like keywords and more.
 
+By default, validation stops at the first error. To collect all errors, pass `new Ajv({ allErrors: true })`, but read [Ajv's security guidance](https://ajv.js.org/security.html#security-risks-of-trusted-schemas){target="_blank"} first.
+
 === "advancedBringAjvInstance.ts"
 
     ```typescript hl_lines="9 16"

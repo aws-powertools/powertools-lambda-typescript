@@ -1,4 +1,5 @@
-import { describe, expect, it } from 'vitest';
+import { gzipSync } from 'node:zlib';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { CloudWatchLogsSchema } from '../../../src/schemas/cloudwatch.js';
 import type { CloudWatchLogsEvent } from '../../../src/types/index.js';
 import { getTestEvent } from '../helpers/utils.js';
@@ -7,6 +8,10 @@ describe('Schema: CloudWatchLogs', () => {
   const baseEvent = getTestEvent<CloudWatchLogsEvent>({
     eventsPath: 'cloudwatch',
     filename: 'base',
+  });
+
+  afterEach(() => {
+    vi.unstubAllEnvs();
   });
 
   it('parses a CloudWatch Logs event', () => {
@@ -63,5 +68,36 @@ describe('Schema: CloudWatchLogs', () => {
 
     // Act & Assess
     expect(() => CloudWatchLogsSchema.parse(event)).toThrow();
+  });
+
+  it('returns a failed result if the log data decompresses past the size limit', () => {
+    // Prepare
+    vi.stubEnv('POWERTOOLS_MAX_DECOMPRESSED_SIZE', '1024');
+    const event = {
+      awslogs: {
+        data: Buffer.from(gzipSync(Buffer.alloc(2048, 'a'))).toString('base64'),
+      },
+    };
+
+    // Act
+    const result = CloudWatchLogsSchema.safeParse(event);
+
+    // Assess
+    expect(result.success).toBe(false);
+    expect(result.error?.issues[0].message).toBe(
+      'Decompressed data exceeds the maximum size of 1024 bytes, set POWERTOOLS_MAX_DECOMPRESSED_SIZE to change the limit'
+    );
+  });
+
+  it('parses a CloudWatch Logs event within the configured size limit', () => {
+    // Prepare
+    vi.stubEnv('POWERTOOLS_MAX_DECOMPRESSED_SIZE', '4096');
+    const event = structuredClone(baseEvent);
+
+    // Act
+    const result = CloudWatchLogsSchema.safeParse(event);
+
+    // Assess
+    expect(result.success).toBe(true);
   });
 });

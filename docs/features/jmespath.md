@@ -145,6 +145,8 @@ This sample will decode the base64 value within the `data` key, and deserialize 
 
 Use `powertools_base64_gzip` function to decompress and decode base64 data.
 
+Data that expands past 16 MiB is not decompressed. Set `POWERTOOLS_MAX_DECOMPRESSED_SIZE` to change the limit in bytes.
+
 This sample will decompress and decode base64 data from Cloudwatch Logs, then use JMESPath pipeline expression to pass the result for decoding its JSON string.
 
 === "powertoolsBase64GzipJmespath.ts"

@@ -126,7 +126,10 @@ export interface EncryptOptions {
   providerOptions?: Record<string, unknown>;
 }
 
-/** Options for {@link DataMasking.decrypt | `DataMasking.decrypt`}. */
+/**
+ * Options for {@link DataMasking.decrypt | `DataMasking.decrypt`}.
+ * Matched values must be encrypted strings; `undefined` values pass through unchanged.
+ */
 export interface DecryptOptions {
   /**
    * Dot-notation path expressions for fields to decrypt (supports `.*` and `[*]` wildcards).

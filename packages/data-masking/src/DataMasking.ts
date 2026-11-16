@@ -183,9 +183,10 @@ export class DataMasking {
   /**
    * Decrypts data using the configured provider.
    *
-   * A string input is treated as a full encrypted payload; an object input is
-   * deep copied and the values at `fields` are decrypted in place. An empty
-   * `fields` list throws a `DataMaskingConfigurationError`.
+   * Without `fields`, the input must be an encrypted string. With `fields`, the
+   * input is deep copied and every matched value must be an encrypted string,
+   * except `undefined`, which passes through. An empty `fields` list throws a
+   * `DataMaskingConfigurationError`.
    *
    * When the data was encrypted with an encryption context, you must provide the
    * same `context` here, otherwise the operation fails.
@@ -205,28 +206,29 @@ export class DataMasking {
     const provider = this.#requireProvider();
     assertFieldsNotEmpty(options?.fields, 'decrypt');
 
-    if (typeof data === 'string') {
+    if (isString(data)) {
       // Safe by contract: a string payload is the output of `encrypt` without `fields`.
       return parsePlaintext(
         await provider.decrypt(data, options?.context)
       ) as T;
     }
+    const fields = options?.fields;
+    if (!fields) throw unsupportedTypeError(data);
 
     const copy = this.#deepCopy(data);
-    if (options?.fields) {
-      await this.#transformFields(copy, options.fields, async (value) => {
+    await this.#transformFields(
+      copy,
+      fields,
+      async (value, path) => {
         if (value === undefined) return value;
-        if (!isString(value)) {
-          console.warn(
-            `Skipping decryption of non-string value of type ${typeof value}; expected an encrypted string`
-          );
+        assertEncryptedString(value, path);
 
-          return value;
-        }
-
-        return parsePlaintext(await provider.decrypt(value, options.context));
-      });
-    }
+        return parsePlaintext(await provider.decrypt(value, options?.context));
+      },
+      (value, path) => {
+        if (value !== undefined) assertEncryptedString(value, path);
+      }
+    );
 
     return copy;
   }
@@ -269,11 +271,13 @@ export class DataMasking {
    * @param data - The object to transform in place
    * @param fields - Path expressions selecting the values to transform
    * @param transform - Async function producing the replacement for a value
+   * @param validate - Optional function that validates every target before transformation
    */
   async #transformFields(
     data: unknown,
     fields: string[],
-    transform: (value: unknown) => Promise<unknown>
+    transform: (value: unknown, path: string[]) => Promise<unknown>,
+    validate?: (value: unknown, path: string[]) => void
   ): Promise<void> {
     const targets = new Map<string, MaskTarget>();
     for (const field of fields) {
@@ -282,12 +286,17 @@ export class DataMasking {
       }
     }
 
+    const paths = withoutSubsumed(targets).map(({ path }) => path);
+    for (const path of paths) {
+      validate?.(getAtPath(data, path), path);
+    }
+
     const transformAt = async (path: string[]): Promise<void> => {
-      const result = await transform(getAtPath(data, path));
+      const result = await transform(getAtPath(data, path), path);
       setAtPath(data, path, result);
     };
     const operations: Promise<void>[] = [];
-    for (const { path } of withoutSubsumed(targets)) {
+    for (const path of paths) {
       operations.push(transformAt(path));
     }
 
@@ -354,6 +363,33 @@ const RESERVED_KEYS = new Set(['__proto__', 'constructor', 'prototype']);
 
 /** A resolved concrete path and the rule to mask it with; no rule means the default mask. */
 type MaskTarget = { path: string[]; rule?: MaskingRule };
+
+/**
+ * Asserts that a value can be passed to the decryption provider.
+ *
+ * @param value - The value to check
+ * @param path - The resolved field path, when checking a field-level value
+ */
+const assertEncryptedString: (
+  value: unknown,
+  path?: string[]
+) => asserts value is string = (value, path) => {
+  if (isString(value)) return;
+
+  throw unsupportedTypeError(value, path);
+};
+
+/** Returns an error for a value that cannot be passed to the decryption provider. */
+const unsupportedTypeError = (
+  value: unknown,
+  path?: string[]
+): DataMaskingUnsupportedTypeError => {
+  const location = path ? ` at '${path.join('.')}'` : '';
+
+  return new DataMaskingUnsupportedTypeError(
+    `Cannot decrypt value of type ${value === null ? 'null' : typeof value}${location}; expected an encrypted string`
+  );
+};
 
 /**
  * Records `path` as a target unless an earlier expression already claimed it.

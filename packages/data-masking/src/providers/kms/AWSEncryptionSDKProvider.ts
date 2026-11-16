@@ -5,9 +5,19 @@ import {
   KmsKeyringNode,
   NodeCachingMaterialsManager,
 } from '@aws-crypto/client-node';
+import { RESERVED_ENCRYPTION_CONTEXT_PREFIX } from '../../constants.js';
 import { DataMaskingEncryptionError } from '../../errors.js';
 import type { EncryptionProvider } from '../../types.js';
 import type { AWSEncryptionSDKProviderOptions, SDKClient } from './types.js';
+
+const isReservedContextKey = (key: string): boolean =>
+  key.startsWith(RESERVED_ENCRYPTION_CONTEXT_PREFIX);
+
+const formatContextKeys = (keys: string[]): string =>
+  keys
+    .toSorted()
+    .map((key) => `'${key}'`)
+    .join(', ');
 
 /**
  * Encryption provider backed by the AWS Encryption SDK and KMS keys.
@@ -57,11 +67,27 @@ export class AWSEncryptionSDKProvider implements EncryptionProvider {
     };
   }
 
+  /**
+   * Encrypts data with the configured KMS keys.
+   *
+   * @param data - the data to encrypt
+   * @param context - the encryption context (additional authenticated data) to bind to the ciphertext
+   */
   async encrypt(
     data: string,
     context?: Record<string, string>
   ): Promise<string> {
     const { encryptFn, cacheManager } = this.#client;
+
+    if (context) {
+      const reservedKeys = Object.keys(context).filter(isReservedContextKey);
+      if (reservedKeys.length > 0) {
+        throw new DataMaskingEncryptionError(
+          `Encryption context keys starting with '${RESERVED_ENCRYPTION_CONTEXT_PREFIX}' are reserved by the AWS Encryption SDK: ${formatContextKeys(reservedKeys)}`
+        );
+      }
+    }
+
     const plaintext = new TextEncoder().encode(data);
     const { result } = await encryptFn(cacheManager, plaintext, {
       encryptionContext: context,
@@ -70,6 +96,15 @@ export class AWSEncryptionSDKProvider implements EncryptionProvider {
     return Buffer.from(result).toString('base64');
   }
 
+  /**
+   * Decrypts data previously encrypted by this provider.
+   *
+   * The encryption context stored with the ciphertext must match `context` exactly, so you
+   * have to provide the same context used to encrypt the data.
+   *
+   * @param data - the base64-encoded ciphertext to decrypt
+   * @param context - the encryption context (additional authenticated data) used to encrypt the data
+   */
   async decrypt(
     data: string,
     context?: Record<string, string>
@@ -81,16 +116,58 @@ export class AWSEncryptionSDKProvider implements EncryptionProvider {
       new Uint8Array(ciphertext)
     );
 
-    if (context) {
-      for (const [key, value] of Object.entries(context)) {
-        if (messageHeader.encryptionContext[key] !== value) {
-          throw new DataMaskingEncryptionError(
-            `Encryption context mismatch for key '${key}'`
-          );
-        }
+    this.#verifyEncryptionContext(messageHeader.encryptionContext, context);
+
+    return new TextDecoder().decode(plaintext);
+  }
+
+  /**
+   * Compares the encryption context stored with the ciphertext to the one provided on decrypt.
+   *
+   * Every stored key must be provided with the same value, and no extra key may be provided.
+   * Keys reserved by the AWS Encryption SDK are ignored on both sides, since the SDK adds and
+   * verifies them itself.
+   *
+   * @param storedContext - the encryption context found in the message header
+   * @param providedContext - the encryption context provided by the caller
+   */
+  #verifyEncryptionContext(
+    storedContext: Record<string, string>,
+    providedContext: Record<string, string> = {}
+  ): void {
+    const missingKeys: string[] = [];
+    const mismatchedKeys: string[] = [];
+
+    for (const [key, value] of Object.entries(storedContext)) {
+      if (isReservedContextKey(key)) continue;
+
+      if (!Object.hasOwn(providedContext, key)) {
+        missingKeys.push(key);
+      } else if (providedContext[key] !== value) {
+        mismatchedKeys.push(key);
       }
     }
 
-    return new TextDecoder().decode(plaintext);
+    const unknownKeys = Object.keys(providedContext).filter(
+      (key) => !isReservedContextKey(key) && !Object.hasOwn(storedContext, key)
+    );
+
+    const details: string[] = [];
+    if (missingKeys.length > 0) {
+      details.push(`missing keys ${formatContextKeys(missingKeys)}`);
+    }
+    if (mismatchedKeys.length > 0) {
+      details.push(
+        `different values for keys ${formatContextKeys(mismatchedKeys)}`
+      );
+    }
+    if (unknownKeys.length > 0) {
+      details.push(`unknown keys ${formatContextKeys(unknownKeys)}`);
+    }
+    if (details.length === 0) return;
+
+    throw new DataMaskingEncryptionError(
+      `Encryption context mismatch (${details.join('; ')}). You must provide the same encryption context used to encrypt the data.`
+    );
   }
 }

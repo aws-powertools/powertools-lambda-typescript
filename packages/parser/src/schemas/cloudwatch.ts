@@ -1,5 +1,5 @@
-import { gunzipSync } from 'node:zlib';
 import { z } from 'zod';
+import { decompressGzip } from '../decompress.js';
 import type { CloudWatchLogsEvent } from '../types/schema.js';
 
 const CloudWatchLogEventSchema = z.object({
@@ -67,9 +67,10 @@ const CloudWatchLogsSchema = z.object({
   awslogs: z.object({
     data: z.base64().transform((data, ctx) => {
       try {
-        const uncompressed = gunzipSync(Buffer.from(data, 'base64')).toString(
-          'utf8'
-        );
+        const uncompressed = decompressGzip(Buffer.from(data, 'base64'), ctx);
+        if (uncompressed === undefined) {
+          return z.NEVER;
+        }
 
         return CloudWatchLogsDecodeSchema.parse(JSON.parse(uncompressed));
       } catch {

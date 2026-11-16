@@ -1,6 +1,7 @@
 import { gunzipSync } from 'node:zlib';
 import type { JSONValue } from '@aws-lambda-powertools/commons/types';
 import { fromBase64 } from '@aws-lambda-powertools/commons/utils/base64';
+import { getMaxDecompressedSize } from '@aws-lambda-powertools/commons/utils/env';
 import { Functions } from './Functions.js';
 import type { search } from './search.js';
 
@@ -43,7 +44,9 @@ class PowertoolsFunctions extends Functions {
   })
   public funcPowertoolsBase64Gzip(value: string): string {
     const encoded = fromBase64(value, 'base64');
-    const uncompressed = gunzipSync(encoded);
+    const uncompressed = gunzipSync(encoded, {
+      maxOutputLength: getMaxDecompressedSize(),
+    });
 
     return uncompressed.toString();
   }

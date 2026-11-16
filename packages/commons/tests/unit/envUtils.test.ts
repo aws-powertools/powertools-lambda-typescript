@@ -2,6 +2,7 @@ import { InvokeStore, InvokeStoreBase } from '@aws/lambda-invoke-store';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   getBooleanFromEnv,
+  getMaxDecompressedSize,
   getNumberFromEnv,
   getServiceName,
   getStringFromEnv,
@@ -289,6 +290,47 @@ describe('Functions: envUtils', () => {
 
       // Assess
       expect(result).toBe('');
+    });
+  });
+
+  describe('Function: getMaxDecompressedSize', () => {
+    it('returns 16 MiB if the environment variable is not set', () => {
+      // Prepare
+      vi.stubEnv('POWERTOOLS_MAX_DECOMPRESSED_SIZE', undefined);
+
+      // Act
+      const result = getMaxDecompressedSize();
+
+      // Assess
+      expect(result).toBe(16 * 1024 * 1024);
+    });
+
+    it('returns the value of the environment variable', () => {
+      // Prepare
+      vi.stubEnv('POWERTOOLS_MAX_DECOMPRESSED_SIZE', '1024');
+
+      // Act
+      const result = getMaxDecompressedSize();
+
+      // Assess
+      expect(result).toBe(1024);
+    });
+
+    it.each([
+      { description: 'is not a number', value: 'notANumber' },
+      { description: 'is empty', value: '' },
+      { description: 'is zero', value: '0' },
+      { description: 'is negative', value: '-1024' },
+      { description: 'is not an integer', value: '1024.5' },
+    ])('returns the default value if the value $description', ({ value }) => {
+      // Prepare
+      vi.stubEnv('POWERTOOLS_MAX_DECOMPRESSED_SIZE', value);
+
+      // Act
+      const result = getMaxDecompressedSize();
+
+      // Assess
+      expect(result).toBe(16 * 1024 * 1024);
     });
   });
 

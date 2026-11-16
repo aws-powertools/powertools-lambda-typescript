@@ -139,7 +139,7 @@ The `erase` method also supports additional options for more advanced and flexib
 
 | Option | Description |
 | --- | --- |
-| `regexPattern` + `maskFormat` | Partial masking via regex replacement |
+| `regexPattern` + `maskFormat` | Partial masking via regex replacement. Every match is replaced; values with no match are replaced with `*****` |
 | `dynamicMask: true` | Replace with `*` repeated to match original value length |
 | `customMask` | Replace with an exact string |
 
@@ -154,11 +154,15 @@ A top-level rule is applied to every path listed in `fields`. When `fields` is o
 !!! note
     A masking rule — top-level or per-field — coerces its target to a string before masking, so non-string values like numbers and booleans are stringified first (`null` and `undefined` pass through unchanged). A plain `fields` erase with no rule instead replaces any value with `*****` regardless of type.
 
+    When the target is an array or an object, the rule is applied to each value inside it.
+
 #### Missing fields
 
 By default, `erase`, `encrypt` and `decrypt` throw a `DataMaskingFieldNotFoundError` when a path in `fields` or a key in `maskingRules` matches nothing in the data, so a typo in a path cannot silently leave a value unprotected. Set `throwOnMissingField: false` on the `DataMasking` constructor to log a warning and continue instead.
 
 A wildcard that expands to nothing, such as `orders[*].card` when `orders` is an empty array, is not a missing field. When a path and one of its descendants are both listed, only the parent is processed, since masking or encrypting it already covers everything beneath it.
+
+An empty `fields` array or `maskingRules` object throws a `DataMaskingConfigurationError`.
 
 ### Encrypting data
 
@@ -198,9 +202,10 @@ For a stronger security posture, you can add metadata to each encryption operati
 and even help to prevent a [confused deputy](https://docs.aws.amazon.com/IAM/latest/UserGuide/confused-deputy.html){target="_blank"} situation.
 
 ???+ danger "Important considerations you should know"
-    1. **Exact match verification on decrypt**. Be careful using random data like `timestamps` as encryption context if you can't provide them on decrypt.
+    1. **Exact match verification on decrypt**. You must provide the same encryption context you used to encrypt the data. `decrypt` fails when a key is missing, holds a different value, or was not part of the context at encryption time. Be careful using random data like `timestamps` as encryption context if you can't provide them on decrypt.
     2. **Only `string` values are supported**.
     3. **Use non-sensitive data only**. When using KMS, encryption context is available as plaintext in AWS CloudTrail, unless you [intentionally disabled KMS events](https://docs.aws.amazon.com/kms/latest/developerguide/logging-using-cloudtrail.html#filtering-kms-events){target="_blank"}.
+    4. **Keys starting with `aws-crypto-` are reserved**. The AWS Encryption SDK stores its own metadata under this prefix, like the `aws-crypto-public-key` it adds when signing a message. `encrypt` rejects them, and the verification on `decrypt` ignores them.
 
 === "Encrypting with context"
 
@@ -216,7 +221,7 @@ and even help to prevent a [confused deputy](https://docs.aws.amazon.com/IAM/lat
     --8<-- "examples/snippets/data-masking/decryptWithContext.ts:3"
     ```
 
-    1. They must match otherwise the operation will fail.
+    1. They must match otherwise the operation will fail. The error message names the keys that did not match, never their values.
 
 ### Choosing parts of your data
 

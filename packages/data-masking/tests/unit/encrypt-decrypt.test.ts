@@ -2,8 +2,10 @@ import fc from 'fast-check';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import {
+  DataMaskingConfigurationError,
   DataMaskingEncryptionError,
   DataMaskingFieldNotFoundError,
+  DataMaskingUnsupportedTypeError,
 } from '../../src/errors.js';
 import { DataMasking } from '../../src/index.js';
 import type { EncryptionProvider } from '../../src/types.js';
@@ -202,6 +204,34 @@ describe('DataMasking.encrypt()', () => {
     expect(console.warn).toHaveBeenCalledWith("Field not found: 'snn'");
   });
 
+  it('throws when fields is an empty array', async () => {
+    // Prepare
+    const provider = createMockProvider();
+    const masker = new DataMasking({ provider });
+
+    // Act & Assess
+    await expect(
+      masker.encrypt({ ssn: '123' }, { fields: [] })
+    ).rejects.toThrow(DataMaskingConfigurationError);
+    expect(provider.encrypt).not.toHaveBeenCalled();
+  });
+
+  it('encrypts an own __proto__ key without touching the prototype', async () => {
+    // Prepare
+    const provider = createMockProvider();
+    const masker = new DataMasking({ provider });
+    const data = JSON.parse('{"__proto__": "injected"}');
+
+    // Act
+    const result = await masker.encrypt(data, { fields: ['__proto__'] });
+
+    // Assess
+    expect(Object.getOwnPropertyDescriptor(result, '__proto__')?.value).toBe(
+      'ENC:"injected"'
+    );
+    expect(Object.getPrototypeOf(result)).toBe(Object.prototype);
+  });
+
   it('does not mutate original input', async () => {
     // Prepare
     const provider = createMockProvider();
@@ -258,6 +288,31 @@ describe('DataMasking.decrypt() - full payload', () => {
     // Assess
     expect(result).toEqual(original);
   });
+
+  it.each([
+    { value: { secret: 'OBJECT-VALUE' }, type: 'object' },
+    { value: 42, type: 'number' },
+    { value: true, type: 'boolean' },
+    { value: null, type: 'null' },
+    { value: undefined, type: 'undefined' },
+  ])('rejects a non-string value of type $type', async ({ value, type }) => {
+    // Prepare
+    const provider = createMockProvider();
+    const masker = new DataMasking({ provider });
+
+    // Act
+    const error = (await masker
+      .decrypt(value)
+      .catch((reason: unknown) => reason)) as Error;
+
+    // Assess
+    expect(error).toBeInstanceOf(DataMaskingUnsupportedTypeError);
+    expect(error.message).toBe(
+      `Cannot decrypt value of type ${type}; expected an encrypted string`
+    );
+    expect(error.message).not.toContain('OBJECT-VALUE');
+    expect(provider.decrypt).not.toHaveBeenCalled();
+  });
 });
 
 describe('DataMasking.decrypt() - field level', () => {
@@ -293,36 +348,87 @@ describe('DataMasking.decrypt() - field level', () => {
     ).rejects.toThrow(DataMaskingFieldNotFoundError);
   });
 
-  it('returns a copy when decrypting object without fields', async () => {
+  it('rejects an object when decrypting without fields', async () => {
     // Prepare
     const provider = createMockProvider();
     const masker = new DataMasking({ provider });
     const data = { name: 'Jane', age: 30 };
 
-    // Act
-    const result = await masker.decrypt(data);
-
-    // Assess
-    expect(result).toEqual(data);
+    // Act & Assess
+    await expect(masker.decrypt(data)).rejects.toThrow(
+      DataMaskingUnsupportedTypeError
+    );
     expect(provider.decrypt).not.toHaveBeenCalled();
   });
 
-  it('passes through non-string values during field-level decrypt and warns', async () => {
+  it('rejects non-string values before field-level decryption', async () => {
     // Prepare
     const provider = createMockProvider();
     const masker = new DataMasking({ provider });
     const data = { num: 42, text: 'ENC:"hello"' };
 
-    // Act
-    const result = await masker.decrypt(data, { fields: ['num', 'text'] });
-
-    // Assess
-    expect(result).toEqual({ num: 42, text: 'hello' });
-    expect(console.warn).toHaveBeenCalledOnce();
-    expect(console.warn).toHaveBeenCalledWith(
-      expect.stringContaining('non-string value of type number')
+    // Act & Assess
+    await expect(
+      masker.decrypt(data, { fields: ['num', 'text'] })
+    ).rejects.toThrow(
+      "Cannot decrypt value of type number at 'num'; expected an encrypted string"
     );
+    expect(provider.decrypt).not.toHaveBeenCalled();
   });
+
+  it.each([
+    { value: { secret: 'OBJECT-VALUE' }, type: 'object' },
+    { value: 42, type: 'number' },
+    { value: true, type: 'boolean' },
+    { value: null, type: 'null' },
+  ])(
+    'rejects a non-string value of type $type at an explicit field',
+    async ({ value, type }) => {
+      // Prepare
+      const provider = createMockProvider();
+      const masker = new DataMasking({ provider });
+
+      // Act
+      const error = (await masker
+        .decrypt({ profile: value }, { fields: ['profile'] })
+        .catch((reason: unknown) => reason)) as Error;
+
+      // Assess
+      expect(error).toBeInstanceOf(DataMaskingUnsupportedTypeError);
+      expect(error.message).toBe(
+        `Cannot decrypt value of type ${type} at 'profile'; expected an encrypted string`
+      );
+      expect(error.message).not.toContain('OBJECT-VALUE');
+      expect(provider.decrypt).not.toHaveBeenCalled();
+    }
+  );
+
+  it.each([
+    { value: { secret: 'OBJECT-VALUE' }, type: 'object' },
+    { value: 42, type: 'number' },
+    { value: true, type: 'boolean' },
+    { value: null, type: 'null' },
+  ])(
+    'rejects a non-string value of type $type at a wildcard target',
+    async ({ value, type }) => {
+      // Prepare
+      const provider = createMockProvider();
+      const masker = new DataMasking({ provider });
+
+      // Act
+      const error = (await masker
+        .decrypt({ profiles: [value] }, { fields: ['profiles[*]'] })
+        .catch((reason: unknown) => reason)) as Error;
+
+      // Assess
+      expect(error).toBeInstanceOf(DataMaskingUnsupportedTypeError);
+      expect(error.message).toBe(
+        `Cannot decrypt value of type ${type} at 'profiles.0'; expected an encrypted string`
+      );
+      expect(error.message).not.toContain('OBJECT-VALUE');
+      expect(provider.decrypt).not.toHaveBeenCalled();
+    }
+  );
 
   it('rejects the whole operation and leaves the original untouched when one field fails to decrypt', async () => {
     // Prepare
@@ -373,6 +479,50 @@ describe('DataMasking.decrypt() - field level', () => {
       masker.decrypt({ a: 'encrypted' }, { fields: ['a'] })
     ).rejects.toThrow(DataMaskingEncryptionError);
   });
+
+  it('throws when fields is an empty array', async () => {
+    // Prepare
+    const provider = createMockProvider();
+    const masker = new DataMasking({ provider });
+
+    // Act & Assess
+    await expect(
+      masker.decrypt({ ssn: 'ENC:"123"' }, { fields: [] })
+    ).rejects.toThrow(DataMaskingConfigurationError);
+    expect(provider.decrypt).not.toHaveBeenCalled();
+  });
+});
+
+describe('DataMasking.decrypt() - invalid plaintext', () => {
+  const provider: EncryptionProvider = {
+    encrypt: vi.fn(async (data: string) => data),
+    decrypt: vi.fn(async () => 'not json SECRET-123'),
+  };
+
+  it.each([
+    { label: 'a full payload', data: 'ciphertext', options: undefined },
+    {
+      label: 'a field',
+      data: { ssn: 'ciphertext' },
+      options: { fields: ['ssn'] },
+    },
+  ])(
+    'throws without leaking the plaintext when $label does not hold JSON',
+    async ({ data, options }) => {
+      // Prepare
+      const masker = new DataMasking({ provider });
+
+      // Act
+      const error = (await masker
+        .decrypt(data, options)
+        .catch((reason: unknown) => reason)) as Error;
+
+      // Assess
+      expect(error).toBeInstanceOf(DataMaskingEncryptionError);
+      expect(error.message).not.toContain('SECRET-123');
+      expect(error.cause).toBeUndefined();
+    }
+  );
 });
 
 const pathKey = fc.stringMatching(/^[a-z][a-z0-9_]{0,10}$/);

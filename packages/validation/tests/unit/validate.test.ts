@@ -48,6 +48,54 @@ describe('validate function', () => {
     expect(() => validate(params)).toThrow(SchemaValidationError);
   });
 
+  it('stops after the first error when using the default ajv instance', () => {
+    // Prepare
+    const payload = Array.from({ length: 10 }, () => 'invalid');
+    const schema = {
+      type: 'array',
+      maxItems: 2,
+      items: { type: 'number' },
+    };
+
+    // Act
+    let validationError: unknown;
+    try {
+      validate({ payload, schema });
+    } catch (error) {
+      validationError = error;
+    }
+
+    // Assess
+    expect(validationError).toBeInstanceOf(SchemaValidationError);
+    expect((validationError as SchemaValidationError).cause).toHaveLength(1);
+  });
+
+  it('returns all errors when using an ajv instance with allErrors enabled', () => {
+    // Prepare
+    const payload = Array.from({ length: 10 }, () => 'invalid');
+    const schema = {
+      type: 'array',
+      maxItems: 2,
+      items: { type: 'number' },
+    };
+
+    // Act
+    let validationError: unknown;
+    try {
+      validate({
+        payload,
+        schema,
+        ajv: new Ajv({ allErrors: true }),
+      });
+    } catch (error) {
+      validationError = error;
+    }
+
+    // Assess
+    expect(validationError).toBeInstanceOf(SchemaValidationError);
+    expect((validationError as SchemaValidationError).cause).toHaveLength(11);
+  });
+
   it('extracts data using envelope when provided', () => {
     // Prepare
     const payload = {

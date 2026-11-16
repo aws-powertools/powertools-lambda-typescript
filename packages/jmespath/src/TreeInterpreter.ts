@@ -6,6 +6,7 @@ import {
 import { Expression } from './Expression.js';
 import {
   ArityError,
+  FunctionEvaluationError,
   JMESPathError,
   JMESPathTypeError,
   UnknownFunctionError,
@@ -221,7 +222,6 @@ class TreeInterpreter {
       // @ts-expect-error
       return this.#functions[funcName](args);
     } catch (error) {
-      /* v8 ignore else -- @preserve */
       if (
         error instanceof JMESPathTypeError ||
         error instanceof VariadicArityError ||
@@ -230,6 +230,10 @@ class TreeInterpreter {
         error.setEvaluatedFunctionName(node.value);
         throw error;
       }
+      if (error instanceof JMESPathError) throw error;
+      // The original error might include fragments of the payload, so we
+      // surface it as the cause rather than in the message.
+      throw new FunctionEvaluationError(node.value, { cause: error });
     }
   }
 

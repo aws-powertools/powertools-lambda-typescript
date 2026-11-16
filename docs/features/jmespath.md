@@ -90,7 +90,7 @@ These are all built-in envelopes you can use along with their expression as a re
 
 ### Built-in JMESPath functions
 
-You can use our built-in JMESPath functions within your envelope expression. They handle deserialization for common data formats found in AWS Lambda event sources such as JSON strings, base64, and uncompress gzip data.
+You can use our built-in JMESPath functions within your envelope expression. They handle deserialization for common data formats found in AWS Lambda event sources such as JSON strings, base64, and uncompress gzip data. When a function can't process the value it receives, it throws a `FunctionEvaluationError` with the original error as its `cause`.
 
 #### `powertools_json` function
 
@@ -144,6 +144,8 @@ This sample will decode the base64 value within the `data` key, and deserialize 
 #### `powertools_base64_gzip` function
 
 Use `powertools_base64_gzip` function to decompress and decode base64 data.
+
+Data that expands past 16 MiB throws a `FunctionEvaluationError`. Set `POWERTOOLS_MAX_DECOMPRESSED_SIZE` to change the limit in bytes.
 
 This sample will decompress and decode base64 data from Cloudwatch Logs, then use JMESPath pipeline expression to pass the result for decoding its JSON string.
 

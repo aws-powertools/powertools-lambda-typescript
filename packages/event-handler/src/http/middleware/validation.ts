@@ -11,7 +11,11 @@ import type {
   ValidatedResponse,
   ValidationConfig,
 } from '../../types/http.js';
-import { RequestValidationError, ResponseValidationError } from '../errors.js';
+import {
+  normalizeIssuePath,
+  RequestValidationError,
+  ResponseValidationError,
+} from '../errors.js';
 import { isJsonContentType } from '../utils.js';
 
 /**
@@ -78,11 +82,8 @@ async function validateRequestData<TEnv extends Env, TReq extends ReqSchema>(
   }
 
   if (reqSchemas.query) {
-    const query = Object.fromEntries(
-      new URL(typedReqCtx.req.url).searchParams.entries()
-    );
     schemaEntries.push(['query', reqSchemas.query]);
-    dataEntries.push(['query', query]);
+    dataEntries.push(['query', extractQuery(typedReqCtx.req)]);
   }
 
   const stitchedSchema = createObjectSchema(schemaEntries);
@@ -149,6 +150,24 @@ async function validateResponseData<
     mutableValid.res.headers = validated.headers as Headers;
 }
 
+/**
+ * Collects the query string parameters, keeping every value of a repeated parameter.
+ *
+ * A parameter supplied once reaches the schema as a string and a repeated one as an array of
+ * its values, so a scalar schema rejects repeated values rather than keeping one of them.
+ *
+ * @param req - The incoming request
+ */
+function extractQuery(req: Request): Record<string, string | string[]> {
+  const { searchParams } = new URL(req.url);
+  return Object.fromEntries(
+    [...new Set(searchParams.keys())].map((key) => {
+      const values = searchParams.getAll(key);
+      return [key, values.length === 1 ? values[0] : values];
+    })
+  );
+}
+
 function createObjectSchema(
   entries: [string, StandardSchemaV1][]
 ): StandardSchemaV1 {
@@ -167,7 +186,10 @@ function createObjectSchema(
           for (const issue of result.issues ?? []) {
             allIssues.push({
               message: issue.message,
-              path: [key, ...(issue.path || [])],
+              path: [
+                key,
+                ...(issue.path ? normalizeIssuePath(issue.path) : []),
+              ],
             });
           }
 

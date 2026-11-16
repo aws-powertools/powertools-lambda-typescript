@@ -1,12 +1,14 @@
-import { gunzipSync } from 'node:zlib';
 import { fromBase64 } from '@aws-lambda-powertools/commons/utils/base64';
-import { type ZodType, z } from 'zod';
+import { type RefinementCtx, type ZodType, z } from 'zod';
+import { decompressGzip } from '../decompress.js';
 
 const decoder = new TextDecoder();
 
-const decompress = (data: string): string => {
+const decompress = (data: string, ctx: RefinementCtx): string | undefined => {
   try {
-    return JSON.parse(gunzipSync(fromBase64(data, 'base64')).toString('utf8'));
+    const decompressed = decompressGzip(fromBase64(data, 'base64'), ctx);
+
+    return decompressed === undefined ? undefined : JSON.parse(decompressed);
   } catch {
     return data;
   }
@@ -103,8 +105,11 @@ const JSONStringified = <T extends ZodType>(schema: T) =>
 const Base64Encoded = <T extends ZodType>(schema: T) =>
   z
     .base64()
-    .transform((data) => {
-      const decompressed = decompress(data);
+    .transform((data, ctx) => {
+      const decompressed = decompress(data, ctx);
+      if (decompressed === undefined) {
+        return z.NEVER;
+      }
       const decoded = decoder.decode(fromBase64(data, 'base64'));
       try {
         // If data was not compressed, try to parse it as JSON otherwise it must be string

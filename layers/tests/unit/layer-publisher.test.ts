@@ -1,4 +1,4 @@
-import { readdirSync } from 'node:fs';
+import { readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { App } from 'aws-cdk-lib';
 import { Template } from 'aws-cdk-lib/assertions';
@@ -7,6 +7,14 @@ import {
   getLayerUtilities,
   LayerPublisherStack,
 } from '../../src/layer-publisher-stack.js';
+import {
+  buildAllowedVersions,
+  collectInstalledPackages,
+  collectPinnedPackages,
+  findVersionDrift,
+  getPinnedVersion,
+  type Lockfile,
+} from '../../src/lockfile.js';
 
 describe('Class: LayerPublisherStack', () => {
   it('creates the stack with a layer in it', () => {
@@ -49,19 +57,19 @@ describe('Class: LayerPublisherStack', () => {
     // Synthesising the stack above runs the local bundling, which installs the
     // utilities into the tmp folder. Assert every publishable utility landed in
     // the layer so the derived list can't silently drop a package.
-    const packagesDir = join(import.meta.dirname, '..', '..', '..', 'packages');
-    const expectedUtilities = getLayerUtilities(packagesDir).map(
-      (util) => util.workspace
-    );
-    const bundledScopeDir = join(
+    const projectRoot = join(import.meta.dirname, '..', '..', '..');
+    const packagesDir = join(projectRoot, 'packages');
+    const utilities = getLayerUtilities(packagesDir);
+    const expectedUtilities = utilities.map((util) => util.workspace);
+    const bundledNodeModules = join(
       import.meta.dirname,
       '..',
       '..',
       'tmp',
       'nodejs',
-      'node_modules',
-      '@aws-lambda-powertools'
+      'node_modules'
     );
+    const bundledScopeDir = join(bundledNodeModules, '@aws-lambda-powertools');
     const bundledUtilities = readdirSync(bundledScopeDir).filter(
       (name) => !name.startsWith('.')
     );
@@ -70,5 +78,32 @@ describe('Class: LayerPublisherStack', () => {
     }
     // The internal testing package is private and must never ship in the layer.
     expect(bundledUtilities).not.toContain('testing-utils');
+
+    // Every version in the layer comes from the repository lockfile (#5981).
+    const pinned = collectPinnedPackages(
+      JSON.parse(
+        readFileSync(join(projectRoot, 'package-lock.json'), 'utf-8')
+      ) as Lockfile,
+      {
+        roots: utilities.map((util) => `packages/${util.workspace}`),
+        extraDependencies: ['zod'],
+      }
+    );
+    expect(
+      findVersionDrift(
+        collectInstalledPackages(bundledNodeModules),
+        buildAllowedVersions(
+          pinned,
+          Object.fromEntries(
+            utilities.map((util) => [util.packageName, util.version])
+          )
+        )
+      )
+    ).toEqual([]);
+    expect(
+      collectInstalledPackages(bundledNodeModules).find(
+        (entry) => entry.name === 'zod'
+      )?.version
+    ).toBe(getPinnedVersion(pinned, 'zod'));
   }, 120000);
 });

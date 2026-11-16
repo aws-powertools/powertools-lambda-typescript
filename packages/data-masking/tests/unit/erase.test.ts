@@ -2,6 +2,7 @@ import fc from 'fast-check';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import {
+  DataMaskingConfigurationError,
   DataMaskingFieldNotFoundError,
   DataMaskingUnsupportedTypeError,
 } from '../../src/errors.js';
@@ -134,7 +135,7 @@ describe('DataMasking.erase()', () => {
     });
 
     // Assess
-    expect(result).toEqual({ a: { b: '#23' } });
+    expect(result).toEqual({ a: { b: '###' } });
   });
 
   it.each([
@@ -261,7 +262,7 @@ describe('DataMasking.erase()', () => {
     expect(result.users.bob.name).toBe('Bob');
   });
 
-  it('ignores __proto__ keys during .* object wildcard traversal', () => {
+  it('masks an own __proto__ key during .* object wildcard traversal', () => {
     // Prepare
     const data = JSON.parse(
       '{"secrets": {"__proto__": "injected", "safe": "value"}}'
@@ -272,12 +273,85 @@ describe('DataMasking.erase()', () => {
 
     // Assess
     expect(result.secrets.safe).toBe('*****');
-    expect(result.secrets.__proto__).toBe('injected');
+    expect(
+      Object.getOwnPropertyDescriptor(result.secrets, '__proto__')
+    ).toEqual({
+      value: '*****',
+      writable: true,
+      enumerable: true,
+      configurable: true,
+    });
+    expect(Object.getPrototypeOf(result.secrets)).toBe(Object.prototype);
+  });
+
+  it('masks an own __proto__ key named as an explicit field', () => {
+    // Prepare
+    const data = JSON.parse('{"__proto__": "injected", "safe": "value"}');
+
+    // Act
+    const result = masker.erase(data, { fields: ['__proto__'] });
+
+    // Assess
+    expect(Object.getOwnPropertyDescriptor(result, '__proto__')?.value).toBe(
+      '*****'
+    );
+    expect(result.safe).toBe('value');
+    expect(Object.getPrototypeOf(result)).toBe(Object.prototype);
   });
 
   it.each([
-    { label: 'a reserved key', field: '__proto__' },
-    { label: 'an own __proto__ key', field: 'secrets.__proto__' },
+    { label: 'constructor', field: 'constructor' },
+    { label: 'prototype', field: 'prototype' },
+  ])('masks an own $label key named as an explicit field', ({ field }) => {
+    // Prepare
+    const data = JSON.parse(`{"${field}": "secret", "safe": "value"}`);
+
+    // Act
+    const result = masker.erase(data, { fields: [field, 'safe'] });
+
+    // Assess
+    expect(result[field]).toBe('*****');
+    expect(result.safe).toBe('*****');
+    expect(Object.prototype.constructor).toBe(Object);
+  });
+
+  it('masks through an own __proto__ key without polluting Object.prototype', () => {
+    // Prepare
+    const data = JSON.parse('{"__proto__": {"polluted": "yes"}}');
+
+    // Act
+    const result = masker.erase(data, { fields: ['__proto__.polluted'] });
+
+    // Assess
+    expect(Object.getOwnPropertyDescriptor(result, '__proto__')?.value).toEqual(
+      {
+        polluted: '*****',
+      }
+    );
+    expect({}).not.toHaveProperty('polluted');
+    expect(Object.getPrototypeOf(result)).toBe(Object.prototype);
+  });
+
+  it('masks own reserved keys reached by a top-level rule', () => {
+    // Prepare
+    const data = JSON.parse(
+      '{"constructor": "secret", "__proto__": "injected", "a": "x"}'
+    );
+
+    // Act
+    const result = masker.erase(data, { customMask: 'X' });
+
+    // Assess
+    expect(result.constructor).toBe('X');
+    expect(Object.getOwnPropertyDescriptor(result, '__proto__')?.value).toBe(
+      'X'
+    );
+    expect(result.a).toBe('X');
+    expect(Object.getPrototypeOf(result)).toBe(Object.prototype);
+  });
+
+  it.each([
+    { label: 'an inherited key', field: 'constructor' },
     { label: 'an empty expression', field: '' },
   ])('reports $label as a missing field', ({ field }) => {
     // Prepare
@@ -360,6 +434,110 @@ describe('DataMasking.erase() - custom masking rules', () => {
     expect(result.email).toBe('j****@example.com');
   });
 
+  it('replaces every occurrence of a pattern that lacks the g flag', () => {
+    // Prepare
+    const data = { card: '1111 2222' };
+
+    // Act
+    const result = masker.erase(data, {
+      maskingRules: { card: { regexPattern: /\d{4}/, maskFormat: '####' } },
+    });
+
+    // Assess
+    expect(result.card).toBe('#### ####');
+  });
+
+  it('applies the default mask value when a pattern matches nothing', () => {
+    // Prepare
+    const data = { ssn: '123456789' };
+
+    // Act
+    const result = masker.erase(data, {
+      maskingRules: {
+        ssn: { regexPattern: /\d{3}-\d{2}-(\d{4})/, maskFormat: '***-**-$1' },
+      },
+    });
+
+    // Assess
+    expect(result.ssn).toBe('*****');
+  });
+
+  it('keeps a match whose replacement equals the original value', () => {
+    // Prepare
+    const data = { tag: 'abc' };
+
+    // Act
+    const result = masker.erase(data, {
+      maskingRules: { tag: { regexPattern: /b/, maskFormat: 'b' } },
+    });
+
+    // Assess
+    expect(result.tag).toBe('abc');
+  });
+
+  it('ignores the match state of a reused pattern', () => {
+    // Prepare
+    const data = { ssn: '123-45-6789' };
+    const regexPattern = /\d{3}/g;
+    regexPattern.lastIndex = 8;
+
+    // Act
+    const first = masker.erase(data, {
+      maskingRules: { ssn: { regexPattern, maskFormat: '#' } },
+    });
+    const second = masker.erase(data, {
+      maskingRules: { ssn: { regexPattern, maskFormat: '#' } },
+    });
+
+    // Assess
+    expect(first.ssn).toBe('#-45-#9');
+    expect(second.ssn).toBe('#-45-#9');
+    expect(regexPattern.lastIndex).toBe(8);
+  });
+
+  it('applies a rule to every element of an array, keeping its structure', () => {
+    // Prepare
+    const data = { cards: ['4111-1111', '4222-2222'] };
+
+    // Act
+    const result = masker.erase(data, {
+      maskingRules: {
+        cards: { regexPattern: /4111-\d{4}/, maskFormat: 'XXXX' },
+      },
+    });
+
+    // Assess
+    expect(result.cards).toEqual(['XXXX', '*****']);
+  });
+
+  it('applies a rule to every leaf of a nested object', () => {
+    // Prepare
+    const data = {
+      customer: { ssn: '123-45-6789', orders: [{ card: '4111' }] },
+    };
+
+    // Act
+    const result = masker.erase(data, {
+      maskingRules: { customer: { customMask: 'X' } },
+    });
+
+    // Assess
+    expect(result).toEqual({ customer: { ssn: 'X', orders: [{ card: 'X' }] } });
+  });
+
+  it('masks a leaf that is neither a primitive nor a container', () => {
+    // Prepare
+    const data = { when: new Date(0) };
+
+    // Act
+    const result = masker.erase(data, {
+      maskingRules: { when: { customMask: 'X' } },
+    });
+
+    // Assess
+    expect(result.when).toBe('X');
+  });
+
   it('throws DataMaskingFieldNotFoundError for a rule that matches no field when throwOnMissingField is true', () => {
     // Prepare
     const data = { ssn: '123-45-6789' };
@@ -404,11 +582,11 @@ describe('DataMasking.erase() - custom masking rules', () => {
       const result = masker.erase(data, { maskingRules });
 
       // Assess
-      expect(result).toEqual({ a: 'M' });
+      expect(result).toEqual({ a: { b: 'M' } });
     }
   );
 
-  it('does not report a field as missing when a rule collapses its parent', () => {
+  it('does not report a field as missing when a rule covers its parent', () => {
     // Prepare
     const data = { a: { b: 'x' } };
 
@@ -419,7 +597,7 @@ describe('DataMasking.erase() - custom masking rules', () => {
     });
 
     // Assess
-    expect(result).toEqual({ a: 'M' });
+    expect(result).toEqual({ a: { b: 'M' } });
   });
 
   it('lets a rule on a parent see the original values of its children', () => {
@@ -433,7 +611,7 @@ describe('DataMasking.erase() - custom masking rules', () => {
     });
 
     // Assess
-    expect(result).toEqual({ cards: '*********' });
+    expect(result).toEqual({ cards: ['****', '****'] });
   });
 
   it('applies the first rule given to a path reached by several expressions', () => {
@@ -537,6 +715,47 @@ describe('DataMasking.erase() - custom masking rules', () => {
 
     // Assess
     expect(result.secret).toBe('*****');
+  });
+});
+
+describe('DataMasking.erase() - options validation', () => {
+  const masker = new DataMasking();
+  const data = { ssn: '123-45-6789' };
+
+  it('throws when fields is an empty array', () => {
+    // Act & Assess
+    expect(() => masker.erase(data, { fields: [] })).toThrow(
+      DataMaskingConfigurationError
+    );
+  });
+
+  it('throws when maskingRules is an empty object', () => {
+    // Act & Assess
+    expect(() => masker.erase(data, { maskingRules: {} })).toThrow(
+      DataMaskingConfigurationError
+    );
+  });
+
+  it.each([
+    {
+      label: 'a top-level rule',
+      options: { regexPattern: /\d{3}-\d{2}-\d{4}/y, maskFormat: '***' },
+    },
+    {
+      label: 'a per-field rule',
+      options: {
+        maskingRules: {
+          ssn: { regexPattern: /\d{3}-\d{2}-\d{4}/y, maskFormat: '***' },
+        },
+      },
+    },
+  ])('throws for a sticky pattern given as $label', ({ options }) => {
+    // Act & Assess
+    expect(() => masker.erase(data, options)).toThrow(
+      new DataMaskingConfigurationError(
+        "Sticky regex patterns are not supported: remove the 'y' flag from /\\d{3}-\\d{2}-\\d{4}/y"
+      )
+    );
   });
 });
 
@@ -693,6 +912,34 @@ describe('DataMasking.erase() - top-level masking rule', () => {
     expect(result.primary).toBe('j****@example.com');
     expect(result.backup).toBe('b****@example.com');
   });
+
+  it('applies a top-level rule to each leaf of a listed container field', () => {
+    // Prepare
+    const data = { cards: ['4111-1111', '4222-2222'], name: 'Jane' };
+
+    // Act
+    const result = masker.erase(data, {
+      fields: ['cards'],
+      regexPattern: /4111-\d{4}/,
+      maskFormat: 'XXXX',
+    });
+
+    // Assess
+    expect(result.cards).toEqual(['XXXX', '*****']);
+    expect(result.name).toBe('Jane');
+  });
+
+  it('masks leaves that are neither primitives nor containers', () => {
+    // Prepare
+    const data = { when: new Date(0), tags: new Set(['a']) };
+
+    // Act
+    const result = masker.erase(data, { customMask: 'X' });
+
+    // Assess
+    expect(result.when).toBe('X');
+    expect(result.tags).toBe('X');
+  });
 });
 
 const pathKey = fc.stringMatching(/^[a-z][a-z0-9_]{0,10}$/);
@@ -706,12 +953,15 @@ describe('DataMasking.erase() - property tests', () => {
 
     // Act & Assess
     fc.assert(
-      fc.property(fc.dictionary(pathKey, fc.jsonValue()), (data) => {
-        const original = structuredClone(data);
-        lenientMasker.erase(data, { fields: Object.keys(data) });
+      fc.property(
+        fc.dictionary(pathKey, fc.jsonValue(), { minKeys: 1 }),
+        (data) => {
+          const original = structuredClone(data);
+          lenientMasker.erase(data, { fields: Object.keys(data) });
 
-        expect(data).toEqual(original);
-      })
+          expect(data).toEqual(original);
+        }
+      )
     );
   });
 

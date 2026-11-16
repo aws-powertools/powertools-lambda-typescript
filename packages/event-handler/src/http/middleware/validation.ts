@@ -11,7 +11,11 @@ import type {
   ValidatedResponse,
   ValidationConfig,
 } from '../../types/http.js';
-import { RequestValidationError, ResponseValidationError } from '../errors.js';
+import {
+  normalizeIssuePath,
+  RequestValidationError,
+  ResponseValidationError,
+} from '../errors.js';
 import { isJsonContentType } from '../utils.js';
 
 /**
@@ -167,7 +171,10 @@ function createObjectSchema(
           for (const issue of result.issues ?? []) {
             allIssues.push({
               message: issue.message,
-              path: [key, ...(issue.path || [])],
+              path: [
+                key,
+                ...(issue.path ? normalizeIssuePath(issue.path) : []),
+              ],
             });
           }
 

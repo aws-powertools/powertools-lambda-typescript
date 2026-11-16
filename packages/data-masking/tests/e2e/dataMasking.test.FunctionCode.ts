@@ -42,3 +42,42 @@ export const handlerFullEncrypt = async (
     context: { purpose: 'e2e-test' },
   });
 };
+
+export const handlerContextVerification = async (
+  event: Record<string, unknown>
+): Promise<Record<string, string>> => {
+  const encrypted = await masker.encrypt(event, {
+    context: { purpose: 'e2e-test', tenant: 'acme' },
+  });
+
+  const attemptDecrypt = async (
+    context?: Record<string, string>
+  ): Promise<string> => {
+    try {
+      await masker.decrypt(encrypted, { context });
+
+      return 'decrypted';
+    } catch (error) {
+      return (error as Error).name;
+    }
+  };
+
+  return {
+    withoutContext: await attemptDecrypt(),
+    withEmptyContext: await attemptDecrypt({}),
+    withPartialContext: await attemptDecrypt({ purpose: 'e2e-test' }),
+    withDifferentValue: await attemptDecrypt({
+      purpose: 'e2e-test',
+      tenant: 'other',
+    }),
+    withUnknownKey: await attemptDecrypt({
+      purpose: 'e2e-test',
+      tenant: 'acme',
+      region: 'eu',
+    }),
+    withSameContext: await attemptDecrypt({
+      purpose: 'e2e-test',
+      tenant: 'acme',
+    }),
+  };
+};

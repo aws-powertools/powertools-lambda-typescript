@@ -60,7 +60,10 @@ When using the decorator or middleware, you can specify a schema to parse the ev
 | **APIGatewayRequestAuthorizerEventSchema**      | Lambda Event Source payload for Amazon API Gateway Request Authorizer                                                 |
 | **APIGatewayTokenAuthorizerEventSchema**        | Lambda Event Source payload for Amazon API Gateway Token Authorizer                                                   |
 | **APIGatewayProxyEventV2Schema**                | Lambda Event Source payload for Amazon API Gateway v2 payload                                                         |
-| **APIGatewayProxyWebsocketEventSchema**         | Lambda Event Source payload for Amazon API Gateway WebSocket events                                                   |
+| **APIGatewayProxyWebsocketEventSchema**         | Lambda Event Source payload for any Amazon API Gateway WebSocket event (`$connect`, message, or `$disconnect`)        |
+| **APIGatewayWebSocketConnectEventSchema**       | Lambda Event Source payload for the Amazon API Gateway WebSocket `$connect` route                                     |
+| **APIGatewayWebSocketMessageEventSchema**       | Lambda Event Source payload for Amazon API Gateway WebSocket messages on custom routes and the `$default` route       |
+| **APIGatewayWebSocketDisconnectEventSchema**    | Lambda Event Source payload for the Amazon API Gateway WebSocket `$disconnect` route                                  |
 | **APIGatewayRequestAuthorizerEventV2Schema**    | Lambda Event Source payload for Amazon API Gateway v2 Authorizer                                                      |
 | **AppSyncResolverSchema**                       | Lambda Event Source payload for AWS AppSync GraphQL API resolver                                                      |
 | **AppSyncBatchResolverSchema**                  | Lambda Event Source payload for AWS AppSync GraphQL API batch resolver                                                |

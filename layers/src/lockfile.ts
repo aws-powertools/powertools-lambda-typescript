@@ -1,5 +1,6 @@
 import { type Dirent, readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
+import { intersects, validRange } from 'semver';
 
 /**
  * Minimal view of an entry of the `packages` map of a v3 `package-lock.json`,
@@ -281,6 +282,41 @@ const groupByName = (
 };
 
 /**
+ * Throws when two ranges a package is requested with pin it to different
+ * versions but overlap.
+ *
+ * npm applies a `"<name>@<range>"` override to every dependency edge whose
+ * requested range intersects `<range>`, so with `"semver@^5.0.0": "5.7.1"` and
+ * `"semver@^5.7.0": "5.7.2"` both edges get 5.7.1. The post-install check can't
+ * catch that, since 5.7.1 is a locked version of `semver`, so the build fails
+ * here instead.
+ */
+const assertRangesDoNotOverlap = (
+  name: string,
+  entries: readonly PinnedPackage[]
+): void => {
+  const rules = entries.flatMap((entry) =>
+    entry.specs.map((spec) => ({ spec, version: entry.version }))
+  );
+  for (const { spec } of rules) {
+    if (validRange(spec) === null) {
+      throw new Error(
+        `Cannot pin ${name}: the lockfile has it at several versions and ${name}@${spec} is not a semver range`
+      );
+    }
+  }
+  for (const [index, rule] of rules.entries()) {
+    for (const other of rules.slice(index + 1)) {
+      if (rule.version !== other.version && intersects(rule.spec, other.spec)) {
+        throw new Error(
+          `Cannot pin ${name}: ${name}@${rule.spec} (${rule.version}) and ${name}@${other.spec} (${other.version}) overlap, so npm would apply one override to both`
+        );
+      }
+    }
+  }
+};
+
+/**
  * Builds the npm `overrides` that pin every transitive dependency to its
  * lockfile version.
  *
@@ -334,6 +370,7 @@ export const buildOverrides = (
         overrides[`${name}@${spec}`] = entry.version;
       }
     }
+    assertRangesDoNotOverlap(name, entries);
   }
 
   return Object.fromEntries(

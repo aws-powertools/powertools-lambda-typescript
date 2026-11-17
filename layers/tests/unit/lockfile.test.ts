@@ -229,6 +229,40 @@ describe('buildOverrides', () => {
       ])
     ).toThrow('nothing depends on a');
   });
+
+  it('throws when ranges that pin different versions overlap', () => {
+    expect(() =>
+      buildOverrides([
+        { name: 'semver', version: '5.7.1', path: 'a', specs: ['^5.0.0'] },
+        { name: 'semver', version: '5.7.2', path: 'b', specs: ['^5.7.0'] },
+      ])
+    ).toThrow(
+      'semver@^5.0.0 (5.7.1) and semver@^5.7.0 (5.7.2) overlap, so npm would apply one override to both'
+    );
+  });
+
+  it('allows overlapping ranges that pin the same version', () => {
+    expect(
+      buildOverrides([
+        { name: 'semver', version: '5.7.2', path: 'a', specs: ['^5.0.0'] },
+        { name: 'semver', version: '5.7.2', path: 'b', specs: ['^5.7.0'] },
+        { name: 'semver', version: '7.8.5', path: 'c', specs: ['^7.5.0'] },
+      ])
+    ).toEqual({
+      'semver@^5.0.0': '5.7.2',
+      'semver@^5.7.0': '5.7.2',
+      'semver@^7.5.0': '7.8.5',
+    });
+  });
+
+  it('throws when a package at several versions is requested with a range that is not semver', () => {
+    expect(() =>
+      buildOverrides([
+        { name: 'dup', version: '1.0.0', path: 'a', specs: ['latest'] },
+        { name: 'dup', version: '2.0.0', path: 'b', specs: ['^2.0.0'] },
+      ])
+    ).toThrow('dup@latest is not a semver range');
+  });
 });
 
 describe('buildLayerPackageJson', () => {

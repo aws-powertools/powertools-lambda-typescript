@@ -25,9 +25,13 @@ describe('getLayerUtilities', () => {
   beforeAll(() => {
     fixtureDir = mkdtempSync(join(tmpdir(), 'layer-utils-'));
 
-    writePackage('logger', { name: '@aws-lambda-powertools/logger' });
+    writePackage('logger', {
+      name: '@aws-lambda-powertools/logger',
+      version: '2.36.0',
+    });
     writePackage('data-masking', {
       name: '@aws-lambda-powertools/data-masking',
+      version: '2.36.0',
     });
     // Private packages (e.g. testing-utils) must be excluded.
     writePackage('testing', {
@@ -55,8 +59,13 @@ describe('getLayerUtilities', () => {
       {
         workspace: 'data-masking',
         packageName: '@aws-lambda-powertools/data-masking',
+        version: '2.36.0',
       },
-      { workspace: 'logger', packageName: '@aws-lambda-powertools/logger' },
+      {
+        workspace: 'logger',
+        packageName: '@aws-lambda-powertools/logger',
+        version: '2.36.0',
+      },
     ]);
   });
 

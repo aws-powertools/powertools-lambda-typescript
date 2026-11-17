@@ -176,13 +176,18 @@ describe('Class IdempotencyHandler', () => {
         idempotentHandler.determineResultFromIdempotencyRecord(stubRecord);
 
       // Assess
-      expect(responseHook).toHaveBeenCalledWith(responseData, stubRecord);
+      expect(responseHook).toHaveBeenCalledOnce();
       expect(result).toEqual({
         message: 'Original message',
         statusCode: 200,
         headers: {
           'x-idempotency-key': 'test-key',
         },
+      });
+      // The hook receives a copy, so the response of the record is left untouched
+      expect(responseData).toEqual({
+        message: 'Original message',
+        statusCode: 200,
       });
     });
   });

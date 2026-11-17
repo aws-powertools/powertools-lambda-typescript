@@ -6,6 +6,7 @@ import {
 import { Expression } from './Expression.js';
 import {
   ArityError,
+  FunctionEvaluationError,
   JMESPathError,
   JMESPathTypeError,
   UnknownFunctionError,
@@ -144,10 +145,7 @@ class TreeInterpreter {
       if (comparator === 'ne') {
         return !isStrictEqual(left, right);
       }
-      /* v8 ignore else -- @preserve */
       if (typeof left === 'number' && typeof right === 'number') {
-        // Ordering operators only work on numbers. Evaluating them on other
-        // types will return null.
         if (comparator === 'lt') {
           return left < right;
         }
@@ -159,9 +157,11 @@ class TreeInterpreter {
         }
         return left >= right;
       }
-    } else {
-      throw new JMESPathError(`Invalid comparator: ${comparator}`);
+      // Ordering operators only work on numbers. Evaluating them on other
+      // types will return null.
+      return null;
     }
+    throw new JMESPathError(`Invalid comparator: ${comparator}`);
   }
 
   /**
@@ -222,7 +222,6 @@ class TreeInterpreter {
       // @ts-expect-error
       return this.#functions[funcName](args);
     } catch (error) {
-      /* v8 ignore else -- @preserve */
       if (
         error instanceof JMESPathTypeError ||
         error instanceof VariadicArityError ||
@@ -231,6 +230,10 @@ class TreeInterpreter {
         error.setEvaluatedFunctionName(node.value);
         throw error;
       }
+      if (error instanceof JMESPathError) throw error;
+      // The original error might include fragments of the payload, so we
+      // surface it as the cause rather than in the message.
+      throw new FunctionEvaluationError(node.value, { cause: error });
     }
   }
 

@@ -60,12 +60,17 @@ const createDeserializer = async (): Promise<AvroDeserializer> => {
    * @param options - Deserialization options. If `options.wireFormat` is `confluent`, the 5-byte header is stripped.
    */
   deserializer = (data: string, schema: string, options) => {
-    const buffer = stripWireFormatHeader(
-      Buffer.from(data, 'base64'),
-      options?.wireFormat
-    );
+    const decodedPayload = Buffer.from(data, 'base64');
+    const buffer = stripWireFormatHeader(decodedPayload, options?.wireFormat);
+    let type: ReturnType<typeof avro.parse>;
     try {
-      const type = avro.parse(schema);
+      type = avro.parse(schema);
+    } catch {
+      throw new KafkaConsumerDeserializationError(
+        `Failed to deserialize Avro message (base64-decoded payload length: ${decodedPayload.length} bytes): invalid Avro schema`
+      );
+    }
+    try {
       // Most Confluent serializers write top-level bytes without the Avro length prefix, so return them as-is
       if (
         options?.wireFormat === WireFormat.CONFLUENT &&
@@ -76,7 +81,7 @@ const createDeserializer = async (): Promise<AvroDeserializer> => {
       return type.fromBuffer(buffer);
     } catch (error) {
       throw new KafkaConsumerDeserializationError(
-        `Failed to deserialize Avro message: ${error}, message: ${data}, schema: ${schema}`
+        `Failed to deserialize Avro message (base64-decoded payload length: ${decodedPayload.length} bytes): ${error}`
       );
     }
   };

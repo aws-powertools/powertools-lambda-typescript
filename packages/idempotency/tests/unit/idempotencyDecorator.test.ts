@@ -67,4 +67,55 @@ describe('Given a class with a function to decorate', () => {
     // Restore the spy
     configureSpy.mockRestore();
   });
+
+  it.each([
+    {
+      case: 'keeps the default key prefix',
+      options: {},
+      prefix: /^my-lambda-function#/,
+    },
+    {
+      case: 'appends the operationName option to the key prefix',
+      options: { operationName: 'process-order' },
+      prefix: /^my-lambda-function\.process-order#/,
+    },
+  ])('$case of a decorated method', async ({ options, prefix }) => {
+    // Prepare
+    const persistenceStore = new PersistenceLayerTestClass();
+    const config = new IdempotencyConfig({});
+    config.registerLambdaContext(context);
+
+    class TestClass {
+      @idempotent({ persistenceStore, config, ...options })
+      public async process(_record: unknown) {
+        return true;
+      }
+    }
+
+    // Act
+    await new TestClass().process({ id: 'order-1' });
+
+    // Assess
+    const [record] = persistenceStore._putRecord.mock.calls[0];
+    expect(record.idempotencyKey).toMatch(prefix);
+  });
+
+  it('keeps the default key prefix for a decorated handler', async () => {
+    // Prepare
+    const persistenceStore = new PersistenceLayerTestClass();
+
+    class TestClass implements LambdaInterface {
+      @idempotent({ persistenceStore })
+      public async handler(_event: unknown, _context: Context) {
+        return true;
+      }
+    }
+
+    // Act
+    await new TestClass().handler({ id: 'order-1' }, context);
+
+    // Assess
+    const [record] = persistenceStore._putRecord.mock.calls[0];
+    expect(record.idempotencyKey).toMatch(/^my-lambda-function#/);
+  });
 });

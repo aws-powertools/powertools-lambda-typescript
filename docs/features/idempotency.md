@@ -265,9 +265,11 @@ For this reason, operations that need different `IdempotencyConfig` settings - i
 
 When using multiple persistence layer instances, you can still share the same AWS SDK client to reuse the underlying connection.
 
+By default, every idempotent operation of a Lambda function shares the same key prefix, so operations that select equal values share a record. Give each operation its own `operationName`, which is appended to the default prefix, or its own `keyPrefix`.
+
 === "index.ts"
 
-    ```typescript hl_lines="11 20-23 37-40"
+    ```typescript hl_lines="11 20 22-25 38 40-43"
     --8<-- "examples/snippets/idempotency/makeIdempotentMultipleOperations.ts"
     ```
 
@@ -733,6 +735,8 @@ You can enable in-memory caching with the **`useLocalCache`** parameter:
     ```
 
 When enabled, the default is to cache a maximum of 1000 records in each Lambda execution environment - You can change it with the **`maxLocalCacheSize`** parameter.
+
+Each replay returns its own copy of the stored response, so changing a replayed response does not change what the next replay returns.
 
 ### Expiring idempotency records
 

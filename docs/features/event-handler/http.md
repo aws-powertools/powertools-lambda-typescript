@@ -253,6 +253,8 @@ You can validate any combination of `body`, `headers`, `path` parameters, and `q
     4. Validated headers available via `reqCtx.valid.req.headers`
     5. Headers are always strings — `z.coerce.number()` coerces and validates the value, typing it as `number`
 
+A query parameter repeated in the request reaches your schema as an array of its values, so use an array schema for it.
+
 #### Validating responses
 
 Pass a `validation` option to your route handler with a `res` configuration to validate the outgoing response body and headers after your handler executes. If validation fails, Event Handler returns a **500 Internal Server Error**.

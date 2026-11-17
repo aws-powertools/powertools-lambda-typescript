@@ -1,5 +1,6 @@
 import { setTimeout } from 'node:timers/promises';
 import context from '@aws-lambda-powertools/testing-utils/context';
+import * as v from 'valibot';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { z } from 'zod';
 import { HttpVerbs, Router } from '../../../../src/http/index.js';
@@ -286,6 +287,75 @@ describe('Router Validation Integration', () => {
 
     // Assess
     expect(result.statusCode).toBe(422);
+  });
+
+  it('returns 422 when a repeated query parameter has a scalar schema', async () => {
+    // Prepare
+    const querySchema = z.object({ id: z.string() });
+
+    app.get('/items', () => ({ body: { items: [] } }), {
+      validation: { req: { query: querySchema } },
+    });
+
+    const event = createTestEvent('/items', 'GET', {});
+    event.multiValueQueryStringParameters = { id: ['a', 'b'] };
+
+    // Act
+    const result = await app.resolve(event, context);
+
+    // Assess
+    expect(result.statusCode).toBe(422);
+    const body = JSON.parse(result.body);
+    expect(body.details.issues[0].path).toEqual(['query', 'id']);
+  });
+
+  it('validates every value of a repeated query parameter with an array schema', async () => {
+    // Prepare
+    const querySchema = z.object({ id: z.array(z.string()) });
+
+    app.get('/items', (reqCtx) => ({ used: reqCtx.valid.req.query.id }), {
+      validation: { req: { query: querySchema } },
+    });
+
+    const event = createTestEvent('/items', 'GET', {});
+    event.multiValueQueryStringParameters = { id: ['a', 'b'] };
+
+    // Act
+    const result = await app.resolve(event, context);
+
+    // Assess
+    expect(result.statusCode).toBe(200);
+    expect(JSON.parse(result.body).used).toEqual(['a', 'b']);
+  });
+
+  it('keeps __proto__ an own property of the query data', async () => {
+    // Prepare
+    let captured: Record<string, unknown> | undefined;
+    const querySchema = {
+      '~standard': {
+        version: 1,
+        vendor: 'custom',
+        validate: (value: unknown) => {
+          captured = value as Record<string, unknown>;
+          return { value: captured };
+        },
+      },
+    } as const;
+
+    app.get('/items', () => ({ statusCode: 200, body: 'ok' }), {
+      validation: { req: { query: querySchema } },
+    });
+
+    const event = createTestEvent('/items', 'GET', {});
+    event.queryStringParameters = JSON.parse('{"__proto__":"polluted"}');
+
+    // Act
+    const result = await app.resolve(event, context);
+
+    // Assess
+    expect(result.statusCode).toBe(200);
+    expect(Object.hasOwn(captured as object, '__proto__')).toBe(true);
+    expect(({} as Record<string, unknown>).polluted).toBeUndefined();
   });
 
   it('validates and serializes a JSON object body in ExtendedAPIGatewayProxyResult', async () => {
@@ -704,6 +774,64 @@ describe('Router Validation Integration', () => {
     expect(result.statusCode).toBe(422);
     const body = JSON.parse(result.body);
     expect(body.error).toBe('RequestValidationError');
+  });
+
+  it('keeps the request input out of 422 issue paths', async () => {
+    // Prepare
+    app.get('/headers', () => ({ ok: true }), {
+      validation: {
+        req: {
+          headers: v.object({ 'x-api-version': v.picklist(['1', '2']) }),
+        },
+      },
+    });
+
+    const event = createTestEvent('/headers', 'GET', {
+      'x-api-version': '9',
+      'x-example': 'dummy',
+    });
+
+    // Act
+    const result = await app.resolve(event, context);
+
+    // Assess
+    expect(result.statusCode).toBe(422);
+    const body = JSON.parse(result.body);
+    expect(body.details.issues).toEqual([
+      {
+        message: 'Invalid type: Expected ("1" | "2") but received "9"',
+        path: ['headers', 'x-api-version'],
+      },
+    ]);
+    expect(result.body).not.toContain('x-example');
+    expect(result.body).not.toContain('"input"');
+    expect(result.body).not.toContain('"value"');
+  });
+
+  it('keeps the rejected response out of 500 issue paths', async () => {
+    // Prepare
+    app.get('/response', () => ({ id: 'demo', extra: 'dummy' }), {
+      validation: { res: { body: v.strictObject({ id: v.string() }) } },
+    });
+
+    // Act
+    const result = await app.resolve(
+      createTestEvent('/response', 'GET'),
+      context
+    );
+
+    // Assess
+    expect(result.statusCode).toBe(500);
+    const body = JSON.parse(result.body);
+    expect(body.error).toBe('ResponseValidationError');
+    expect(body.details.issues).toEqual([
+      {
+        message: 'Invalid key: Expected never but received "extra"',
+        path: ['body', 'extra'],
+      },
+    ]);
+    expect(result.body).not.toContain('"input"');
+    expect(result.body).not.toContain('"value"');
   });
 
   it('handles validation error with missing path in issue', async () => {

@@ -1,5 +1,6 @@
 import type { DurableContext } from '@aws/durable-execution-sdk-js';
 import type { JSONValue } from '@aws-lambda-powertools/commons/types';
+import { FunctionEvaluationError } from '@aws-lambda-powertools/jmespath';
 import context from '@aws-lambda-powertools/testing-utils/context';
 import middy from '@middy/core';
 import type { Context } from 'aws-lambda';
@@ -79,6 +80,47 @@ const createDurableContext = (
 const fnSuccessfull = async () => true;
 const fnError = () => {
   throw new Error('Something went wrong');
+};
+/**
+ * Two requests of different callers that select no idempotency key, whatever the
+ * expression used: `user` and `productId` are absent, and the other fields are falsy.
+ */
+const requestA = {
+  caller: 'dummy-a',
+  name: '',
+  items: [] as string[],
+  metadata: {} as Record<string, string>,
+};
+const requestB = { ...requestA, caller: 'dummy-b' };
+/**
+ * A promise that another part of a test opens, to interleave invocations.
+ */
+const createGate = () => {
+  let open = () => {};
+  const gate = new Promise<void>((resolve) => {
+    open = resolve;
+  });
+
+  return { gate, open: () => open() };
+};
+/**
+ * An in-memory cache client, to exercise the records that a store actually holds.
+ */
+const createCacheClient = () => {
+  const items = new Map<string, string>();
+
+  return {
+    get: async (key: string) => items.get(key) ?? null,
+    set: async (key: string, value: unknown, options?: { NX?: boolean }) => {
+      if (options?.NX && items.has(key)) return null;
+      items.set(key, String(value));
+      return 'OK';
+    },
+    del: async (keys: string[]) => {
+      for (const key of keys) items.delete(key);
+      return keys.length;
+    },
+  };
 };
 
 describe('Function: makeIdempotent', () => {
@@ -346,6 +388,97 @@ describe('Function: makeIdempotent', () => {
     expect(deleteRecordSpy).toHaveBeenCalledTimes(1);
   });
 
+  it('stores and replays the response of each overlapping invocation sharing the same internal storage (middleware)', async () => {
+    // Prepare
+    const started = createGate();
+    const release = createGate();
+    const handler = middy(
+      async (request: { orderId: string; caller: string }) => {
+        if (request.caller === 'dummy-a') {
+          started.open();
+          await release.gate;
+        }
+
+        return { body: `result-for-${request.caller}` };
+      },
+      { internal: {}, timeoutEarlyInMillis: 0 }
+    ).use(
+      makeHandlerIdempotent({
+        persistenceStore: new CachePersistenceLayer({
+          client: createCacheClient(),
+        }),
+        config: new IdempotencyConfig({ eventKeyJmesPath: 'orderId' }),
+      })
+    );
+
+    // Act
+    const first = handler(
+      { orderId: 'dummy-key-a', caller: 'dummy-a' },
+      context
+    );
+    await started.gate;
+    const second = await handler(
+      { orderId: 'dummy-key-b', caller: 'dummy-b' },
+      context
+    );
+    release.open();
+
+    // Assess
+    expect(second).toEqual({ body: 'result-for-dummy-b' });
+    await expect(first).resolves.toEqual({ body: 'result-for-dummy-a' });
+    // A retry of either request replays its own stored response
+    await expect(
+      handler({ orderId: 'dummy-key-a', caller: 'dummy-c' }, context)
+    ).resolves.toEqual({ body: 'result-for-dummy-a' });
+    await expect(
+      handler({ orderId: 'dummy-key-b', caller: 'dummy-c' }, context)
+    ).resolves.toEqual({ body: 'result-for-dummy-b' });
+  });
+
+  it('deletes only the record of the overlapping invocation that failed (middleware)', async () => {
+    // Prepare
+    const started = createGate();
+    const release = createGate();
+    const handler = middy(
+      async (request: { orderId: string; caller: string }) => {
+        if (request.caller === 'dummy-a') {
+          started.open();
+          await release.gate;
+          throw new Error('Something went wrong');
+        }
+
+        return { body: `result-for-${request.caller}` };
+      },
+      { internal: {}, timeoutEarlyInMillis: 0 }
+    ).use(
+      makeHandlerIdempotent({
+        persistenceStore: new CachePersistenceLayer({
+          client: createCacheClient(),
+        }),
+        config: new IdempotencyConfig({ eventKeyJmesPath: 'orderId' }),
+      })
+    );
+
+    // Act
+    const first = handler(
+      { orderId: 'dummy-key-a', caller: 'dummy-a' },
+      context
+    );
+    await started.gate;
+    await handler({ orderId: 'dummy-key-b', caller: 'dummy-b' }, context);
+    release.open();
+
+    // Assess
+    await expect(first).rejects.toThrow('Something went wrong');
+    // The failed request left no record behind, while the other one kept its own
+    await expect(
+      handler({ orderId: 'dummy-key-a', caller: 'dummy-c' }, context)
+    ).resolves.toEqual({ body: 'result-for-dummy-c' });
+    await expect(
+      handler({ orderId: 'dummy-key-b', caller: 'dummy-c' }, context)
+    ).resolves.toEqual({ body: 'result-for-dummy-b' });
+  });
+
   it('keeps the record of a concurrent execution when rejecting a duplicate request (middleware)', async () => {
     // Prepare
     const handler = middy(fnSuccessfull).use(
@@ -430,6 +563,44 @@ describe('Function: makeIdempotent', () => {
     expect(saveSuccessSpy).toHaveBeenCalledTimes(1);
     expect(deleteRecordSpy).toHaveBeenCalledTimes(0);
   });
+
+  it.each([{ type: 'wrapper' }, { type: 'middleware' }])(
+    'returns a separate copy of the cached response on each replay ($type)',
+    async ({ type }) => {
+      // Prepare
+      const options = {
+        // Use a dedicated persistence store because this test uses a different
+        // `IdempotencyConfig` and a persistence layer instance can only be
+        // configured once - see `BasePersistenceLayer.configure()`
+        persistenceStore: new PersistenceLayerTestClass(),
+        config: new IdempotencyConfig({
+          eventKeyJmesPath: 'orderId',
+          useLocalCache: true,
+        }),
+      };
+      const fn = async (request: { orderId: string }, _context: Context) => ({
+        orderId: request.orderId,
+        headers: {} as Record<string, string>,
+      });
+      const handler =
+        type === 'wrapper'
+          ? makeIdempotent(fn, options)
+          : middy(fn).use(makeHandlerIdempotent(options));
+      const request = { orderId: 'dummy-1' };
+
+      // Act
+      const first = await handler(request, context);
+      first.headers['x-dummy-caller'] = 'dummy-a';
+      const second = await handler(request, context);
+
+      // Assess
+      expect(second).toEqual({ orderId: 'dummy-1', headers: {} });
+      second.headers['x-dummy-extra'] = 'dummy-b';
+      const third = await handler(request, context);
+      expect(third).toEqual({ orderId: 'dummy-1', headers: {} });
+      expect(third).not.toBe(second);
+    }
+  );
 
   it.each([{ type: 'wrapper' }, { type: 'middleware' }])(
     'thows an error if the persistence layer throws an error when deleting a record ($type)',
@@ -658,6 +829,112 @@ describe('Function: makeIdempotent', () => {
     }
   );
 
+  it.each(
+    [
+      {
+        case: 'an all-null multi-select list',
+        eventKeyJmesPath: '[user, productId]',
+      },
+      {
+        case: 'an all-null multi-select hash',
+        eventKeyJmesPath: '{u: user, p: productId}',
+      },
+      { case: 'an empty string', eventKeyJmesPath: 'name' },
+      { case: 'an empty list', eventKeyJmesPath: 'items' },
+      { case: 'an empty object', eventKeyJmesPath: 'metadata' },
+    ].flatMap((selection) => [
+      { ...selection, type: 'wrapper' },
+      { ...selection, type: 'middleware' },
+    ])
+  )(
+    'runs the function without any persistence call when the idempotency key is $case ($type)',
+    async ({ eventKeyJmesPath, type }) => {
+      // Prepare
+      const options = {
+        // Use a dedicated persistence store because this test uses a different
+        // `IdempotencyConfig` and a persistence layer instance can only be
+        // configured once - see `BasePersistenceLayer.configure()`
+        persistenceStore: new PersistenceLayerTestClass(),
+        config: new IdempotencyConfig({ eventKeyJmesPath }),
+      };
+      const fn = vi.fn(
+        async (request: typeof requestA, _context: Context) =>
+          `done-${request.caller}`
+      );
+      const handler =
+        type === 'wrapper'
+          ? makeIdempotent(fn, options)
+          : middy(fn).use(makeHandlerIdempotent(options));
+
+      // Act
+      const first = await handler(requestA, context);
+      const second = await handler(requestB, context);
+
+      // Assess
+      expect(first).toBe('done-dummy-a');
+      expect(second).toBe('done-dummy-b');
+      expect(options.persistenceStore._putRecord).not.toHaveBeenCalled();
+      expect(options.persistenceStore._getRecord).not.toHaveBeenCalled();
+      expect(options.persistenceStore._updateRecord).not.toHaveBeenCalled();
+      expect(options.persistenceStore._deleteRecord).not.toHaveBeenCalled();
+    }
+  );
+
+  it.each([
+    { case: 'zero', eventKeyJmesPath: 'count' },
+    { case: 'false', eventKeyJmesPath: 'enabled' },
+    { case: 'a list of falsy values', eventKeyJmesPath: '[count, name]' },
+    { case: 'an object with a falsy value', eventKeyJmesPath: '{n: name}' },
+  ])(
+    'keeps idempotency when the idempotency key is $case',
+    async ({ eventKeyJmesPath }) => {
+      // Prepare
+      const options = {
+        persistenceStore: new PersistenceLayerTestClass(),
+        config: new IdempotencyConfig({ eventKeyJmesPath }),
+      };
+      const fn = vi.fn(async (_request: unknown, _context: Context) => 'done');
+      const handler = makeIdempotent(fn, options);
+
+      // Act
+      await handler({ count: 0, enabled: false, name: '' }, context);
+
+      // Assess
+      expect(options.persistenceStore._putRecord).toHaveBeenCalledOnce();
+    }
+  );
+
+  it.each([
+    {
+      type: 'wrapper',
+    },
+    { type: 'middleware' },
+  ])(
+    'throws when the idempotency key expression fails to evaluate ($type)',
+    async ({ type }) => {
+      // Prepare
+      const options = {
+        // Use a dedicated persistence store because this test uses a different
+        // `IdempotencyConfig` and a persistence layer instance can only be
+        // configured once - see `BasePersistenceLayer.configure()`
+        persistenceStore: new PersistenceLayerTestClass(),
+        config: new IdempotencyConfig({
+          eventKeyJmesPath: 'powertools_json(body)',
+          throwOnNoIdempotencyKey: false,
+        }),
+      };
+      const handler =
+        type === 'wrapper'
+          ? makeIdempotent(fnSuccessfull, options)
+          : middy(fnSuccessfull).use(makeHandlerIdempotent(options));
+
+      // Act & Assess
+      await expect(
+        handler({ body: 'not json' }, context)
+      ).rejects.toBeInstanceOf(FunctionEvaluationError);
+    }
+  );
+
   it.each([
     {
       type: 'wrapper',
@@ -796,6 +1073,133 @@ describe('Function: makeIdempotent', () => {
       expect.stringMatching(/^my-lambda-function#/),
     ]);
     expect(updateKeys).toEqual([putKeys[1], putKeys[0]]);
+  });
+
+  it('runs each operation under its own key prefix when they share a persistence store', async () => {
+    // Prepare
+    const persistenceStore = new CachePersistenceLayer({
+      client: createCacheClient(),
+    });
+    const config = new IdempotencyConfig({ eventKeyJmesPath: 'id' });
+    config.registerLambdaContext(context);
+    const processUser = async (user: { id: string }) => ({
+      profile: user.id,
+    });
+    const processProduct = async (product: { id: string }) => ({
+      product: product.id,
+    });
+    const userIdempotently = makeIdempotent(processUser, {
+      persistenceStore,
+      config,
+      operationName: 'processUser',
+    });
+    const productIdempotently = makeIdempotent(processProduct, {
+      persistenceStore,
+      config,
+      operationName: 'processProduct',
+    });
+
+    // Act
+    const user = await userIdempotently({ id: 'dummy-1' });
+    const product = await productIdempotently({ id: 'dummy-1' });
+
+    // Assess
+    expect(user).toEqual({ profile: 'dummy-1' });
+    expect(product).toEqual({ product: 'dummy-1' });
+  });
+
+  it.each([
+    {
+      case: 'the Lambda function name alone when the operationName option is not set',
+      fn: async function processOrder(_order: unknown) {
+        return true;
+      },
+      options: {},
+      prefix: 'my-lambda-function',
+    },
+    {
+      case: 'the operationName option',
+      fn: async (_order: unknown) => true,
+      options: { operationName: 'process-order' },
+      prefix: 'my-lambda-function.process-order',
+    },
+    {
+      case: 'the Lambda function name alone when the operationName option is blank',
+      fn: async (_order: unknown) => true,
+      options: { operationName: '  ' },
+      prefix: 'my-lambda-function',
+    },
+    {
+      case: 'the Lambda function name alone when the operationName option is undefined',
+      fn: async (_order: unknown) => true,
+      options: { operationName: undefined },
+      prefix: 'my-lambda-function',
+    },
+    {
+      case: 'the keyPrefix option over the operationName option',
+      fn: async function processOrder(_order: unknown) {
+        return true;
+      },
+      options: { operationName: 'process-order', keyPrefix: 'orders' },
+      prefix: 'orders',
+    },
+  ])(
+    'prefixes the records of an operation with $case',
+    async ({ fn, options, prefix }) => {
+      // Prepare
+      const persistenceStore = new PersistenceLayerTestClass();
+      const config = new IdempotencyConfig({});
+      config.registerLambdaContext(context);
+      const operation = makeIdempotent(fn, {
+        ...options,
+        persistenceStore,
+        config,
+      });
+
+      // Act
+      await operation({ id: 'order-1' });
+
+      // Assess
+      const [record] = persistenceStore._putRecord.mock.calls[0];
+      expect(record.idempotencyKey).toMatch(
+        new RegExp(`^${prefix.replace('.', '\\.')}#`)
+      );
+    }
+  );
+
+  it('keeps the default key prefix for a handler with a name', async () => {
+    // Prepare
+    const persistenceStore = new PersistenceLayerTestClass();
+    const operation = makeIdempotent(
+      async function processOrder(_event: unknown, _context: Context) {
+        return true;
+      },
+      { persistenceStore }
+    );
+
+    // Act
+    await operation(event, context);
+
+    // Assess
+    const [record] = persistenceStore._putRecord.mock.calls[0];
+    expect(record.idempotencyKey).toMatch(/^my-lambda-function#/);
+  });
+
+  it('ignores the operationName option for a handler', async () => {
+    // Prepare
+    const persistenceStore = new PersistenceLayerTestClass();
+    const operation = makeIdempotent(
+      async (_event: unknown, _context: Context) => true,
+      // @ts-expect-error - operationName is not part of the options of a handler
+      { persistenceStore, operationName: 'process-order' }
+    );
+
+    // Act
+    await operation(event, context);
+
+    // Assess
+    const [record] = persistenceStore._putRecord.mock.calls[0];
+    expect(record.idempotencyKey).toMatch(/^my-lambda-function#/);
   });
 
   it('uses the specified argument as payload when wrapping an arbitrary function', async () => {
@@ -1154,19 +1558,7 @@ describe('Function: makeIdempotent', () => {
     onTestFinished(() => {
       vi.useRealTimers();
     });
-    const items = new Map<string, string>();
-    const client = {
-      get: async (key: string) => items.get(key) ?? null,
-      set: async (key: string, value: unknown, options?: { NX?: boolean }) => {
-        if (options?.NX && items.has(key)) return null;
-        items.set(key, String(value));
-        return 'OK';
-      },
-      del: async (keys: string[]) => {
-        for (const key of keys) items.delete(key);
-        return keys.length;
-      },
-    };
+    const client = createCacheClient();
     const shipOrder = vi.fn();
     const firstInvocation = createDurableContext(executionA, 'ExecutionMode');
     const handler = makeIdempotent(
@@ -1291,6 +1683,99 @@ describe('Function: makeIdempotent', () => {
       expect(fn).not.toHaveBeenCalled();
     }
   );
+
+  it.each([
+    {
+      case: 'a replay mode',
+      data: { durableExecutionMode: 'ReplayMode' },
+      owner: undefined,
+    },
+    {
+      case: 'an execution ARN',
+      data: { executionContext: { durableExecutionArn: executionA } },
+      owner: executionA,
+    },
+  ])(
+    'rejects a duplicate request when the ordinary data of an operation carries $case',
+    async ({ data, owner }) => {
+      // Prepare
+      const persistenceStore = new PersistenceLayerTestClass();
+      const config = new IdempotencyConfig({ eventKeyJmesPath: 'productId' });
+      config.registerLambdaContext(context);
+      persistenceStore._putRecord.mockRejectedValueOnce(
+        new IdempotencyItemAlreadyExistsError(
+          'Record is already in progress',
+          new IdempotencyRecord({
+            idempotencyKey: 'idempotencyKey',
+            status: IdempotencyRecordStatus.INPROGRESS,
+            inProgressExpiryTimestamp: Date.now() + 10_000,
+            owner,
+          })
+        )
+      );
+      const fn = vi.fn();
+      const execute = makeIdempotent(
+        async (_transactionId: string, _data: Record<string, unknown>) => fn(),
+        { persistenceStore, config, dataIndexArgument: 1 }
+      );
+
+      // Act & Assess
+      await expect(
+        execute('dummy-tx', { productId: 'dummy-1', ...data })
+      ).rejects.toThrow(IdempotencyAlreadyInProgressError);
+      expect(fn).not.toHaveBeenCalled();
+    }
+  );
+
+  it('does not make the execution ARN in the ordinary data of an operation the owner of its record', async () => {
+    // Prepare
+    const persistenceStore = new PersistenceLayerTestClass();
+    const config = new IdempotencyConfig({ eventKeyJmesPath: 'productId' });
+    config.registerLambdaContext(context);
+    const execute = makeIdempotent(
+      async (_transactionId: string, _data: Record<string, unknown>) => true,
+      { persistenceStore, config, dataIndexArgument: 1 }
+    );
+
+    // Act
+    await execute('dummy-tx', {
+      productId: 'dummy-1',
+      executionContext: { durableExecutionArn: executionA },
+    });
+
+    // Assess
+    const [record] = persistenceStore._putRecord.mock.calls[0];
+    expect(record).toEqual(
+      expect.objectContaining({
+        owner: undefined,
+        inProgressExpiryTimestamp: expect.any(Number),
+      })
+    );
+  });
+
+  it('keeps the payload and the registered context of an operation whose ordinary data looks like a Lambda context', async () => {
+    // Prepare
+    const persistenceStore = new PersistenceLayerTestClass();
+    const config = new IdempotencyConfig({});
+    config.registerLambdaContext(context);
+    const saveInProgressSpy = vi.spyOn(persistenceStore, 'saveInProgress');
+    const execute = makeIdempotent(
+      async (_transactionId: string, _data: Record<string, unknown>) => true,
+      { persistenceStore, config, dataIndexArgument: 1 }
+    );
+    const data = { productId: 'dummy-1', getRemainingTimeInMillis: 1 };
+
+    // Act
+    await execute('dummy-tx', data);
+
+    // Assess
+    expect(saveInProgressSpy).toHaveBeenCalledWith(
+      data,
+      remainingTImeInMillis,
+      withIdentity
+    );
+    expect(config.lambdaContext).toBe(context);
+  });
 
   it('completes the record it acquired when the wrapped function mutates its input', async () => {
     // Prepare

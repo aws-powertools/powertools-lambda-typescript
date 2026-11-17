@@ -16,6 +16,8 @@ const processUser = makeIdempotent(
     return { userId: user.userId };
   },
   {
+    // Tells the records of this operation apart from those of the other operations
+    operationName: 'processUser',
     // Operations with different configs need their own persistence layer instance
     persistenceStore: new DynamoDBPersistenceLayer({
       tableName: 'idempotencyTableName',
@@ -33,6 +35,7 @@ const processProduct = makeIdempotent(
     return { productId: product.productId };
   },
   {
+    operationName: 'processProduct',
     // Don't reuse the instance above: this operation has a different config
     persistenceStore: new DynamoDBPersistenceLayer({
       tableName: 'idempotencyTableName',

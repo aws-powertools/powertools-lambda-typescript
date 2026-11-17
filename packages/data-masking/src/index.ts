@@ -1,6 +1,7 @@
 export { DEFAULT_MASK_VALUE } from './constants.js';
 export { DataMasking } from './DataMasking.js';
 export {
+  DataMaskingConfigurationError,
   DataMaskingEncryptionError,
   DataMaskingFieldNotFoundError,
   DataMaskingUnsupportedTypeError,

@@ -1167,6 +1167,12 @@ class Metrics extends Utility implements MetricsInterface {
       );
     if (!isNumber(value))
       throw new RangeError(`${value} is not a valid number`);
+    if (!Number.isFinite(value)) {
+      this.#logger.warn(
+        `The metric ${name} has a non-finite value (${value}) and won't be added. CloudWatch EMF only accepts finite numbers.`
+      );
+      return;
+    }
     if (!Object.values(MetricUnits).includes(unit))
       throw new RangeError(
         `Invalid metric unit '${unit}', expected either option: ${Object.values(

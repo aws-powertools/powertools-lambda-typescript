@@ -102,7 +102,7 @@ import { validate } from './validate.js';
  * @param options.envelope - Optional JMESPath expression to use as envelope for the payload.
  * @param options.formats - Optional formats for validation.
  * @param options.externalRefs - Optional external references for validation.
- * @param options.ajv - Optional Ajv instance to use for validation, if not provided a new instance will be created.
+ * @param options.ajv - Optional Ajv instance to use for validation; if omitted, a new instance with Ajv's default options is created.
  */
 const validator = (options: ValidatorOptions) => {
   const before: MiddlewareFn = (request) => {

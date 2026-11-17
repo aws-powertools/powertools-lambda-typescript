@@ -1,14 +1,17 @@
-import { brotliDecompressSync } from 'node:zlib';
+import { brotliDecompressSync, gzipSync } from 'node:zlib';
 import { fromBase64 } from '@aws-lambda-powertools/commons/utils/base64';
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { extractDataFromEnvelope, SQS } from '../../src/envelopes.js';
 import { Functions } from '../../src/Functions.js';
 import {
   ArityError,
   EmptyExpressionError,
+  FunctionEvaluationError,
   JMESPathError,
+  JMESPathTypeError,
   LexerError,
   search,
+  UnknownFunctionError,
   VariadicArityError,
 } from '../../src/index.js';
 import { Parser } from '../../src/Parser.js';
@@ -89,6 +92,69 @@ describe('Coverage tests', () => {
       // Assess
       expect(result).toBe('b');
     });
+
+    it.each([
+      { expression: 'a < b' },
+      { expression: 'a <= b' },
+      { expression: 'a > b' },
+      { expression: 'a >= b' },
+      { expression: "'a' < 'b'" },
+      { expression: '`true` > `false`' },
+    ])(
+      'returns null when ordering non-numbers: $expression',
+      ({ expression }) => {
+        // Act
+        const result = search(expression, { b: 1 });
+
+        // Assess
+        expect(result).toBeNull();
+      }
+    );
+
+    it.each([
+      { expression: 'type(a < b)', expected: 'null' },
+      { expression: '{x: a < b, y: `1`}', expected: { x: null, y: 1 } },
+      { expression: '(a < b) == c', expected: true },
+      { expression: "not_null(a < b, 'fallback')", expected: 'fallback' },
+      { expression: '[a < b, `1`][*]', expected: [1] },
+    ])(
+      'treats the result of ordering non-numbers as null: $expression',
+      ({ expression, expected }) => {
+        // Act
+        const result = search(expression, { b: 1 });
+
+        // Assess
+        expect(result).toStrictEqual(expected);
+      }
+    );
+
+    it.each([
+      { expression: 'sort(@)', data: ['b', 1] },
+      { expression: 'sort(@)', data: [null, 2, 1] },
+      { expression: 'max(@)', data: ['b', 1] },
+      { expression: 'max(@)', data: [null] },
+      { expression: 'min(@)', data: [true, 5, 2] },
+    ])(
+      'throws when $expression receives an array of mixed or invalid types: $data',
+      ({ expression, data }) => {
+        // Act & Assess
+        expect(() => search(expression, data)).toThrow(
+          `expected one of "array-number", "array-string" but found "array" in expression: ${expression}`
+        );
+      }
+    );
+
+    it.each([
+      { expression: 'sort_by(@, &a)', data: [{ a: 2 }, { a: 'x' }] },
+      { expression: 'max_by(@, &a)', data: [{ a: 2 }, { a: 'x' }] },
+      { expression: 'min_by(@, &a)', data: [{ a: 'x' }, { a: 2 }] },
+    ])(
+      'throws when $expression evaluates to keys of mixed types',
+      ({ expression, data }) => {
+        // Act & Assess
+        expect(() => search(expression, data)).toThrow(JMESPathTypeError);
+      }
+    );
   });
 
   describe('type checking', () => {
@@ -127,6 +193,97 @@ describe('Coverage tests', () => {
       expect(() =>
         search(expression, {}, { customFunctions: new TestFunctions() })
       ).toThrow(VariadicArityError);
+    });
+  });
+
+  describe('function evaluation', () => {
+    const captureError = (fn: () => unknown): Error => {
+      try {
+        fn();
+      } catch (error) {
+        return error as Error;
+      }
+      expect.unreachable('the expression should have thrown');
+    };
+
+    it.each([
+      {
+        functionName: 'powertools_json',
+        expression: 'powertools_json(body)',
+        data: { body: '{not json' },
+        causeName: 'SyntaxError',
+      },
+      {
+        functionName: 'powertools_base64',
+        expression: 'powertools_base64(body)',
+        data: { body: '%%%' },
+        causeName: 'TypeError',
+      },
+      {
+        functionName: 'powertools_base64_gzip',
+        expression: 'powertools_base64_gzip(body)',
+        data: { body: 'bm90IGd6aXA=' },
+        causeName: 'Error',
+      },
+    ])(
+      'throws when $functionName fails to process the value',
+      ({ functionName, expression, data, causeName }) => {
+        // Act
+        const error = captureError(() =>
+          extractDataFromEnvelope(data, expression)
+        );
+
+        // Assess
+        expect(error).toBeInstanceOf(FunctionEvaluationError);
+        expect(error).toEqual(
+          expect.objectContaining({
+            name: 'FunctionEvaluationError',
+            message: `Error while evaluating function ${functionName}() in expression: ${expression}`,
+            functionName,
+            cause: expect.objectContaining({ name: causeName }),
+          })
+        );
+      }
+    );
+
+    it('does not include the payload in the error message', () => {
+      // Prepare
+      const data = { body: 'secret-value' };
+
+      // Act
+      const error = captureError(() =>
+        extractDataFromEnvelope(data, 'powertools_json(body)')
+      );
+
+      // Assess
+      expect(error.message).not.toContain('secret-value');
+      expect((error.cause as Error).message).toContain('secret-value');
+    });
+
+    it('wraps values that are not errors', () => {
+      // Prepare
+      class ThrowingFunctions extends Functions {
+        @ThrowingFunctions.signature({ argumentsSpecs: [['any']] })
+        public funcThrow(): void {
+          throw 'boom';
+        }
+      }
+
+      // Act
+      const error = captureError(() =>
+        search('throw(@)', {}, { customFunctions: new ThrowingFunctions() })
+      );
+
+      // Assess
+      expect(error).toBeInstanceOf(FunctionEvaluationError);
+      expect(error.cause).toBe('boom');
+    });
+
+    it('rethrows errors raised while evaluating a nested expression', () => {
+      // Act & Assess
+      expect(() => search('sort_by(@, &nope(a))', [{ a: 1 }])).toThrow(
+        UnknownFunctionError
+      );
     });
   });
 
@@ -282,6 +439,10 @@ describe('Coverage tests', () => {
   });
 
   describe('class: PowertoolsFunctions', () => {
+    afterEach(() => {
+      vi.unstubAllEnvs();
+    });
+
     it('decodes a json string', () => {
       // Prepare
       const event = '{"user":"xyz","product_id":"123456789"}';
@@ -316,6 +477,45 @@ describe('Coverage tests', () => {
 
       // Assess
       expect(data).toStrictEqual('/aws/lambda/powertools-example');
+    });
+
+    it('throws when a base64 gzip string expands past the size limit', () => {
+      // Prepare
+      vi.stubEnv('POWERTOOLS_MAX_DECOMPRESSED_SIZE', '1024');
+      const event = {
+        payload: gzipSync(Buffer.alloc(2048, 'a')).toString('base64'),
+      };
+
+      // Act & Assess
+      expect(() =>
+        extractDataFromEnvelope(event, 'powertools_base64_gzip(payload)', {
+          customFunctions: new PowertoolsFunctions(),
+        })
+      ).toThrow(
+        expect.objectContaining({
+          name: 'FunctionEvaluationError',
+          functionName: 'powertools_base64_gzip',
+          cause: expect.objectContaining({ code: 'ERR_BUFFER_TOO_LARGE' }),
+        })
+      );
+    });
+
+    it('decodes a base64 gzip string within the configured size limit', () => {
+      // Prepare
+      vi.stubEnv('POWERTOOLS_MAX_DECOMPRESSED_SIZE', '4096');
+      const event = {
+        payload: gzipSync(Buffer.alloc(2048, 'a')).toString('base64'),
+      };
+
+      // Act
+      const data = extractDataFromEnvelope(
+        event,
+        'powertools_base64_gzip(payload)',
+        { customFunctions: new PowertoolsFunctions() }
+      );
+
+      // Assess
+      expect(data).toStrictEqual('a'.repeat(2048));
     });
 
     it('decodes a base64 string', () => {

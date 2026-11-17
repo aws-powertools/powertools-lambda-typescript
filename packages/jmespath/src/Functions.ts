@@ -12,13 +12,12 @@ import {
 } from '@aws-lambda-powertools/commons/typeutils';
 import { JSON_NUMBER_REGEX } from './constants.js';
 import type { Expression } from './Expression.js';
-import { JMESPathTypeError } from './errors.js';
 import type {
   FunctionSignatureDecorator,
   FunctionSignatureOptions,
   JSONObject as JSONObjectType,
 } from './types.js';
-import { arityCheck, typeCheck } from './utils.js';
+import { arityCheck, typeCheck, typeCheckSortKeys } from './utils.js';
 
 /**
  * A class that contains the built-in JMESPath functions.
@@ -238,17 +237,9 @@ class Functions {
       arg,
       visited: expression.visit(arg),
     }));
+    typeCheckSortKeys(visitedArgs);
 
     const max = visitedArgs.reduce((max, current) => {
-      const type = getType(current.visited);
-      if (type !== 'string' && type !== 'number') {
-        throw new JMESPathTypeError({
-          currentValue: current.visited,
-          expectedTypes: ['string'],
-          actualType: type,
-        });
-      }
-
       if (max.visited === current.visited) {
         return max;
       }
@@ -260,12 +251,7 @@ class Functions {
           ? max
           : current;
       }
-      // We can safely cast visited to number | string here because we've already
-      // checked the type at runtime above and we know that it's either a number or a string
-      return (max.visited as number | string) >
-        (current.visited as number | string)
-        ? max
-        : current;
+      return max.visited > current.visited ? max : current;
     }, visitedArgs[0]);
 
     return max.arg;
@@ -330,17 +316,9 @@ class Functions {
       arg,
       visited: expression.visit(arg),
     }));
+    typeCheckSortKeys(visitedArgs);
 
     const min = visitedArgs.reduce((min, current) => {
-      const type = getType(current.visited);
-      if (type !== 'string' && type !== 'number') {
-        throw new JMESPathTypeError({
-          currentValue: current.visited,
-          expectedTypes: ['string'],
-          actualType: type,
-        });
-      }
-
       if (min.visited === current.visited) {
         return min;
       }
@@ -352,12 +330,7 @@ class Functions {
           ? min
           : current;
       }
-      // We can safely cast visited to number | string here because we've already
-      // checked the type at runtime above and we know that it's either a number or a string
-      return (min.visited as string | number) <
-        (current.visited as string | number)
-        ? min
-        : current;
+      return min.visited < current.visited ? min : current;
     }, visitedArgs[0]);
 
     return min.arg;
@@ -425,24 +398,14 @@ class Functions {
     args: Array<JSONValue>,
     expression: Expression
   ): Array<unknown> {
-    return args
-      .map((value, index) => {
-        const visited = expression.visit(value);
-        const type = getType(visited);
-        if (type !== 'string' && type !== 'number') {
-          throw new JMESPathTypeError({
-            currentValue: visited,
-            expectedTypes: ['string'],
-            actualType: getType(visited),
-          });
-        }
+    const visitedArgs = args.map((value, index) => ({
+      value,
+      index,
+      visited: expression.visit(value),
+    }));
+    typeCheckSortKeys(visitedArgs);
 
-        return {
-          value,
-          index,
-          visited,
-        };
-      })
+    return visitedArgs
       .sort((a, b) => {
         if (a.visited === b.visited) {
           return a.index - b.index; // Make the sort stable
@@ -450,11 +413,7 @@ class Functions {
         if (typeof a.visited === 'string' && typeof b.visited === 'string') {
           return compareStringsByCodePoint(a.visited, b.visited);
         }
-        // We can safely cast visited to number | string here because we've already
-        // checked the type at runtime above and we know that it's either a number or a string
-        return (a.visited as string | number) > (b.visited as string | number)
-          ? 1
-          : -1;
+        return a.visited > b.visited ? 1 : -1;
       })
       .map(({ value }) => value); // Extract the original values
   }

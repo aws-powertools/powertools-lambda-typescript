@@ -106,6 +106,17 @@ type ItempotentFunctionOptions<T extends Array<any>> = T[1] extends Context
   ? IdempotencyLambdaHandlerOptions
   : IdempotencyLambdaHandlerOptions & {
       dataIndexArgument?: number;
+      /**
+       * The name that tells the records of this operation apart from the records of the
+       * other idempotent operations of the same Lambda function.
+       *
+       * When set, it is appended to the default key prefix. Set it, or a distinct
+       * `keyPrefix`, when several operations of a Lambda function can select equal values.
+       *
+       * It does not apply to Lambda handlers, whose records are prefixed with the name
+       * of the Lambda function alone.
+       */
+      operationName?: string;
     };
 
 /**
@@ -141,6 +152,15 @@ type IdempotencyHandlerOptions = {
    */
   keyPrefix?: string;
   /**
+   * The name of the operation being made idempotent, appended to the default key prefix
+   * so that the records of this operation are told apart from the records of the other
+   * idempotent operations of the same Lambda function.
+   *
+   * It is left out for Lambda handlers, whose records are prefixed with the name of the
+   * Lambda function alone.
+   */
+  operationName?: string;
+  /**
    * Persistence layer used to store the idempotency records.
    */
   persistenceStore: BasePersistenceLayer;
@@ -154,8 +174,9 @@ type IdempotencyHandlerOptions = {
 
 /**
  * @internal
- * The part of a durable context that the idempotency utility uses to run its
- * persistence calls as durable steps.
+ * The part of a durable context that the idempotency utility uses to detect it, to run
+ * its persistence calls as durable steps, and to tell a replay apart from a first
+ * execution.
  *
  * It is declared here instead of imported from `@aws/durable-execution-sdk-js`
  * so that the utility does not depend on the SDK.
@@ -166,6 +187,9 @@ type DurableStepContext = {
     fn: () => Promise<void>,
     config: { retryStrategy: () => { shouldRetry: boolean } }
   ) => PromiseLike<unknown>;
+  lambdaContext?: Context;
+  durableExecutionMode?: string;
+  executionContext?: { durableExecutionArn?: string };
 };
 
 /**

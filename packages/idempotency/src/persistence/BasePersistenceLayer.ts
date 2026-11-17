@@ -5,6 +5,7 @@ import { LRUCache } from '@aws-lambda-powertools/commons/utils/lru-cache';
 import { search } from '@aws-lambda-powertools/jmespath';
 import type { JMESPathParsingOptions } from '@aws-lambda-powertools/jmespath/types';
 import { IdempotencyRecordStatus } from '../constants.js';
+import { copyResponse } from '../copyResponse.js';
 import { deepSort } from '../deepSort.js';
 import {
   IdempotencyItemAlreadyExistsError,
@@ -12,6 +13,7 @@ import {
   IdempotencyValidationError,
 } from '../errors.js';
 import type { IdempotencyConfig } from '../IdempotencyConfig.js';
+import { isMissingIdempotencyKey } from '../isMissingIdempotencyKey.js';
 import type {
   BasePersistenceLayerInterface,
   BasePersistenceLayerOptions,
@@ -395,7 +397,7 @@ abstract class BasePersistenceLayer implements BasePersistenceLayerInterface {
         ) as JSONValue)
       : data;
 
-    if (BasePersistenceLayer.isMissingIdempotencyKey(payload)) {
+    if (isMissingIdempotencyKey(payload)) {
       if (this.throwOnNoIdempotencyKey) {
         throw new IdempotencyKeyError(
           'No data found to create a hashed idempotency_key'
@@ -434,22 +436,6 @@ abstract class BasePersistenceLayer implements BasePersistenceLayerInterface {
     return '';
   }
 
-  private static isMissingIdempotencyKey(data: JSONValue): boolean {
-    if (Array.isArray(data) || typeof data === 'object') {
-      if (data === null) return true;
-      for (const value of Object.values(data)) {
-        /* v8 ignore else -- @preserve */
-        if (value) {
-          return false;
-        }
-      }
-
-      return true;
-    }
-
-    return !data;
-  }
-
   /**
    * Save record to local cache except for when status is `INPROGRESS`.
    *
@@ -457,11 +443,15 @@ abstract class BasePersistenceLayer implements BasePersistenceLayerInterface {
    * reflect updates that might happen to the record outside the execution
    * context of the function.
    *
+   * The cache keeps a copy of the response, so that the caller that ran the function
+   * cannot change what the replays of other callers return.
+   *
    * @param record - record to save
    */
   private saveToCache(record: IdempotencyRecord): void {
     if (!this.useLocalCache) return;
     if (record.getStatus() === IdempotencyRecordStatus.INPROGRESS) return;
+    record.responseData = copyResponse(record.responseData);
     this.cache?.add(record.idempotencyKey, record);
   }
 

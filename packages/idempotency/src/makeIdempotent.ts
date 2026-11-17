@@ -14,7 +14,8 @@ const isContext = (arg: unknown): arg is Context => {
     arg !== undefined &&
     arg !== null &&
     typeof arg === 'object' &&
-    'getRemainingTimeInMillis' in arg
+    'getRemainingTimeInMillis' in arg &&
+    typeof arg.getRemainingTimeInMillis === 'function'
   );
 };
 
@@ -132,14 +133,24 @@ function makeIdempotent<Func extends AnyFunction>(
 
   if (!idempotencyConfig.isEnabled()) return fn;
 
+  // `operationName` is only part of the options of a function that is not a handler
+  const operationName =
+    'operationName' in options
+      ? options.operationName?.trim() || undefined
+      : undefined;
+
   return function (this: Handler, ...args: Parameters<Func>): ReturnType<Func> {
     let functionPayloadToBeHashed: JSONValue;
+    const isHandler = isFnHandler(fn, args);
+    // The durable flags are read only from a context that the durable execution SDK
+    // provides, so that ordinary function arguments cannot alter the replay behavior
+    const durableContext = isDurableContext(args[1]) ? args[1] : undefined;
 
-    if (isFnHandler(fn, args)) {
+    if (isHandler) {
       // If it's a durable context, retrieve the lambdaContext property
       // Otherwise use the context
       idempotencyConfig.registerLambdaContext(
-        args[1]?.lambdaContext || args[1]
+        durableContext?.lambdaContext ?? args[1]
       );
       functionPayloadToBeHashed = args[0];
     } else if (isOptionsWithDataIndexArgument(options)) {
@@ -148,25 +159,27 @@ function makeIdempotent<Func extends AnyFunction>(
       functionPayloadToBeHashed = args[0];
     }
 
-    const isReplay = args[1]?.durableExecutionMode === 'ReplayMode';
-    const durableExecutionArn = args[1]?.executionContext?.durableExecutionArn;
-    const durableContext =
-      durableExecutionArn !== undefined && isDurableContext(args[1])
-        ? args[1]
-        : undefined;
+    const isReplay = durableContext?.durableExecutionMode === 'ReplayMode';
+    const durableExecutionArn =
+      durableContext?.executionContext?.durableExecutionArn;
 
     return new IdempotencyHandler({
       functionToMakeIdempotent: fn,
       idempotencyConfig: idempotencyConfig,
       persistenceStore: persistenceStore,
       keyPrefix: keyPrefix,
+      // Handler records keep the prefix of the Lambda function alone, so that the
+      // records written by earlier versions remain valid
+      operationName: isHandler ? undefined : operationName,
       functionArguments: args,
       functionPayloadToBeHashed,
       thisArg: this,
     }).handle({
       isReplay,
       durableExecutionArn,
-      durableContext,
+      // Only a durable execution runs its persistence calls as durable steps
+      durableContext:
+        durableExecutionArn === undefined ? undefined : durableContext,
     }) as ReturnType<Func>;
   };
 }

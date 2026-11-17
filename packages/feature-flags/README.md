@@ -3,6 +3,7 @@
 Powertools for AWS Lambda (TypeScript) is a developer toolkit to implement Serverless [best practices and increase developer velocity](https://docs.aws.amazon.com/powertools/typescript/latest/#features).
 
 - [Intro](#intro)
+- [Usage](#usage)
 - [Contribute](#contribute)
 - [Roadmap](#roadmap)
 - [Connect](#connect)
@@ -10,7 +11,48 @@ Powertools for AWS Lambda (TypeScript) is a developer toolkit to implement Serve
 
 ## Intro
 
-The Feature Flags utility is under development. See the [RFC discussion #5614](https://github.com/aws-powertools/powertools-lambda-typescript/discussions/5614) for the proposed design.
+The Feature Flags utility evaluates flags against caller-supplied context. Use a local rule engine over a Powertools for Python freeform Flag Document, AWS AppConfig Agent-selected variants, or your own Store. Every evaluation has an explicit fallback for a missing flag or an availability failure.
+
+## Usage
+
+Install the core utility for local rules or custom Stores:
+
+```sh
+npm install @aws-lambda-powertools/feature-flags
+```
+
+```typescript
+import {
+  FeatureFlags,
+  ruleEngineStore,
+} from '@aws-lambda-powertools/feature-flags';
+
+const flags = new FeatureFlags({
+  store: ruleEngineStore({
+    source: async () => ({
+      checkout_v2: {
+        default: false,
+        rules: {
+          premium_customers: {
+            when_match: true,
+            conditions: [{ action: 'EQUALS', key: 'tier', value: 'premium' }],
+          },
+        },
+      },
+    }),
+  }),
+});
+
+export const handler = async () => {
+  return flags.evaluate({
+    name: 'checkout_v2',
+    context: { tier: 'premium' },
+    default: false,
+  });
+};
+```
+
+See the [Feature Flags documentation](https://docs.aws.amazon.com/powertools/typescript/latest/features/feature-flags/) for AppConfig installation, IAM permissions, variants, result validation, and testing.
 
 ## Contribute
 

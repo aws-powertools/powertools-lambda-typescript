@@ -1,0 +1,14 @@
+{
+  "checkout_v2": {
+    "default": false,
+    "rules": {
+      "premium_customers": {
+        "when_match": true,
+        "conditions": [
+          { "action": "EQUALS", "key": "tier", "value": "premium" }
+        ]
+      }
+    }
+  },
+  "ten_percent_off_campaign": { "default": true }
+}

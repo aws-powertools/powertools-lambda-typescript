@@ -1,0 +1,12 @@
+{
+  "extends": ["../../typedoc.base.json"],
+  "entryPoints": [
+    "./src/index.ts",
+    "./src/appconfig/index.ts",
+    "./src/appconfig-agent/index.ts",
+    "./src/envelope/index.ts",
+    "./src/errors.ts",
+    "./src/types/index.ts"
+  ],
+  "readme": "README.md"
+}

@@ -18,9 +18,10 @@ const document = {
 const flags = new FeatureFlags({
   store: ruleEngineStore({ source: async () => document }),
 });
-const checkoutV2 = await flags.evaluate({
-  name: 'checkout_v2',
-  context: { tier: 'premium' },
-  default: false,
-});
-console.log(checkoutV2);
+
+export const handler = async () =>
+  flags.evaluate({
+    name: 'checkout_v2',
+    context: { tier: 'premium' },
+    default: false, // (1)!
+  });

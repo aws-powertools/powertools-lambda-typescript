@@ -132,6 +132,7 @@ export type {
   EvaluateManyResult,
   EvaluateOptions,
   EvaluateResult,
+  EvaluateSchemaResult,
   EvaluateWithSchemaOptions,
   EvaluationContext,
   FeatureFlagsOptions,
@@ -140,3 +141,9 @@ export type {
   StoreResult,
   Variant,
 };
+export type { EnvelopeOptions, EnvelopeSearchFn } from './Envelope.js';
+export type {
+  EvaluateManyVariantOptions,
+  EvaluateManyVariantResult,
+  EvaluateVariantOptions,
+} from './VariantEvaluation.js';

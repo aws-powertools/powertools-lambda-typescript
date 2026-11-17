@@ -135,7 +135,9 @@ function makeIdempotent<Func extends AnyFunction>(
 
   // `operationName` is only part of the options of a function that is not a handler
   const operationName =
-    (options as { operationName?: string }).operationName?.trim() || undefined;
+    'operationName' in options
+      ? options.operationName?.trim() || undefined
+      : undefined;
 
   return function (this: Handler, ...args: Parameters<Func>): ReturnType<Func> {
     let functionPayloadToBeHashed: JSONValue;

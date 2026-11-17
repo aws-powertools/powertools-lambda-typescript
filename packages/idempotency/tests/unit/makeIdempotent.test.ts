@@ -1124,6 +1124,18 @@ describe('Function: makeIdempotent', () => {
       prefix: 'my-lambda-function.process-order',
     },
     {
+      case: 'the Lambda function name alone when the operationName option is blank',
+      fn: async (_order: unknown) => true,
+      options: { operationName: '  ' },
+      prefix: 'my-lambda-function',
+    },
+    {
+      case: 'the Lambda function name alone when the operationName option is undefined',
+      fn: async (_order: unknown) => true,
+      options: { operationName: undefined },
+      prefix: 'my-lambda-function',
+    },
+    {
       case: 'the keyPrefix option over the operationName option',
       fn: async function processOrder(_order: unknown) {
         return true;

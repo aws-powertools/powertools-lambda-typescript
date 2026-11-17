@@ -9,6 +9,7 @@ import {
   IdempotencyRecordStatus,
   MAX_RETRIES,
 } from './constants.js';
+import { copyResponse } from './copyResponse.js';
 import {
   IdempotencyAlreadyInProgressError,
   IdempotencyInconsistentStateError,
@@ -17,6 +18,7 @@ import {
   IdempotencyUnknownError,
 } from './errors.js';
 import type { IdempotencyConfig } from './IdempotencyConfig.js';
+import { isMissingIdempotencyKey } from './isMissingIdempotencyKey.js';
 import type { BasePersistenceLayer } from './persistence/BasePersistenceLayer.js';
 import type { IdempotencyRecord } from './persistence/IdempotencyRecord.js';
 import type { IdempotencyRecordIdentity } from './types/BasePersistenceLayer.js';
@@ -102,6 +104,7 @@ export class IdempotencyHandler<Func extends AnyFunction> {
       functionArguments,
       persistenceStore,
       keyPrefix,
+      operationName,
       thisArg,
     } = options;
     this.#functionToMakeIdempotent = functionToMakeIdempotent;
@@ -115,6 +118,7 @@ export class IdempotencyHandler<Func extends AnyFunction> {
     this.#persistenceStore.configure({
       config: this.#idempotencyConfig,
       keyPrefix,
+      functionName: operationName,
     });
     this.#resolvedKeyPrefix = this.#persistenceStore.idempotencyKeyPrefix;
   }
@@ -125,6 +129,9 @@ export class IdempotencyHandler<Func extends AnyFunction> {
    * If a response hook is provided in the idempotency configuration, it will be called before returning the response.
    *
    * If the idempotency record is not COMPLETE, then it will throw an error based on the status of the record.
+   *
+   * The response is copied, so that a caller changing it does not change what the next
+   * replay of the same record returns.
    *
    * @param idempotencyRecord The idempotency record stored in the persistence layer
    * @returns The result of the function if the idempotency record is in a terminal state
@@ -155,7 +162,7 @@ export class IdempotencyHandler<Func extends AnyFunction> {
       );
     }
 
-    const response = idempotencyRecord.getResponse();
+    const response = copyResponse(idempotencyRecord.getResponse());
 
     // If a response hook is provided, call it to allow the user to modify the response
     if (this.#idempotencyConfig.responseHook) {
@@ -359,7 +366,11 @@ export class IdempotencyHandler<Func extends AnyFunction> {
   }
 
   /**
-   * Avoid idempotency if the eventKeyJmesPath is not present in the payload and throwOnNoIdempotencyKey is false
+   * Avoid idempotency if the payload selected by the eventKeyJmesPath expression cannot
+   * identify the request and throwOnNoIdempotencyKey is false.
+   *
+   * It uses the same predicate as the key generator, so that a selection that would be
+   * hashed into a record shared by unrelated requests is skipped instead.
    */
   public shouldSkipIdempotency(): boolean {
     if (!this.#idempotencyConfig.isEnabled()) return true;
@@ -374,7 +385,7 @@ export class IdempotencyHandler<Func extends AnyFunction> {
         this.#idempotencyConfig.jmesPathOptions
       );
 
-      return selection === undefined || selection === null;
+      return isMissingIdempotencyKey(selection as JSONValue);
     }
 
     return false;

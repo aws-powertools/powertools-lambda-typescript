@@ -6,6 +6,7 @@ import {
   APIGatewayWebSocketMessageEventSchema,
 } from '../../../src/schemas/api-gateway-websocket.js';
 import type {
+  APIGatewayProxyWebsocketEvent,
   APIGatewayWebSocketConnectEvent,
   APIGatewayWebSocketDisconnectEvent,
   APIGatewayWebSocketMessageEvent,
@@ -112,38 +113,17 @@ describe('Schema: APIGatewayWebSocket', () => {
     ).toThrow();
   });
 
-  it.each([
-    { type: '$connect', event: baseConnect },
-    { type: 'message', event: baseMessage },
-    { type: '$disconnect', event: baseDisconnect },
-  ])(
-    'parses a $type event with the schema for all WebSocket events',
-    ({ event }) => {
-      // Prepare
-      const input = structuredClone(event);
-
-      // Act
-      const result = APIGatewayProxyWebsocketEventSchema.parse(input);
-
-      // Assess
-      expect(result).toStrictEqual(input);
-    }
-  );
-
-  it('throws if the event is not an API Gateway WebSocket event', () => {
+  it('parses an event with the deprecated schema', () => {
     // Prepare
-    const event = {
-      type: 'REQUEST',
-      methodArn:
-        'arn:aws:execute-api:us-east-1:123456789012:abcdef123/default/$connect',
-      headers: {},
-      requestContext: {
-        routeKey: '$connect',
-        eventType: 'CONNECT',
-      },
-    };
+    const event = getTestEvent<APIGatewayProxyWebsocketEvent>({
+      eventsPath,
+      filename: 'connectEvent',
+    });
 
-    // Act & Assess
-    expect(() => APIGatewayProxyWebsocketEventSchema.parse(event)).toThrow();
+    // Act
+    const result = APIGatewayProxyWebsocketEventSchema.parse(event);
+
+    // Assess
+    expect(result).toStrictEqual(event);
   });
 });

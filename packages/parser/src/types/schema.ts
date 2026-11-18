@@ -78,6 +78,12 @@ type APIGatewayEventRequestContext = z.infer<
 
 type APIGatewayProxyEventV2 = z.infer<typeof APIGatewayProxyEventV2Schema>;
 
+/**
+ * @deprecated Use {@link APIGatewayWebSocketConnectEvent | `APIGatewayWebSocketConnectEvent`},
+ * {@link APIGatewayWebSocketMessageEvent | `APIGatewayWebSocketMessageEvent`} or
+ * {@link APIGatewayWebSocketDisconnectEvent | `APIGatewayWebSocketDisconnectEvent`} instead,
+ * this type is deprecated and will be removed in the next major version.
+ */
 type APIGatewayProxyWebsocketEvent = z.infer<
   typeof APIGatewayProxyWebsocketEventSchema
 >;

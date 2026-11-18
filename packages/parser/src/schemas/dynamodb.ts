@@ -276,7 +276,8 @@ const DynamoDBStreamSchemaSchema = z.object({
       end: z.iso.datetime(),
     })
     .optional(),
-  state: z.record(z.string(), z.string()).optional(),
+  // Lambda passes back the state the function returned, so the values can be any JSON type
+  state: z.record(z.string(), z.unknown()).optional(),
   shardId: z.string().optional(),
   eventSourceARN: z.string().optional(),
   isFinalInvokeForWindow: z.boolean().optional(),

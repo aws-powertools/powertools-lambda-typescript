@@ -193,4 +193,30 @@ describe('Schema: DynamoDB', () => {
       isWindowTerminatedEarly: false,
     });
   });
+
+  it('parses a DynamoDB Stream tumbling window event with non-string state values', () => {
+    // Prepare
+    const event = structuredClone(baseEvent);
+    event.window = {
+      start: '2020-07-30T17:00:00Z',
+      end: '2020-07-30T17:05:00Z',
+    };
+    event.state = {
+      '1': 282,
+      '2': 715,
+    };
+    event.shardId = 'shard123456789';
+    event.eventSourceARN = 'stream-ARN';
+    event.isFinalInvokeForWindow = false;
+    event.isWindowTerminatedEarly = false;
+
+    // Act
+    const result = DynamoDBStreamSchema.parse(event);
+
+    // Assess
+    expect(result.state).toStrictEqual({
+      '1': 282,
+      '2': 715,
+    });
+  });
 });

@@ -24,7 +24,7 @@ import { registerVariantStore } from '../variant.js';
 /**
  * Creates a Store that retrieves Agent-selected AppConfig Variants.
  *
- * Requires AppConfig Agent version `2.0.230173` or later and the optional
+ * Requires AppConfig Agent Lambda extension version `2.0.678` or later and the optional
  * `@aws-lambda-powertools/parameters` peer. The Agent owns evaluation, caching,
  * and polling. A single requested flag in Lambda uses selective retrieval;
  * batches and getAll retrieve the whole profile and select flags locally.

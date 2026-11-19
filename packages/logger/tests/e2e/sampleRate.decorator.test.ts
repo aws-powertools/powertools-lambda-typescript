@@ -24,6 +24,7 @@ describe('Logger E2E tests, sample rate and injectLambdaContext()', () => {
   );
 
   const invocationCount = 20;
+  const applicationMessage = `Log message ${randomUUID()}`;
   let invocationLogs: TestInvocationLogs[];
   let logGroupName: string;
 
@@ -36,7 +37,7 @@ describe('Logger E2E tests, sample rate and injectLambdaContext()', () => {
         environment: {
           POWERTOOLS_LOG_LEVEL: 'ERROR',
           SAMPLE_RATE: '0.5',
-          LOG_MSG: `Log message ${randomUUID()}`,
+          LOG_MSG: applicationMessage,
         },
       },
       {
@@ -64,26 +65,39 @@ describe('Logger E2E tests, sample rate and injectLambdaContext()', () => {
       let countSampled = 0;
       let countNotSampled = 0;
 
-      for (let i = 0; i < invocationCount; i++) {
-        // Get log messages of the invocation
-        const logMessages = invocationLogs[i].getFunctionLogs();
+      for (const invocation of invocationLogs) {
+        const logs = invocation
+          .getFunctionLogs()
+          .map(TestInvocationLogs.parseFunctionLog);
 
-        if (logMessages.length === 1 && logMessages[0].includes('ERROR')) {
+        if (logs.length === 1) {
+          expect(logs[0]).toMatchObject({
+            level: 'ERROR',
+            message: applicationMessage,
+          });
           countNotSampled++;
-        } else if (
-          (logMessages.length === 5 &&
-            logMessages[0].includes(
-              'Setting log level to DEBUG due to sampling rate'
-            )) ||
-          logMessages.length === 4
-        ) {
-          countSampled++;
-        } else {
-          console.error(`Log group ${logGroupName} contains missing log`);
-          throw new Error(
-            'Sampled log should have either 1 error log or 5 logs of all levels'
+          continue;
+        }
+
+        const applicationLevels = logs
+          .filter((log) => log.message === applicationMessage)
+          .map((log) => log.level);
+        expect(applicationLevels.sort()).toEqual([
+          'DEBUG',
+          'ERROR',
+          'INFO',
+          'WARN',
+        ]);
+        if (logs.length !== 4) {
+          expect(logs).toHaveLength(5);
+          expect(logs).toContainEqual(
+            expect.objectContaining({
+              level: 'DEBUG',
+              message: 'Setting log level to DEBUG due to sampling rate',
+            })
           );
         }
+        countSampled++;
       }
 
       // Given that we set rate to 0.5. The chance that we get all invocationCount sampled

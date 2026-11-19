@@ -88,6 +88,8 @@ describe('Logger E2E tests, sample rate and injectLambdaContext()', () => {
           'INFO',
           'WARN',
         ]);
+        // Cold-start sampling emits the diagnostic during initialization, before START.
+        // Warm-start sampling emits it during the invocation, so it can appear anywhere in the log tail.
         if (logs.length !== 4) {
           expect(logs).toHaveLength(5);
           expect(logs).toContainEqual(

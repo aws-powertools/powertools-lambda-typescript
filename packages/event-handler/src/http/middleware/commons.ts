@@ -3,8 +3,11 @@ import type { RequestContext } from '../../types/http.js';
 /**
  * Extracts the client IP address from the request context.
  *
- * For API Gateway events the source IP is taken from the request context, while
- * for ALB (or any other source) it falls back to the `X-Forwarded-For` header.
+ * For API Gateway events the source IP is taken from the request context. On a
+ * Lambda Web Function, Lambda appends the connecting client as the last
+ * `X-Forwarded-For` value and earlier values are client-supplied, so the last
+ * value is used. For ALB (or any other source) it falls back to the first
+ * `X-Forwarded-For` value.
  *
  * @param reqCtx - The request context for the current request
  */
@@ -16,10 +19,13 @@ const getClientIp = (reqCtx: RequestContext): string | undefined => {
     return reqCtx.event.requestContext.http.sourceIp;
   }
   const xForwardedFor = reqCtx.req.headers.get('X-Forwarded-For');
-  if (xForwardedFor) {
-    return xForwardedFor.split(',')[0].trim();
+  if (!xForwardedFor) {
+    return undefined;
   }
-  return undefined;
+  const addresses = xForwardedFor.split(',');
+  const address =
+    reqCtx.responseType === 'WebFunction' ? addresses.at(-1) : addresses[0];
+  return address?.trim();
 };
 
 /**

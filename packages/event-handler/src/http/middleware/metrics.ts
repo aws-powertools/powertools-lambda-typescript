@@ -22,6 +22,13 @@ const getEventMetadata = (reqCtx: RequestContext): Record<string, string> => {
     metadata.ipAddress = ipAddress;
   }
 
+  if (reqCtx.responseType === 'WebFunction') {
+    const webRequestId = reqCtx.req.headers.get('lambda-web-request-id');
+    if (webRequestId) {
+      metadata.webRequestId = webRequestId;
+    }
+    return metadata;
+  }
   if (reqCtx.responseType !== 'ALB') {
     metadata.apiGwRequestId = reqCtx.event.requestContext.requestId;
     metadata.apiGwApiId = reqCtx.event.requestContext.apiId;
@@ -46,6 +53,7 @@ const getEventMetadata = (reqCtx: RequestContext): Record<string, string> => {
  * - Adds `ipAddress` and `userAgent` metadata from request headers when available
  * - Adds `apiGwRequestId` and `apiGwApiId` metadata for API Gateway V1 and V2 events
  * - Adds `apiGwExtendedRequestId` metadata for API Gateway V1 events when available
+ * - Adds `webRequestId` metadata for Lambda Web Function requests when available
  * - Publishes stored metrics after each request
  *
  * @example

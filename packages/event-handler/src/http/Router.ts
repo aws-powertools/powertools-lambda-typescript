@@ -44,12 +44,14 @@ import type {
   RequestStoreOf,
   ResolveStreamOptions,
   ResponseStream,
+  ResponseType,
   ResSchema,
   RouteHandler,
   RouterResponse,
   SharedStoreOf,
   TypedRouteHandler,
   ValidationConfig,
+  WebRequestEvent,
 } from '../types/http.js';
 import type { HandlerResponse, ResolveOptions } from '../types/index.js';
 import { HttpStatusCodes, HttpVerbs } from './constants.js';
@@ -57,6 +59,7 @@ import {
   classifiedEventToWebRequest,
   classifyEvent,
   webHeadersToApiGatewayHeaders,
+  webRequestToEvent,
   webResponseToProxyResult,
 } from './converters.js';
 import { ErrorHandlerRegistry } from './ErrorHandlerRegistry.js';
@@ -77,6 +80,7 @@ import {
   isALBEvent,
   isBinaryResult,
   isExtendedAPIGatewayProxyResult,
+  isHttpMethod,
   resolvePrefixedPath,
   stripTrailingSlashes,
 } from './utils.js';
@@ -86,10 +90,25 @@ import {
  *
  * @internal
  */
-type ResolvedResponse = Pick<
-  RequestContext,
-  'res' | 'responseType' | 'isBase64Encoded'
->;
+type ResolvedResponse = DispatchedResponse & {
+  responseType: ResponseType;
+};
+
+/**
+ * The response produced by routing a Web Request, before it is converted to
+ * the caller's output format.
+ *
+ * @internal
+ */
+type DispatchedResponse = Pick<RequestContext, 'res' | 'isBase64Encoded'>;
+
+/**
+ * Where a routed request came from: a classified Lambda event, or a Web
+ * Request whose event view is built on demand.
+ *
+ * @internal
+ */
+type RequestSource = ClassifiedEvent | { responseType: 'WebFunction' };
 
 class Router<TEnv extends Env = Env> {
   /**
@@ -255,14 +274,19 @@ class Router<TEnv extends Env = Env> {
   }
 
   /**
-   * Builds the middleware context from a classified event and its Web Request.
+   * Builds the middleware context from the request and where it came from.
    *
-   * @param classified - The event and its integration
+   * For a Web Request, `event` is built from the request when it's first
+   * read, by a handler, a middleware, or the router itself when it copies the
+   * request context for an error handler. It can also be replaced by assigning
+   * to it, like the event of any other request.
+   *
+   * @param source - The event and its integration, or the marker of a Web Request
    * @param context - The Lambda context
    * @param options - The request, response, and store accessors
    */
   #buildRequestContext(
-    classified: ClassifiedEvent,
+    source: RequestSource,
     context: Context,
     options: {
       req: Request;
@@ -270,8 +294,7 @@ class Router<TEnv extends Env = Env> {
       isHttpStreaming?: boolean;
     } & Pick<RequestContext<TEnv>, 'set' | 'get' | 'has' | 'delete' | 'shared'>
   ): RequestContext<TEnv> {
-    return {
-      ...classified,
+    const fields = {
       context,
       req: options.req,
       res: options.res,
@@ -284,11 +307,30 @@ class Router<TEnv extends Env = Env> {
       delete: options.delete,
       shared: options.shared,
     };
+
+    if (source.responseType === 'WebFunction') {
+      let event: WebRequestEvent | undefined;
+      return {
+        responseType: source.responseType,
+        get event() {
+          event ??= webRequestToEvent(options.req);
+          return event;
+        },
+        set event(value: WebRequestEvent) {
+          event = value;
+        },
+        ...fields,
+      };
+    }
+
+    return { ...source, ...fields };
   }
 
   /**
-   * Core resolution logic shared by both resolve and resolveStream methods.
-   * Validates the event, routes to handlers, executes middleware, and handles errors.
+   * Converts a Lambda event to a Web Request and routes it.
+   *
+   * Shared by {@link Router.resolve | `resolve()`} and
+   * {@link Router.resolveStream | `resolveStream()`}.
    *
    * @param event - The Lambda event to resolve
    * @param context - The Lambda context
@@ -328,9 +370,33 @@ class Router<TEnv extends Env = Env> {
       throw err;
     }
 
+    const { res, isBase64Encoded } = await this.#dispatch(
+      classified,
+      req,
+      context,
+      options
+    );
+    return { responseType: classified.responseType, res, isBase64Encoded };
+  }
+
+  /**
+   * Core routing logic: matches the route, executes middleware and the
+   * handler, and handles errors.
+   *
+   * @param source - The event the request was built from, or the marker of a Web Request
+   * @param req - The Web Request to route
+   * @param context - The Lambda context
+   * @param options - Optional resolve options for scope binding
+   */
+  async #dispatch(
+    source: RequestSource,
+    req: Request,
+    context: Context,
+    options?: HttpResolveOptions
+  ): Promise<DispatchedResponse> {
     const requestStore = new Store<RequestStoreOf<TEnv>>();
     const storeAccessors = this.#createStoreAccessors(requestStore);
-    const requestContext = this.#buildRequestContext(classified, context, {
+    const requestContext = this.#buildRequestContext(source, context, {
       req,
       res: new Response('', {
         status: HttpStatusCodes.INTERNAL_SERVER_ERROR,
@@ -343,7 +409,7 @@ class Router<TEnv extends Env = Env> {
     });
 
     try {
-      const method = req.method as HttpMethod;
+      const method = req.method.toUpperCase() as HttpMethod;
       const rawPath = new URL(req.url).pathname;
       const path = (
         rawPath === '/' ? rawPath : stripTrailingSlashes(rawPath)
@@ -479,6 +545,61 @@ class Router<TEnv extends Env = Env> {
       isHttpStreaming: true,
     });
     await this.#streamHandlerResponse(resolvedResponse, options.responseStream);
+  }
+
+  /**
+   * Routes a Web {@link Request | `Request`} to the matching handler and
+   * returns a Web {@link Response | `Response`}, without going through a
+   * Lambda event.
+   *
+   * Use this when the request already arrives as an HTTP request rather than
+   * as an event, for example on a Lambda Web Function. Handler results are
+   * converted the same way as in {@link Router.resolve | `resolve()`}, and
+   * streaming bodies (`ReadableStream`, Node.js `Readable`) are passed through
+   * without buffering.
+   *
+   * In handlers and middleware, `reqCtx.responseType` is `'WebFunction'`, and
+   * `reqCtx.event` is a deprecated, event-shaped view of the request (headers
+   * and query string parameters only), so that code reading
+   * `reqCtx.event.headers` without checking `reqCtx.responseType` keeps
+   * working. Read the request from `reqCtx.req` instead.
+   *
+   * @example
+   * ```typescript
+   * import { Router } from '@aws-lambda-powertools/event-handler/http';
+   *
+   * const app = new Router();
+   * app.get('/hello', () => ({ message: 'hello' }));
+   *
+   * const res = await app.resolveRequest(
+   *   new Request('https://example.com/hello'),
+   *   context
+   * );
+   * ```
+   *
+   * @param request - The Web Request to route
+   * @param context - The Lambda context, or an equivalent for the request
+   * @param options - Optional resolve options for scope binding
+   */
+  public async resolveRequest(
+    request: Request,
+    context: Context,
+    options?: ResolveOptions
+  ): Promise<Response> {
+    const method = request.method.toUpperCase();
+    if (!isHttpMethod(method)) {
+      this.logger.error(new InvalidHttpMethodError(method));
+      return new Response(null, {
+        status: HttpStatusCodes.METHOD_NOT_ALLOWED,
+      });
+    }
+    const { res } = await this.#dispatch(
+      { responseType: 'WebFunction' },
+      request,
+      context,
+      options
+    );
+    return res;
   }
 
   /**

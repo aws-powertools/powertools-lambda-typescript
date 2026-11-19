@@ -178,20 +178,82 @@ type ValidatedResponse<TRes extends ResSchema = ResSchema> = {
   [K in keyof TRes as TRes[K] extends undefined ? never : K]: TRes[K];
 };
 
-type RequestContext<TEnv extends Env = Env> = {
-  [T in ResponseType]: {
-    req: Request;
-    event: EventTypeMap[T];
-    context: Context;
-    res: Response;
-    route: string | null;
-    params: Record<string, string>;
-    responseType: T;
-    isBase64Encoded?: boolean;
-    isHttpStreaming?: boolean;
-    shared: IStore<SharedStoreOf<TEnv>>;
-  } & RequestStoreMethods<TEnv>;
-}[ResponseType];
+/**
+ * Event-shaped view of a Web {@link Request | `Request`}, with the fields that
+ * API Gateway (REST and HTTP API) and ALB events have in common.
+ *
+ * It lets handlers and middleware that read `reqCtx.event` without checking
+ * `reqCtx.responseType` keep compiling and working when the request arrives as
+ * a Web Request, for example through
+ * {@link Router.resolveRequest | `Router.resolveRequest()`}.
+ *
+ * @deprecated Read the request from `reqCtx.req` instead. In the next major
+ * version, `reqCtx.event` is `undefined` for requests that don't come from a
+ * Lambda event.
+ */
+type WebRequestEvent = {
+  /**
+   * The request headers, with lowercase names. Repeated headers are joined
+   * with `, `.
+   */
+  headers: Record<string, string>;
+  /**
+   * The query string parameters, or `undefined` when there are none. Repeated
+   * parameters are joined with `,`, like in API Gateway HTTP API events.
+   */
+  queryStringParameters: Record<string, string> | undefined;
+  /**
+   * Always `undefined`: a Web Request body is a stream that is read
+   * asynchronously. Use `reqCtx.req.text()`, `reqCtx.req.json()`, or
+   * `reqCtx.req.arrayBuffer()` instead.
+   */
+  body: undefined;
+  /**
+   * Always `false`.
+   */
+  isBase64Encoded: false;
+  /**
+   * Always empty: a Web Request carries no API Gateway or ALB request context.
+   *
+   * Typed so that code reading fields of an API Gateway request context
+   * without narrowing on `reqCtx.responseType` keeps compiling; those fields
+   * are always `undefined` for Web Requests.
+   */
+  requestContext: Record<string, never>;
+};
+
+/**
+ * Fields of the request context shared by every request source.
+ */
+type RequestContextBase<TEnv extends Env = Env> = {
+  req: Request;
+  context: Context;
+  res: Response;
+  route: string | null;
+  params: Record<string, string>;
+  isBase64Encoded?: boolean;
+  isHttpStreaming?: boolean;
+  shared: IStore<SharedStoreOf<TEnv>>;
+} & RequestStoreMethods<TEnv>;
+
+type RequestContext<TEnv extends Env = Env> =
+  | {
+      [T in ResponseType]: RequestContextBase<TEnv> & {
+        event: EventTypeMap[T];
+        responseType: T;
+      };
+    }[ResponseType]
+  | (RequestContextBase<TEnv> & {
+      /**
+       * Event-shaped view of the Web Request.
+       *
+       * @deprecated Read the request from `reqCtx.req` instead. In the next
+       * major version, `reqCtx.event` is `undefined` for requests that don't
+       * come from a Lambda event.
+       */
+      event: WebRequestEvent;
+      responseType: 'WebFunction';
+    });
 
 type TypedRequestContext<
   TEnv extends Env = Env,
@@ -693,5 +755,6 @@ export type {
   ValidationConfig,
   ValidationErrorDetail,
   ValidationResult,
+  WebRequestEvent,
   WebResponseToProxyResultOptions,
 };

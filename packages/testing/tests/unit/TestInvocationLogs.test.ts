@@ -95,6 +95,28 @@ describe('getFunctionLogs()', () => {
     );
   });
 
+  it('excludes Node.js 26 TLS profile diagnostics from handler logs', () => {
+    // Prepare
+    const runtimeLog =
+      "[tls-profile] applied 'aws' -> /var/runtime/tls-profiles/commercial-2025.conf";
+    const structuredLog = JSON.stringify({
+      level: 'INFO',
+      message: 'The handler mentions [tls-profile] in its log',
+    });
+    const plainLog = 'The handler writes an unstructured log';
+    const logs = new TestInvocationLogs(
+      Buffer.from([runtimeLog, structuredLog, plainLog].join('\n')).toString(
+        'base64'
+      )
+    );
+
+    // Act
+    const functionLogs = logs.getFunctionLogs();
+
+    // Assess
+    expect(functionLogs).toEqual([structuredLog, plainLog]);
+  });
+
   it('retrives logs of the given level only', () => {
     const infoLogs = invocationLogs.getFunctionLogs('INFO');
     expect(infoLogs.length).toBe(2);

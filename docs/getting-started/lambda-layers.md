@@ -144,7 +144,7 @@ Change `{aws::region}` to your AWS region, e.g. `eu-west-1`, and run the followi
         );
         
         new NodejsFunction(this, 'Function', {
-          runtime: Runtime.NODEJS_24_X,
+          runtime: Runtime.NODEJS_26_X,
           // Add the Layer to a Lambda function
           layers: [powertoolsLayer],
           code: Code.fromInline(`...`),
@@ -192,7 +192,7 @@ Change `{aws::region}` to your AWS region, e.g. `eu-west-1`, and run the followi
         );
         
         new NodejsFunction(this, 'Function', {
-          runtime: Runtime.NODEJS_24_X,
+          runtime: Runtime.NODEJS_26_X,
           // Add the Layer to a Lambda function
           layers: [powertoolsLayer],
           code: Code.fromInline(`...`),
@@ -280,7 +280,7 @@ Change `{aws::region}` to your AWS region, e.g. `eu-west-1`, and run the followi
       function_name = "lambda_function_name"
       role          = ...
       handler       = "index.handler"
-      runtime 		= "nodejs24.x"
+      runtime 		= "nodejs26.x"
       layers 		= ["arn:aws:lambda:{aws::region}:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:51"]
       source_code_hash = filebase64sha256("lambda_function_payload.zip")
     }
@@ -297,7 +297,7 @@ Change `{aws::region}` to your AWS region, e.g. `eu-west-1`, and run the followi
       resource "aws_lambda_function" "test_lambda" {
         ...
 
-        runtime = "nodejs24.x"
+        runtime = "nodejs26.x"
 
         layers = [data.aws_ssm_parameter.powertools_version.value]
       }

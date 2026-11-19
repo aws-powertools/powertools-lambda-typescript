@@ -14,7 +14,7 @@ import { getRunId } from './naming.js';
  * `deploySharedCapacityProvider.ts`) and passes the capacity provider ARN to
  * the test cells via the `LMI_CAPACITY_PROVIDER_ARN` environment variable.
  * The capacity provider is architecture-constrained but package- and
- * runtime-agnostic: all packages' LMI suites, on both Node.js versions,
+ * runtime-agnostic: all packages' LMI suites, on all tested Node.js versions,
  * attach their functions to the same per-architecture capacity provider.
  *
  * The stack name is scoped to the workflow run (`LmiShared-<runId>-<arch>`)

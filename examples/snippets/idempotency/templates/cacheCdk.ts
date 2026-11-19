@@ -67,7 +67,7 @@ export class ValkeyStack extends Stack {
     const fn = new NodejsFunction(this, 'MyFunction', {
       functionName: fnName,
       logGroup,
-      runtime: Runtime.NODEJS_24_X,
+      runtime: Runtime.NODEJS_26_X,
       architecture: Architecture.ARM_64,
       memorySize: 512,
       timeout: Duration.seconds(30),

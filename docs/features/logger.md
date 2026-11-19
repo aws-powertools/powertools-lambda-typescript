@@ -75,7 +75,7 @@ Check API docs to learn more about [Logger constructor options](https://docs.aws
       ShoppingCartApiFunction:
         Type: AWS::Serverless::Function
         Properties:
-          Runtime: nodejs24.x
+          Runtime: nodejs26.x
           Environment:
             Variables:
               POWERTOOLS_LOG_LEVEL: WARN

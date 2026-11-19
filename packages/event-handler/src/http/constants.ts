@@ -107,6 +107,20 @@ const DEFAULT_CORS_OPTIONS = {
 
 const DEFAULT_COMPRESSION_RESPONSE_THRESHOLD = 1024;
 
+/**
+ * Defaults used by the Lambda Web Function server.
+ */
+const WEB_FUNCTION_DEFAULTS = {
+  /** Address to listen on when `AWS_LAMBDA_HTTP_ENDPOINT` isn't set, as when running locally. */
+  ENDPOINT: '127.0.0.1:3000',
+  /** Request timeout, in seconds, when `timeoutSeconds` isn't set. */
+  TIMEOUT_SECONDS: 60,
+  /** Memory size, in MB, when `AWS_LAMBDA_FUNCTION_MEMORY_SIZE` isn't set. Web Functions have 2 GB. */
+  MEMORY_SIZE: '2048',
+  /** How long to wait for in-flight requests on `SIGTERM`, in milliseconds. */
+  SHUTDOWN_TIMEOUT_MS: 500,
+} as const;
+
 const CACHE_CONTROL_NO_TRANSFORM_REGEX = /(?:^|,)\s*?no-transform\s*?(?:,|$)/i;
 
 const DECIMAL_QVALUE_REGEX = /^(?:\d+(?:\.\d*)?|\.\d+)$/;
@@ -226,4 +240,5 @@ export {
   SAFE_CHARS,
   SET_COOKIE_SEPARATOR_REGEX,
   UNSAFE_CHARS,
+  WEB_FUNCTION_DEFAULTS,
 };

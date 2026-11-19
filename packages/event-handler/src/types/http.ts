@@ -145,6 +145,47 @@ type ResponseTypeMap = {
 type Headers = Record<string, string | number | boolean>;
 
 /**
+ * Options for how the Lambda Web Function server shuts down on `SIGTERM`.
+ */
+type WebFunctionShutdownOptions = {
+  /**
+   * How long to wait for in-flight requests to finish before running
+   * `onShutdown`, in milliseconds. Lambda kills the process about one second
+   * after `SIGTERM`, so this and `onShutdown` together must stay under that.
+   *
+   * @default 500
+   */
+  timeoutMs?: number;
+  /**
+   * Runs once in-flight requests have finished or `timeoutMs` has elapsed, for
+   * example to flush buffered metrics or close database connections.
+   */
+  onShutdown?: () => Promise<void> | void;
+};
+
+/**
+ * Options for the Lambda Web Function server started by `serve()`.
+ */
+type WebFunctionServeOptions = {
+  /**
+   * The request timeout of the Web Function revision, in seconds. Used to
+   * compute `context.getRemainingTimeInMillis()`.
+   *
+   * @default 60
+   */
+  timeoutSeconds?: number;
+  /**
+   * Reference to `this` instance of the class that registered the routes,
+   * used to bind route decorators to your class instance.
+   */
+  scope?: unknown;
+  /**
+   * How to shut down on `SIGTERM`, or `false` to not handle `SIGTERM`.
+   */
+  shutdown?: WebFunctionShutdownOptions | false;
+};
+
+/**
  * Request validation type parameters
  */
 type ReqSchema = {
@@ -755,6 +796,8 @@ export type {
   ValidationConfig,
   ValidationErrorDetail,
   ValidationResult,
+  WebFunctionServeOptions,
+  WebFunctionShutdownOptions,
   WebRequestEvent,
   WebResponseToProxyResultOptions,
 };

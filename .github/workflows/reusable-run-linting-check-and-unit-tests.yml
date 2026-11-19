@@ -54,7 +54,7 @@ jobs:
       NODE_ENV: dev
     strategy:
       matrix:
-        version: [22, 24]
+        version: [22, 24, 26]
         # packages/testing is private and intentionally excluded from this publishable package matrix.
         workspace: ${{ fromJSON(needs.resolve-workspaces.outputs.workspaces) }}
       fail-fast: false
@@ -89,7 +89,7 @@ jobs:
         name: Setup Node.js
         uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1  # v7.1.0
         with:
-          node-version: 24
+          node-version: 26
           cache: "npm"
       - &setup_dependencies
         name: Setup dependencies

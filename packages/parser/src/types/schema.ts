@@ -8,6 +8,9 @@ import type {
   APIGatewayRequestAuthorizerEventSchema,
   APIGatewayRequestAuthorizerEventV2Schema,
   APIGatewayTokenAuthorizerEventSchema,
+  APIGatewayWebSocketConnectEventSchema,
+  APIGatewayWebSocketDisconnectEventSchema,
+  APIGatewayWebSocketMessageEventSchema,
   AppSyncBatchResolverSchema,
   AppSyncEventsPublishSchema,
   AppSyncEventsSubscribeSchema,
@@ -75,8 +78,26 @@ type APIGatewayEventRequestContext = z.infer<
 
 type APIGatewayProxyEventV2 = z.infer<typeof APIGatewayProxyEventV2Schema>;
 
+/**
+ * @deprecated Use {@link APIGatewayWebSocketConnectEvent | `APIGatewayWebSocketConnectEvent`},
+ * {@link APIGatewayWebSocketMessageEvent | `APIGatewayWebSocketMessageEvent`} or
+ * {@link APIGatewayWebSocketDisconnectEvent | `APIGatewayWebSocketDisconnectEvent`} instead,
+ * this type is deprecated and will be removed in the next major version.
+ */
 type APIGatewayProxyWebsocketEvent = z.infer<
   typeof APIGatewayProxyWebsocketEventSchema
+>;
+
+type APIGatewayWebSocketConnectEvent = z.infer<
+  typeof APIGatewayWebSocketConnectEventSchema
+>;
+
+type APIGatewayWebSocketMessageEvent = z.infer<
+  typeof APIGatewayWebSocketMessageEventSchema
+>;
+
+type APIGatewayWebSocketDisconnectEvent = z.infer<
+  typeof APIGatewayWebSocketDisconnectEventSchema
 >;
 
 type APIGatewayRequestAuthorizerEventV2 = z.infer<
@@ -209,6 +230,9 @@ export type {
   APIGatewayRequestAuthorizerEvent,
   APIGatewayRequestAuthorizerEventV2,
   APIGatewayTokenAuthorizerEvent,
+  APIGatewayWebSocketConnectEvent,
+  APIGatewayWebSocketDisconnectEvent,
+  APIGatewayWebSocketMessageEvent,
   AppSyncBatchResolverEvent,
   AppSyncEventsPublishEvent,
   AppSyncEventsSubscribeEvent,

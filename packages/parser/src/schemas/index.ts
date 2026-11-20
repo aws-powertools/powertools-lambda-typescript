@@ -5,7 +5,12 @@ export {
   APIGatewayRequestAuthorizerEventSchema,
   APIGatewayTokenAuthorizerEventSchema,
 } from './api-gateway.js';
-export { APIGatewayProxyWebsocketEventSchema } from './api-gateway-websocket.js';
+export {
+  APIGatewayProxyWebsocketEventSchema,
+  APIGatewayWebSocketConnectEventSchema,
+  APIGatewayWebSocketDisconnectEventSchema,
+  APIGatewayWebSocketMessageEventSchema,
+} from './api-gateway-websocket.js';
 export {
   APIGatewayProxyEventV2Schema,
   APIGatewayRequestAuthorizerEventV2Schema,

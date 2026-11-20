@@ -22,6 +22,15 @@ import {
 } from 'aws-cdk-lib/aws-lambda';
 import { StringParameter } from 'aws-cdk-lib/aws-ssm';
 import type { Construct } from 'constructs';
+import {
+  buildAllowedVersions,
+  buildLayerPackageJson,
+  collectInstalledPackages,
+  collectPinnedPackages,
+  findVersionDrift,
+  getPinnedVersion,
+  type Lockfile,
+} from './lockfile.ts';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -74,6 +83,8 @@ interface LayerUtility {
   readonly workspace: string;
   /** Published npm package name, e.g. `@aws-lambda-powertools/logger`. */
   readonly packageName: string;
+  /** Version in the workspace, which is what `npm pack` produces locally. */
+  readonly version: string;
 }
 
 /**
@@ -87,7 +98,7 @@ export const getLayerUtilities = (packagesDir: string): LayerUtility[] =>
   readdirSync(packagesDir, { withFileTypes: true })
     .filter((entry) => entry.isDirectory())
     .flatMap((entry) => {
-      let manifest: { name?: string; private?: boolean };
+      let manifest: { name?: string; private?: boolean; version?: string };
       try {
         manifest = JSON.parse(
           readFileSync(join(packagesDir, entry.name, 'package.json'), 'utf-8')
@@ -102,7 +113,13 @@ export const getLayerUtilities = (packagesDir: string): LayerUtility[] =>
       ) {
         return [];
       }
-      return [{ workspace: entry.name, packageName: manifest.name }];
+      return [
+        {
+          workspace: entry.name,
+          packageName: manifest.name,
+          version: manifest.version ?? '0.0.0',
+        },
+      ];
     })
     .sort((a, b) => a.workspace.localeCompare(b.workspace));
 
@@ -138,7 +155,11 @@ export class LayerPublisherStack extends Stack {
     this.lambdaLayerVersion = new LayerVersion(this, 'LambdaPowertoolsLayer', {
       layerVersionName: props?.layerName,
       description: `Powertools for AWS Lambda (TypeScript) version ${powertoolsPackageVersion}`,
-      compatibleRuntimes: [Runtime.NODEJS_22_X, Runtime.NODEJS_24_X],
+      compatibleRuntimes: [
+        Runtime.NODEJS_22_X,
+        Runtime.NODEJS_24_X,
+        Runtime.NODEJS_26_X,
+      ],
       license: 'MIT-0',
       compatibleArchitectures: [Architecture.ARM_64, Architecture.X86_64],
       code: Code.fromAsset(resolve(__dirname), {
@@ -200,7 +221,18 @@ export class LayerPublisherStack extends Stack {
                 'node_modules/@smithy/**/README.md',
                 'node_modules/@aws-sdk/**/README.md',
               ];
-              // We deliberately do NOT ship any @aws-sdk/* client in the layer.
+              // Phase 1: Cleanup & create tmp folder
+              rmSync(tmpBuildDir, { recursive: true, force: true });
+              mkdirSync(tmpBuildDir, { recursive: true });
+
+              // Phase 2: Derive the versions to install from the repository
+              // lockfile, so the layer ships the dependency tree CI tested
+              // rather than whatever the registry serves while the release runs
+              // (see issue #5981). Done before building anything, so a stale
+              // lockfile fails the build in seconds rather than minutes.
+              //
+              // Note that we deliberately do NOT ship any @aws-sdk/* client in
+              // the layer:
               //
               // The layer is mounted at /opt/nodejs/node_modules, which precedes
               // /var/runtime/node_modules on NODE_PATH. Any SDK package we ship
@@ -212,22 +244,31 @@ export class LayerPublisherStack extends Stack {
               //
               // The Node.js runtime already provides a complete, self-consistent
               // AWS SDK v3, so we rely on it instead of exposing a partial one.
-              const modulesToInstall: string[] = ['zod'];
+              // The utilities declare the clients as optional peer dependencies,
+              // which npm does not install, and walking the lockfile follows the
+              // same rules, so they stay out of the derived versions too.
+              const lockfile = JSON.parse(
+                readFileSync(join(projectRoot, 'package-lock.json'), 'utf-8')
+              ) as Lockfile;
+              const pinned = collectPinnedPackages(lockfile, {
+                roots: utilities.map((util) => `packages/${util.workspace}`),
+                extraDependencies: ['zod'],
+              });
 
-              if (!buildFromLocal) {
-                // Dependencies to install in the Lambda Layer
-                modulesToInstall.push(
-                  ...utilities.map(
-                    (util) => `${util.packageName}@${powertoolsPackageVersion}`
-                  )
-                );
+              // Direct dependencies of the layer, and the version each of them
+              // ends up installed at: the release version from the registry, or
+              // the workspace version when installing the local tarballs.
+              const releaseVersion = powertoolsPackageVersion ?? '0.0.0';
+              const dependencies: Record<string, string> = {
+                zod: getPinnedVersion(pinned, 'zod'),
+              };
+              const utilityVersions: Record<string, string> = {};
+              for (const util of utilities) {
+                dependencies[util.packageName] = releaseVersion;
+                utilityVersions[util.packageName] = releaseVersion;
               }
 
-              // Phase 1: Cleanup & create tmp folder
-              rmSync(tmpBuildDir, { recursive: true, force: true });
-              mkdirSync(tmpBuildDir, { recursive: true });
-
-              // Phase 2: (Optional) Build packages & pack them
+              // Phase 3: (Optional) Build packages & pack them
               if (buildFromLocal) {
                 for (const util of utilities) {
                   execFileSync(
@@ -249,24 +290,59 @@ export class LayerPublisherStack extends Stack {
                       `Could not determine packed tarball for ${util.packageName}`
                     );
                   }
-                  const tmpTarballPath = join(tmpBuildDir, tarball);
-                  renameSync(join(projectRoot, tarball), tmpTarballPath);
-                  modulesToInstall.push(tmpTarballPath);
+                  renameSync(
+                    join(projectRoot, tarball),
+                    join(tmpBuildDir, tarball)
+                  );
+                  // The tarball sits next to the generated package.json.
+                  dependencies[util.packageName] = `file:${tarball}`;
+                  utilityVersions[util.packageName] = util.version;
                   filesToRemove.push(tarball);
                 }
               }
 
-              // Phase 3: Install dependencies to tmp folder. Retry with backoff
-              // to absorb npm registry propagation delays for freshly published
-              // versions (see issue #5564).
+              // Phase 4: Install dependencies to tmp folder from a generated
+              // package.json that pins every transitive dependency. Retry with
+              // backoff to absorb npm registry propagation delays for freshly
+              // published versions (see issue #5564). Install scripts are
+              // skipped: nothing in the layer needs one, and the release
+              // pipeline should not run code from a dependency on our behalf.
+              writeFileSync(
+                join(tmpBuildDir, 'package.json'),
+                `${JSON.stringify(
+                  buildLayerPackageJson({
+                    version: releaseVersion,
+                    dependencies,
+                    pinned,
+                  }),
+                  null,
+                  2
+                )}\n`
+              );
               execFileWithRetry('npm', [
                 'i',
                 '--prefix',
                 tmpBuildDir,
-                ...modulesToInstall,
+                '--ignore-scripts',
               ]);
 
-              // Phase 4: Remove unnecessary files
+              // Phase 5: Check the installed tree against the lockfile. The
+              // overrides above cover every dependency we know about, this
+              // catches the ones they don't, e.g. a dependency added upstream
+              // after the lockfile was last refreshed.
+              const drift = findVersionDrift(
+                collectInstalledPackages(join(tmpBuildDir, 'node_modules')),
+                buildAllowedVersions(pinned, utilityVersions)
+              );
+              if (drift.length > 0) {
+                throw new Error(
+                  `The layer dependency tree does not match package-lock.json:\n  - ${drift.join(
+                    '\n  - '
+                  )}`
+                );
+              }
+
+              // Phase 6: Remove unnecessary files
               for (const pattern of filesToRemove) {
                 for (const filePath of globSync(pattern, {
                   cwd: tmpBuildDir,
@@ -278,7 +354,7 @@ export class LayerPublisherStack extends Stack {
                 }
               }
 
-              // Phase 5: patch require keyword in ESM Tracer package due to AWS X-Ray SDK for Node.js not being ESM compatible
+              // Phase 7: patch require keyword in ESM Tracer package due to AWS X-Ray SDK for Node.js not being ESM compatible
               const esmTracerPath = join(
                 tmpBuildDir,
                 'node_modules',
@@ -293,10 +369,10 @@ export class LayerPublisherStack extends Stack {
                 `import { createRequire } from 'module'; const require = createRequire(import.meta.url);${readFileSync(esmTracerPath, 'utf-8')}`
               );
 
-              // Phase 6: Copy files from tmp folder to cdk.out asset folder (the folder is created by CDK)
+              // Phase 8: Copy files from tmp folder to cdk.out asset folder (the folder is created by CDK)
               cpSync(tmpBuildPath, outputDir, { recursive: true });
 
-              // Phase 7: (Optional) Restore changes to the project root made by the build
+              // Phase 9: (Optional) Restore changes to the project root made by the build
               if (buildFromLocal) {
                 execFileSync(
                   'git',

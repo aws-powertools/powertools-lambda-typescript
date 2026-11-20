@@ -1,7 +1,10 @@
 import type { GenericLogger } from '@aws-lambda-powertools/commons/types';
 import type { EnvelopeOptions } from './Envelope.js';
 
-/** Configures Agent retrieval and local evaluation of a freeform Flag Document. */
+/**
+ * Configures Agent retrieval and local evaluation of a freeform Flag Document.
+ * @expand
+ */
 type AppConfigAgentStoreOptions = EnvelopeOptions & {
   /** Identifies the configuration profile by name or ID. */
   name: string;

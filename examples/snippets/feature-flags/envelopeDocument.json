@@ -1,0 +1,6 @@
+{
+  "logging": { "level": "INFO" },
+  "settings": {
+    "flags": { "checkout_v2": { "default": true } }
+  }
+}

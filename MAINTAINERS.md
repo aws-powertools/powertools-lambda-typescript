@@ -146,6 +146,8 @@ Trusted publishers can only be configured for a package that **already exists** 
 The PR that adds the package must also add it to the `workspaces` array in the root `package.json`. That is all CI needs: the unit test and e2e workflows derive their package lists from it through `.github/scripts/list_workspaces.js`, the e2e workflow picking up any workspace with suites under `tests/e2e`.
 The same array is what gets the package into the Lambda layer, since the layer bundles every non-private `@aws-lambda-powertools/*` workspace.
 
+The versions the layer bundles come from the root `package-lock.json`: the build derives every transitive dependency from it, pins them through npm `overrides`, and fails if the installed tree does not match. A Dependabot bump to the lockfile is therefore what moves the layer's dependencies, and no release can ship a version CI has not tested.
+
 Once that's done, the package ships like any other on the next `Make Release` run.
 
 ## Releasing a new version

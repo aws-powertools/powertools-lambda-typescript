@@ -47,7 +47,7 @@ type InvocationPayload = {
  * overlapping invocations' metric values and metadata would bleed into each
  * other's EMF payload.
  *
- * Exact environment counts are not asserted. In CI both Node.js versions of
+ * Exact environment counts are not asserted. In CI all tested Node.js versions of
  * both LMI suites share one per-architecture capacity provider; pinning the
  * environments per function keeps the overlap independent of that fleet and
  * lets the provider carry spare vCPU headroom to replace a failed instance

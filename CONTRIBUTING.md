@@ -106,7 +106,7 @@ A maintainer may add a `do-not-merge` label, which blocks the merge until the un
 
 Prerequisites:
 
-- **Node.js 24.x**, the version pinned in `.nvmrc`, so `nvm use` or `fnm use` picks it up. npm 11.x ships with it; this is an npm workspaces monorepo, so always install from the repo root rather than from a package directory.
+- **Node.js 26.x**, the version pinned in `.nvmrc`, so `nvm use` or `fnm use` picks it up. npm 11.x ships with it; this is an npm workspaces monorepo, so always install from the repo root rather than from a package directory.
 - **Docker**, only to preview the documentation with `npm run docs:docker:*`. Nothing else in the repo needs it.
 - **Python 3**, only to preview the documentation without Docker, with `npm run docs:local:*`.
 - **An AWS account and the AWS CLI**, only to run [end-to-end tests](#end-to-end-tests).
@@ -137,7 +137,7 @@ End-to-end tests give us confidence that a Lambda function using our code behave
 You'll need an [AWS account bootstrapped with CDK](https://docs.aws.amazon.com/cdk/v2/guide/bootstrapping.html) and the [AWS CLI installed and configured](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html). Then, from the repo root:
 
 - `npm run test:e2e -w packages/metrics` runs the end-to-end suites of a single package on the default Node.js runtime.
-- `npm run test:e2e:nodejs24x -w packages/metrics` runs the same suites pinned to a specific runtime.
+- `npm run test:e2e:nodejs26x -w packages/metrics` runs the same suites pinned to a specific runtime. Node.js 22, 24, and 26 are supported; the default is Node.js 26.
 
 ```mermaid
 sequenceDiagram

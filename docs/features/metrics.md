@@ -93,7 +93,7 @@ The `Metrics` utility is instantiated outside of the Lambda handler. In doing th
       HelloWorldFunction:
         Type: AWS::Serverless::Function
         Properties:
-          Runtime: nodejs24.x
+          Runtime: nodejs26.x
           Environment:
           Variables:
             POWERTOOLS_SERVICE_NAME: orders

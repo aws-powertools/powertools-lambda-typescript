@@ -41,7 +41,7 @@
     "@aws-lambda-powertools/testing-utils": "file:../packages/testing",
     "@types/semver": "^7.8.0",
     "esbuild": "^0.28.2",
-    "semver": "^7.8.5",
+    "semver": "^7.8.6",
     "source-map-support": "^0.5.21"
   },
   "dependencies": {

@@ -47,7 +47,7 @@
     "@aws/durable-execution-sdk-js": "^3.0.0",
     "@middy/core": "^4.7.0",
     "@redis/client": "^6.3.1",
-    "@valkey/valkey-glide": "^2.5.3",
+    "@valkey/valkey-glide": "^2.6.0",
     "aws-sdk-client-mock": "^4.1.0",
     "zod": "^4.6.7"
   },

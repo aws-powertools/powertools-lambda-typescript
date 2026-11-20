@@ -83,7 +83,12 @@ jobs:
           VERSION: ${{ inputs.version }}
         run: |
           set -euo pipefail
-          echo "VERSION=$(echo "$VERSION" | sed 's/v//')" >> "$GITHUB_ENV"
+          VERSION="${VERSION#v}"
+          if [[ ! "$VERSION" =~ ^(main|[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?)$ ]]; then
+            echo "::error::version must be main or a semantic version, e.g. 2.36.0"
+            exit 1
+          fi
+          echo "VERSION=$VERSION" >> "$GITHUB_ENV"
       - name: Build docs website and API reference
         env:
           ALIAS: ${{ inputs.alias }}

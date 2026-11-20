@@ -48,10 +48,24 @@ jobs:
           node-version: 26
       - name: Setup dependencies
         uses: aws-powertools/actions/.github/actions/cached-node-modules@7898dbd71be8083748aa52f07ce5201bb36078ac # v1.6.0
+      - name: Validate version
+        env:
+          LAYER_VERSION: ${{ inputs.latest_published_version }}
+        run: |
+          set -euo pipefail
+          if [[ ! "$LAYER_VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?$ ]]; then
+            echo "::error::latest_published_version must be a semantic version, e.g. 2.36.0"
+            exit 1
+          fi
+          published=$(npm view "@aws-lambda-powertools/commons@$LAYER_VERSION" version)
+          if [ "$published" != "$LAYER_VERSION" ]; then
+            echo "::error::@aws-lambda-powertools/commons@$LAYER_VERSION is not published on npm"
+            exit 1
+          fi
       - name: CDK build
         env:
           LAYER_VERSION: ${{ inputs.latest_published_version }}
-        run: npm run cdk -w layers -- synth --context PowertoolsPackageVersion=$LAYER_VERSION -o cdk.out
+        run: npm run cdk -w layers -- synth --context PowertoolsPackageVersion="$LAYER_VERSION" -o cdk.out
       - name: Zip output
         run: zip -r cdk.out.zip layers/cdk.out
       - name: Archive CDK artifacts
@@ -94,7 +108,7 @@ jobs:
     needs: [deploy-prod]
     uses: ./.github/workflows/update_ssm.yml
     permissions:
-      contents: write
+      contents: read
       id-token: write
     with:
       environment: prod

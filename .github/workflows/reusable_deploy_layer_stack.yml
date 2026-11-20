@@ -28,6 +28,7 @@ permissions:
 
 jobs:
   deploy-cdk-stack:
+    environment: ${{ inputs.stage == 'PROD' && 'layer-prod' || '' }}
     permissions:
       id-token: write
     runs-on: ubuntu-latest

@@ -1,5 +1,15 @@
 # Change Log
 
+## [2.37.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.36.0...v2.37.0) (2026-11-21)
+
+### Bug Fixes
+
+- keep record payloads out of diagnostics ([#5980](https://github.com/aws-powertools/powertools-lambda-typescript/issues/5980)) ([cb4a125](https://github.com/aws-powertools/powertools-lambda-typescript/commit/cb4a1252b596db247dc7351660bb5d3467d1821b))
+- read Confluent Protobuf message indexes as zigzag varints ([#5960](https://github.com/aws-powertools/powertools-lambda-typescript/issues/5960)) ([8a6dfc2](https://github.com/aws-powertools/powertools-lambda-typescript/commit/8a6dfc272b0954c88c4c8f3535f02824c6254337))
+
+### Features
+
+- add opt-in Confluent wire format support for Avro ([#5825](https://github.com/aws-powertools/powertools-lambda-typescript/issues/5825)) ([e01f6ec](https://github.com/aws-powertools/powertools-lambda-typescript/commit/e01f6ec419621b4b754b0012e68404e5da47da66))
 ## [2.36.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.35.0...v2.36.0) (2026-10-06)
 
 ### Bug Fixes

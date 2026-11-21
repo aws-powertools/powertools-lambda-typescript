@@ -1,5 +1,13 @@
 # Change Log
 
+## [2.37.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.36.0...v2.37.0) (2026-11-21)
+
+### Bug Fixes
+
+- keep validation details scalar and repeated query values intact ([#5993](https://github.com/aws-powertools/powertools-lambda-typescript/issues/5993)) ([18dadcc](https://github.com/aws-powertools/powertools-lambda-typescript/commit/18dadcc4cb013b9bfc0f5e81157dfbd2df9192c1))
+- set Vary: Accept-Encoding in compress middleware ([#5888](https://github.com/aws-powertools/powertools-lambda-typescript/issues/5888)) ([529b2c1](https://github.com/aws-powertools/powertools-lambda-typescript/commit/529b2c150d2783dd41e8630f11bddfa68cb1551e))
+- keep Expires cookies and ALB headers intact ([#5875](https://github.com/aws-powertools/powertools-lambda-typescript/issues/5875)) ([92d62c1](https://github.com/aws-powertools/powertools-lambda-typescript/commit/92d62c1cab75a5e00ec118620f625a7abd48c976))
+- preserve response and streaming cookies ([#5845](https://github.com/aws-powertools/powertools-lambda-typescript/issues/5845)) ([deeb6ff](https://github.com/aws-powertools/powertools-lambda-typescript/commit/deeb6ffa0083ee8c404bd32ea7e0158cfe3e6e60))
 ## [2.36.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.35.0...v2.36.0) (2026-10-06)
 
 ### Bug Fixes

@@ -58,6 +58,36 @@ describe('Schema: CloudWatchLogs', () => {
     });
   });
 
+  it('parses a CloudWatch Logs event from an account-level subscription filter', () => {
+    // Prepare
+    const payload = {
+      messageType: 'DATA_MESSAGE',
+      owner: '123456789012',
+      logGroup: 'Example1',
+      logStream: 'logStream1',
+      subscriptionFilters: ['ExamplePolicy'],
+      logEvents: [
+        {
+          id: '31953106606966983378809025079804211143289615424298221568',
+          timestamp: 1432826855000,
+          message: '{"eventVersion":"1.03","userIdentity":{"type":"Root"}',
+        },
+      ],
+      policyLevel: 'ACCOUNT_LEVEL_POLICY',
+    };
+    const event = {
+      awslogs: {
+        data: gzipSync(JSON.stringify(payload)).toString('base64'),
+      },
+    };
+
+    // Act
+    const result = CloudWatchLogsSchema.parse(event);
+
+    // Assess
+    expect(result).toStrictEqual({ awslogs: { data: payload } });
+  });
+
   it('throws if the event is not a CloudWatch Logs event', () => {
     // Prepare
     const event = {

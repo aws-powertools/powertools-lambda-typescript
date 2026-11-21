@@ -1,5 +1,23 @@
 # Change Log
 
+## [2.37.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.36.0...v2.37.0) (2026-11-21)
+
+### Bug Fixes
+
+- accept non-string DynamoDB tumbling window state ([#6001](https://github.com/aws-powertools/powertools-lambda-typescript/issues/6001)) ([25f8820](https://github.com/aws-powertools/powertools-lambda-typescript/commit/25f88209374f5848e08d17dcdf7a380b4eb2ed89))
+- limit the size of decompressed gzip data ([#5986](https://github.com/aws-powertools/powertools-lambda-typescript/issues/5986)) ([7ac0769](https://github.com/aws-powertools/powertools-lambda-typescript/commit/7ac07692676fc797a04a64a18d021761a3f133d7))
+- keep S3 tiering, lifecycle and replication event data ([#5924](https://github.com/aws-powertools/powertools-lambda-typescript/issues/5924)) ([e91f5d0](https://github.com/aws-powertools/powertools-lambda-typescript/commit/e91f5d040690e96d8293f3660032765e344b534d))
+- accept IPv6 source addresses in S3 event schemas ([#5918](https://github.com/aws-powertools/powertools-lambda-typescript/issues/5918)) ([366f8fc](https://github.com/aws-powertools/powertools-lambda-typescript/commit/366f8fc6d2faf408c6a95af6b09564132af7e82d))
+- accept Transfer Family events without password and with IPv6 source IP ([#5880](https://github.com/aws-powertools/powertools-lambda-typescript/issues/5880)) ([f7bef4f](https://github.com/aws-powertools/powertools-lambda-typescript/commit/f7bef4f47a4fefee782bbbaf7e7cb51feb8e6d6c))
+- preserve Kafka key and value schema metadata ([#5879](https://github.com/aws-powertools/powertools-lambda-typescript/issues/5879)) ([ff1a2f7](https://github.com/aws-powertools/powertools-lambda-typescript/commit/ff1a2f7d6e966ddb0f43b2d08738e4d7ad81ef67))
+- use AWS casing for VPC Lattice v2 identity fields ([#5847](https://github.com/aws-powertools/powertools-lambda-typescript/issues/5847)) ([28630d4](https://github.com/aws-powertools/powertools-lambda-typescript/commit/28630d48ad58ddb828eb43db7f81057f872ba59b))
+- let SnsSqsEnvelope safeParse propagate schema errors ([#5846](https://github.com/aws-powertools/powertools-lambda-typescript/issues/5846)) ([db8ac34](https://github.com/aws-powertools/powertools-lambda-typescript/commit/db8ac340eeaf2ae34b2538f2822af8f902572e96))
+- decode signed Kafka header bytes as UTF-8 ([#5839](https://github.com/aws-powertools/powertools-lambda-typescript/issues/5839)) ([6e22577](https://github.com/aws-powertools/powertools-lambda-typescript/commit/6e22577130d70295060a17bbc18dfae1f31da0a3))
+- wrap envelope parse failures in ParseError ([#5758](https://github.com/aws-powertools/powertools-lambda-typescript/issues/5758)) ([77d5f9e](https://github.com/aws-powertools/powertools-lambda-typescript/commit/77d5f9edfcb1414affa6e13737efea28321b9962))
+
+### Features
+
+- add schema for ECS Task State Change events ([#5946](https://github.com/aws-powertools/powertools-lambda-typescript/issues/5946)) ([228bd91](https://github.com/aws-powertools/powertools-lambda-typescript/commit/228bd91c70cfa8f9f074beecf1ac403f29a2a07c))
 ## [2.36.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.35.0...v2.36.0) (2026-10-06)
 
 ### Bug Fixes

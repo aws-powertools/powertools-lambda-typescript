@@ -1,5 +1,17 @@
 # Change Log
 
+## [2.37.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.36.0...v2.37.0) (2026-11-21)
+
+### Features
+
+- support flags and context in AppConfig Agent requests ([#5951](https://github.com/aws-powertools/powertools-lambda-typescript/issues/5951)) ([c3445f5](https://github.com/aws-powertools/powertools-lambda-typescript/commit/c3445f50b9a5a13ba2bd96c935d76bd1b25223e0))
+- expose HTTP status on AppConfig Agent errors ([#5922](https://github.com/aws-powertools/powertools-lambda-typescript/issues/5922)) ([ba5a918](https://github.com/aws-powertools/powertools-lambda-typescript/commit/ba5a918a70ea8b47c628d10a3589b42fd50905e3))
+
+### Bug Fixes
+
+- stop getParametersByName mutating caller options ([#5862](https://github.com/aws-powertools/powertools-lambda-typescript/issues/5862)) ([faa8220](https://github.com/aws-powertools/powertools-lambda-typescript/commit/faa82205410dec1bdbb5179b891bc80413613f75))
+- merge DynamoDB getMultiple expression attribute maps ([#5857](https://github.com/aws-powertools/powertools-lambda-typescript/issues/5857)) ([616d786](https://github.com/aws-powertools/powertools-lambda-typescript/commit/616d78652577e9d80d0c9e63b30085b26e99f085))
+- cache and transform mixed-batch decrypted parameters ([#5841](https://github.com/aws-powertools/powertools-lambda-typescript/issues/5841)) ([b31e79e](https://github.com/aws-powertools/powertools-lambda-typescript/commit/b31e79e21dde21d57a09f4786f69609d0d85468c))
 ## [2.36.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.35.0...v2.36.0) (2026-10-06)
 
 ### Bug Fixes

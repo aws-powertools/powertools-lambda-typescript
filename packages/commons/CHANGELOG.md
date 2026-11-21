@@ -1,5 +1,11 @@
 # Change Log
 
+## [2.37.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.36.0...v2.37.0) (2026-11-21)
+
+### Features
+
+- scope invocation state per request on Lambda Web Functions ([#5877](https://github.com/aws-powertools/powertools-lambda-typescript/issues/5877)) ([985a345](https://github.com/aws-powertools/powertools-lambda-typescript/commit/985a345fb1301219620fb4a8ebd851e5c9f2ec31))
+- allow opting out of the AWS SDK app ID marker ([#5816](https://github.com/aws-powertools/powertools-lambda-typescript/issues/5816)) ([764e1f2](https://github.com/aws-powertools/powertools-lambda-typescript/commit/764e1f2ee3cb81239129f950e1b4d1c9b04a89de))
 ## [2.36.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.35.0...v2.36.0) (2026-10-06)
 
 ### Improvements

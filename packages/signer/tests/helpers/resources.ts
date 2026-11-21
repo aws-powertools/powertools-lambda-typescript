@@ -54,6 +54,7 @@ class SignerTestFunction extends TestNodejsFunction {
         resourceName: 'RestApi',
       }),
       {
+        cloudWatchRole: false,
         restApiName: concatenateResourceName({
           testName: scope.testName,
           resourceName: extraProps.nameSuffix,

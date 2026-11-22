@@ -1,5 +1,10 @@
 # Change Log
 
+## [2.37.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.36.0...v2.37.0) (2026-11-21)
+
+### Bug Fixes
+
+- skip non-finite metric values with a warning ([#5963](https://github.com/aws-powertools/powertools-lambda-typescript/issues/5963)) ([fcf3bd4](https://github.com/aws-powertools/powertools-lambda-typescript/commit/fcf3bd4a087f0f41c0d2217b7306b9221e533f32))
 ## [2.36.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.35.0...v2.36.0) (2026-10-06)
 
 **Note:** Version bump only for this package

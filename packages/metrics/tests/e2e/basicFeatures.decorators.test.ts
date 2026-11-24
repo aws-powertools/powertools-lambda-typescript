@@ -1,6 +1,7 @@
 import { join } from 'node:path';
 import {
   invokeFunction,
+  type TestInvocationLogs,
   TestStack,
 } from '@aws-lambda-powertools/testing-utils';
 import {
@@ -45,6 +46,7 @@ describe('Metrics E2E tests, basic features decorator usage', () => {
 
   const cloudwatchClient = new CloudWatchClient({});
   const invocations = 2;
+  let invocationLogs: TestInvocationLogs[];
 
   beforeAll(async () => {
     // Deploy the stack
@@ -54,7 +56,7 @@ describe('Metrics E2E tests, basic features decorator usage', () => {
     fnNameBasicFeatures = testStack.findAndGetStackOutputValue('BasicFeatures');
 
     // Act
-    await invokeFunction({
+    invocationLogs = await invokeFunction({
       functionName: fnNameBasicFeatures,
       times: invocations,
       invocationMode: 'SEQUENTIAL',
@@ -90,26 +92,15 @@ describe('Metrics E2E tests, basic features decorator usage', () => {
         sortDimensions(expectedDimensions)
       );
 
-      // Check coldstart metric value
-      const adjustedStartTime = new Date(startTime.getTime() - 60 * 1000);
-      const endTime = new Date(Date.now() + 60 * 1000);
-      const coldStartMetricStat = await cloudwatchClient.send(
-        new GetMetricStatisticsCommand({
-          Namespace: expectedNamespace,
-          StartTime: adjustedStartTime,
-          Dimensions: expectedDimensions,
-          EndTime: endTime,
-          Period: 60,
-          MetricName: 'ColdStart',
-          Statistics: ['Sum'],
-        })
-      );
-
-      // Despite lambda has been called twice, coldstart metric sum should only be 1
-      const singleDataPoint = coldStartMetricStat.Datapoints
-        ? coldStartMetricStat.Datapoints[0]
-        : {};
-      expect(singleDataPoint?.Sum).toBe(1);
+      // Lambda includes Init Duration in the REPORT for a cold invocation.
+      for (const logs of invocationLogs) {
+        const coldStartValues = logs
+          .getFunctionLogs()
+          .filter((log) => log.includes('"ColdStart"'))
+          .map((log) => JSON.parse(log).ColdStart);
+        const isColdStart = logs.getReportLog().includes('Init Duration:');
+        expect(coldStartValues).toEqual(isColdStart ? [1] : []);
+      }
     });
   });
 

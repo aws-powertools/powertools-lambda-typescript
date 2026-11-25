@@ -51,6 +51,7 @@ class RestApiTestConstruct extends Construct {
         resourceName: 'RestApi',
       }),
       {
+        cloudWatchRole: false,
         restApiName: concatenateResourceName({
           testName: testStack.testName,
           resourceName: extraProps.nameSuffix,

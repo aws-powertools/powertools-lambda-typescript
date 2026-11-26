@@ -1,6 +1,6 @@
 {
   "name": "@aws-lambda-powertools/logger",
-  "version": "2.36.0",
+  "version": "2.37.0",
   "description": "The logging package for the Powertools for AWS Lambda (TypeScript) library",
   "author": {
     "name": "Amazon Web Services",
@@ -76,13 +76,13 @@
   "main": "./lib/cjs/index.js",
   "devDependencies": {
     "@aws-lambda-powertools/testing-utils": "file:../testing",
-    "@aws-sdk/client-lambda": "^3.1169.0",
+    "@aws-sdk/client-lambda": "^3.1175.0",
     "@aws/lambda-invoke-store": "0.3.0",
     "@types/promise-retry": "^1.1.3",
     "promise-retry": "^2.0.1"
   },
   "peerDependencies": {
-    "@aws-lambda-powertools/jmespath": "2.36.0",
+    "@aws-lambda-powertools/jmespath": "2.37.0",
     "@middy/core": "4.x || 5.x || 6.x || 7.x"
   },
   "peerDependenciesMeta": {
@@ -104,7 +104,7 @@
     "url": "https://github.com/aws-powertools/powertools-lambda-typescript/issues"
   },
   "dependencies": {
-    "@aws-lambda-powertools/commons": "2.36.0"
+    "@aws-lambda-powertools/commons": "2.37.0"
   },
   "keywords": [
     "aws",

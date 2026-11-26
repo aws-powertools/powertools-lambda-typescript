@@ -1,5 +1,15 @@
 # Change Log
 
+## [2.37.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.36.0...v2.37.0) (2026-11-21)
+
+### Bug Fixes
+
+- keep each request's result in its own record ([#5994](https://github.com/aws-powertools/powertools-lambda-typescript/issues/5994)) ([e4aec78](https://github.com/aws-powertools/powertools-lambda-typescript/commit/e4aec78e09f96e3e1ba95c1ace20ae6be7e95729))
+- handle __proto__ and case-variant keys in deepSort ([#5971](https://github.com/aws-powertools/powertools-lambda-typescript/issues/5971)) ([00d1d01](https://github.com/aws-powertools/powertools-lambda-typescript/commit/00d1d015752a37e76207c59082685f631e1d7e28))
+- update durable records in a durable step ([#5898](https://github.com/aws-powertools/powertools-lambda-typescript/issues/5898)) ([dbfa374](https://github.com/aws-powertools/powertools-lambda-typescript/commit/dbfa3748c4bde6d57497abecf6e65e0a51dc4ca6))
+- expire cache in-progress records at their deadline ([#5863](https://github.com/aws-powertools/powertools-lambda-typescript/issues/5863)) ([ffdf63c](https://github.com/aws-powertools/powertools-lambda-typescript/commit/ffdf63cba51249337f0d60a66bfd2fdc62f19c20))
+- avoid running durable executions twice ([#5873](https://github.com/aws-powertools/powertools-lambda-typescript/issues/5873)) ([9608c05](https://github.com/aws-powertools/powertools-lambda-typescript/commit/9608c051b049ca42faa069793faac89dbd0c7dec))
+- compare in-progress expiry against current time in milliseconds ([#5881](https://github.com/aws-powertools/powertools-lambda-typescript/issues/5881)) ([3ad0cf5](https://github.com/aws-powertools/powertools-lambda-typescript/commit/3ad0cf59e26fff15385570ffd71c94770dd866a0))
 ## [2.36.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.35.0...v2.36.0) (2026-10-06)
 
 ### Improvements

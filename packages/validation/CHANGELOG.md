@@ -1,5 +1,10 @@
 # Change Log
 
+## [2.37.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.36.0...v2.37.0) (2026-11-21)
+
+### Bug Fixes
+
+- stop at the first error with the default Ajv instance ([#5979](https://github.com/aws-powertools/powertools-lambda-typescript/issues/5979)) ([a45532b](https://github.com/aws-powertools/powertools-lambda-typescript/commit/a45532bc187cbe950046c71f71cca9df33893696))
 ## [2.36.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.35.0...v2.36.0) (2026-10-06)
 
 **Note:** Version bump only for this package

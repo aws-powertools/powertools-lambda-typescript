@@ -1,5 +1,15 @@
 # Change Log
 
+## [2.37.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.36.0...v2.37.0) (2026-11-21)
+
+### Bug Fixes
+
+- return null for ordering non-numbers and reject mixed types ([#5967](https://github.com/aws-powertools/powertools-lambda-typescript/issues/5967)) ([3c0ac7c](https://github.com/aws-powertools/powertools-lambda-typescript/commit/3c0ac7c911f372ff8d3ac57882fa27cd69de2876))
+- throw when a function fails at runtime ([#5988](https://github.com/aws-powertools/powertools-lambda-typescript/issues/5988)) ([648a0dc](https://github.com/aws-powertools/powertools-lambda-typescript/commit/648a0dc50b84a2cefad7a563e1b4bfc2d1a5eaeb))
+- make avg, contains and to_number follow the spec ([#5890](https://github.com/aws-powertools/powertools-lambda-typescript/issues/5890)) ([b462488](https://github.com/aws-powertools/powertools-lambda-typescript/commit/b4624888357464edf4194fd9c5d924cce1c02b36))
+- handle strings by Unicode code point ([#5884](https://github.com/aws-powertools/powertools-lambda-typescript/issues/5884)) ([192a014](https://github.com/aws-powertools/powertools-lambda-typescript/commit/192a01471e842285e072d136e61f8156eab2e3d8))
+- avoid mutating arrays in sort and reverse ([#5843](https://github.com/aws-powertools/powertools-lambda-typescript/issues/5843)) ([7421e40](https://github.com/aws-powertools/powertools-lambda-typescript/commit/7421e40c72ee0025aba2907b94c221b7027f649c))
+- keep falsy results in map() and not_null() ([#5821](https://github.com/aws-powertools/powertools-lambda-typescript/issues/5821)) ([dc7cdb7](https://github.com/aws-powertools/powertools-lambda-typescript/commit/dc7cdb70e3b48488b1a832efc4389c36572266d1))
 ## [2.36.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.35.0...v2.36.0) (2026-10-06)
 
 **Note:** Version bump only for this package

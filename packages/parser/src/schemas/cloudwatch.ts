@@ -15,6 +15,7 @@ const CloudWatchLogsDecodeSchema = z.object({
   logStream: z.string(),
   subscriptionFilters: z.array(z.string()),
   logEvents: z.array(CloudWatchLogEventSchema).nonempty(),
+  policyLevel: z.string().optional(),
 });
 
 /**
